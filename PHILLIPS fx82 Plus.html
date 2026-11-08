@@ -1,0 +1,2459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phillips fx-82AU PLUS II Emulator</title>
+  <style id="calcThemeStyles">
+    :root {
+      /* Chassis Themes */
+      --chassis-grad: linear-gradient(175deg, #33383f 0%, #202428 55%, #181b1e 100%);
+      --chassis-border: #141618;
+      
+      /* LCD Defaults */
+      --lcd-bg: #98ad95;
+      --lcd-dark: #1f271e;
+      --lcd-ghost: #8fa38c;
+      --lcd-history-sub: rgba(31, 39, 30, 0.65);
+      
+      /* Keys Themes */
+      --key-num-grad: linear-gradient(180deg, #f8fafc 0%, #dbe0e6 100%);
+      --key-num-text: #1d2024;
+      --key-fun-grad: linear-gradient(180deg, #444b54 0%, #2f343b 100%);
+      --key-fun-text: #ffffff;
+      --key-del-grad: linear-gradient(180deg, #c53c33 0%, #92261e 100%);
+      --key-del-text: #ffffff;
+      
+      /* Shift / Alpha Labels */
+      --shift-color: #d69726;
+      --alpha-color: #b83d47;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0f1215;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    /* Resizable Container */
+    #resizer {
+      position: relative;
+      width: 440px;
+      height: 96vh;
+      resize: both;
+      overflow: hidden;
+      min-width: 290px;
+      min-height: 580px;
+      max-width: 96vw;
+      max-height: 98vh;
+      padding-bottom: 12px;
+      padding-right: 12px;
+    }
+
+    #resizer::after {
+      content: "◢";
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      color: #94a3b8;
+      font-size: 14px;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Calculator Chassis - Tightly Fitted (Unused bottom removed) */
+    .calc-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 440px;
+      height: 950px; /* Snug height eliminating empty plastic bottom */
+      transform-origin: top left;
+      background: var(--chassis-grad);
+      border-radius: 36px 36px 38px 38px;
+      box-shadow: 0 16px 42px rgba(0,0,0,0.75), inset 0 2px 3px rgba(255,255,255,0.22), inset 0 -3px 5px rgba(0,0,0,0.5);
+      border: 3px solid var(--chassis-border);
+      padding: 14px 18px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.25s ease;
+    }
+
+    /* Top Utility Bar for Pop-outs */
+    .top-pop-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 2px;
+    }
+
+    .pop-btn {
+      background: linear-gradient(180deg, #374151 0%, #1f2937 100%);
+      color: #cbd5e1;
+      border: 1px solid #4b5563;
+      border-radius: 6px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      transition: all 0.15s ease;
+    }
+    .pop-btn:hover {
+      background: linear-gradient(180deg, #4b5563 0%, #374151 100%);
+      color: #ffffff;
+      border-color: #60a5fa;
+      transform: translateY(-1px);
+    }
+    .pop-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Header Bar */
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      padding: 0 4px;
+    }
+    .brand-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-phillips {
+      font-weight: 900;
+      font-size: 21px;
+      letter-spacing: 2.2px;
+      color: #f8fafc;
+      line-height: 1.1;
+    }
+    .model-name {
+      font-weight: bold;
+      font-style: italic;
+      font-size: 12.5px;
+      color: #cbd5e1;
+      letter-spacing: 0.5px;
+    }
+    .sub-model {
+      font-size: 9.5px;
+      color: #94a3b8;
+    }
+    .solar-strip {
+      width: 88px;
+      height: 22px;
+      background: linear-gradient(180deg, #1b1918 0%, #302621 100%);
+      border: 2px solid #121010;
+      border-radius: 4px;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.85);
+      position: relative;
+    }
+    .solar-strip::before {
+      content: "";
+      position: absolute;
+      left: 33%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(255,255,255,0.12);
+    }
+    .solar-strip::after {
+      content: "";
+      position: absolute;
+      left: 66%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* 3X Height Screen Bezel & LCD */
+    .lcd-bezel {
+      background: #181b1d;
+      border-radius: 12px;
+      padding: 8px 10px;
+      box-shadow: inset 0 3px 8px rgba(0,0,0,0.85), 0 1px 1px rgba(255,255,255,0.15);
+      border: 1px solid #333a40;
+      margin-bottom: 12px;
+    }
+
+    .lcd-screen {
+      background: var(--lcd-bg);
+      border-radius: 6px;
+      box-shadow: inset 1px 2px 7px rgba(0,0,0,0.45);
+      border: 1px solid #738570;
+      height: 366px; /* 3X height */
+      display: flex;
+      flex-direction: column;
+      padding: 6px 8px;
+      font-family: "Courier New", Courier, monospace;
+      color: var(--lcd-dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Indicators Bar */
+    .lcd-indicators {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      font-weight: 900;
+      height: 15px;
+      border-bottom: 1px dashed rgba(31, 39, 30, 0.3);
+      padding-bottom: 2px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .ind {
+      visibility: hidden;
+      display: inline-block;
+    }
+    .ind.active {
+      visibility: visible;
+    }
+
+    /* History Tape */
+    .lcd-history-tape {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 6px 2px;
+      border-bottom: 1px solid rgba(31, 39, 30, 0.25);
+    }
+    .lcd-history-tape::-webkit-scrollbar {
+      width: 4px;
+    }
+    .lcd-history-tape::-webkit-scrollbar-thumb {
+      background: rgba(31, 39, 30, 0.35);
+      border-radius: 2px;
+    }
+
+    .hist-item {
+      display: flex;
+      flex-direction: column;
+      opacity: 0.88;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 3px;
+      padding: 1px 4px;
+      transition: background 0.1s ease;
+    }
+    .hist-item:hover {
+      background: rgba(0,0,0,0.06);
+    }
+    .hist-item .hist-expr {
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .hist-item .hist-res {
+      font-weight: 900;
+      text-align: right;
+      font-size: 14.5px;
+    }
+
+    /* Active Working Area */
+    .lcd-active-area {
+      height: 84px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-top: 4px;
+    }
+
+    .lcd-line1 {
+      font-size: 17px;
+      line-height: 20px;
+      min-height: 38px;
+      word-break: break-all;
+      white-space: pre-wrap;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .lcd-line2 {
+      font-size: 22px;
+      font-weight: 900;
+      text-align: right;
+      letter-spacing: 1px;
+      min-height: 26px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: var(--lcd-dark);
+      vertical-align: text-bottom;
+      animation: blink 0.9s steps(2, start) infinite;
+      margin-left: 1px;
+    }
+    .cursor.overwrite {
+      width: 10px;
+      height: 3px;
+      margin-bottom: 2px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Keypad Grid Alignment Engine */
+    .keypad {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .upper-control {
+      display: grid;
+      grid-template-columns: 1fr 136px 1fr;
+      align-items: center;
+      margin-bottom: 2px;
+      gap: 8px;
+    }
+    .col-keys {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .dpad-container {
+      width: 132px;
+      height: 72px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, #2a2e34, #191c20);
+      border-radius: 36px;
+      position: relative;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,255,255,0.2);
+      border: 2px solid #14171a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dpad-center {
+      font-size: 8.5px;
+      color: #94a3b8;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+    .dpad-btn {
+      position: absolute;
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .dpad-btn:active {
+      color: #38bdf8;
+      transform: scale(0.9);
+    }
+    .dpad-up { top: 2px; left: 50px; width: 32px; height: 22px; }
+    .dpad-down { bottom: 2px; left: 50px; width: 32px; height: 22px; }
+    .dpad-left { left: 4px; top: 20px; width: 28px; height: 32px; }
+    .dpad-right { right: 4px; top: 20px; width: 28px; height: 32px; }
+
+    /* Uniform Key Cells for Perfect Grid Alignment */
+    .key-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      position: relative;
+    }
+
+    .key-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      height: 14px;
+      min-height: 14px;
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 0 3px;
+      line-height: 14px;
+      box-sizing: border-box;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .label-shift {
+      color: var(--shift-color);
+      text-align: left;
+    }
+    .label-alpha {
+      color: var(--alpha-color);
+      text-align: right;
+    }
+
+    button.calc-btn {
+      width: 100%;
+      height: 33px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 700;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 2px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.35);
+      transition: transform 0.05s ease;
+      outline: none;
+    }
+    button.calc-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 1px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.2);
+    }
+
+    button.btn-fun {
+      background: var(--key-fun-grad);
+      color: var(--key-fun-text);
+      font-size: 13px;
+    }
+    button.btn-fun.pill {
+      height: 27px;
+      border-radius: 14px;
+    }
+    button.btn-num {
+      background: var(--key-num-grad);
+      color: var(--key-num-text);
+      font-size: 16px;
+      font-weight: 800;
+    }
+    button.btn-del {
+      background: var(--key-del-grad);
+      color: var(--key-del-text);
+      font-weight: 800;
+    }
+
+    .function-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px 5px;
+      margin-bottom: 4px;
+    }
+
+    /* Perfect 5-Column Grid for Lower Numeric & Arithmetic Keys */
+    .main-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px 6px;
+    }
+
+    /* Overlays */
+    .menu-screen, .stat-table {
+      position: absolute;
+      inset: 2px;
+      background: var(--lcd-bg);
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 18px;
+      padding: 8px 6px;
+      overflow-y: auto;
+      z-index: 20;
+    }
+    .menu-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 1px 0;
+    }
+    .stat-table table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 12px;
+    }
+    .stat-table th, .stat-table td {
+      padding: 2px 4px;
+      border: 1px solid rgba(0,0,0,0.3);
+    }
+    .stat-table th {
+      background: rgba(0,0,0,0.06);
+    }
+    .stat-table tr.selected td {
+      background: var(--lcd-dark);
+      color: var(--lcd-bg);
+    }
+
+    /* Context Color Change Menu */
+    .custom-ctx-menu {
+      position: fixed;
+      z-index: 2000;
+      background: #1e2227;
+      border: 2px solid #3b424d;
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.85);
+      padding: 10px;
+      width: 250px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      font-family: inherit;
+    }
+    .ctx-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #f1f5f9;
+      font-size: 12.5px;
+      font-weight: 800;
+      border-bottom: 1px solid #333a44;
+      padding-bottom: 6px;
+    }
+    .ctx-close {
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 15px;
+      line-height: 1;
+    }
+    .ctx-close:hover {
+      color: #fff;
+    }
+    .ctx-palette-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 5px;
+      max-height: 310px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .palette-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 6px;
+      background: #2a3038;
+      border: 1px solid #3a424e;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: left;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .palette-btn:hover {
+      background: #39424e;
+      border-color: #60a5fa;
+    }
+    .color-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.4);
+      flex-shrink: 0;
+    }
+
+    .screen-tip {
+      color: #94a3b8;
+      font-size: 11.5px;
+      margin-top: 8px;
+      text-align: center;
+      letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="resizer">
+  <div class="calc-container" id="calcChassis">
+    <!-- Top Utility Bar for Pop-Out Windows -->
+    <div class="top-pop-bar">
+      <button class="pop-btn" id="btnPopKeypad" title="Open resizable pop-out keyboard window">
+        <span>⧉</span> Pop-out Keypad
+      </button>
+      <button class="pop-btn" id="btnPopScreen" title="Open resizable pop-out screen window with zoom">
+        Pop-out Screen <span>⧉</span>
+      </button>
+    </div>
+
+    <!-- Header with PHILLIPS Title -->
+    <div class="top-header">
+      <div class="brand-group">
+        <span class="brand-phillips">PHILLIPS</span>
+        <span class="model-name">fx-82AU PLUS II</span>
+        <span class="sub-model">2nd edition / NATURAL-V.P.A.M.</span>
+      </div>
+      <div class="solar-strip" title="Two-Way Power Simulation"></div>
+    </div>
+
+    <!-- 3X Extended Height LCD Bezel -->
+    <div class="lcd-bezel" id="lcdBezelContainer">
+      <div class="lcd-screen" id="lcdScreen">
+        <!-- Indicators Bar -->
+        <div class="lcd-indicators">
+          <span class="ind" id="ind-s">S</span>
+          <span class="ind" id="ind-a">A</span>
+          <span class="ind" id="ind-m">M</span>
+          <span class="ind" id="ind-sto">STO</span>
+          <span class="ind" id="ind-rcl">RCL</span>
+          <span class="ind" id="ind-stat">STAT</span>
+          <span class="ind active" id="ind-ang">D</span>
+          <span class="ind" id="ind-fix">FIX</span>
+          <span class="ind" id="ind-sci">SCI</span>
+          <span class="ind active" id="ind-math">Math</span>
+          <span class="ind" id="ind-arrow">▲▼</span>
+          <span class="ind" id="ind-disp">Disp</span>
+        </div>
+
+        <!-- 3X Height Screen: History Tape -->
+        <div class="lcd-history-tape" id="historyTape" title="Click any item to copy expression">
+          <!-- Populated by engine -->
+        </div>
+
+        <!-- Active Input & Result Area -->
+        <div class="lcd-active-area">
+          <div class="lcd-line1" id="line1">0<span class="cursor"></span></div>
+          <div class="lcd-line2" id="line2"></div>
+        </div>
+
+        <!-- Menus / Stat Tables Overlay -->
+        <div class="menu-screen" id="menuOverlay" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Keypad Wrapper -->
+    <div class="keypad" id="calcKeypad">
+      <!-- Upper Section: Replay D-Pad & System Control -->
+      <div class="upper-control">
+        <div class="col-keys">
+          <div class="key-cell">
+            <div class="key-labels"><span></span><span></span></div>
+            <button class="calc-btn btn-fun pill" style="color:#f4c430;" id="k-shift">SHIFT</button>
+          </div>
+          <div class="key-cell">
+            <div class="key-labels"><span></span><span></span></div>
+            <button class="calc-btn btn-fun pill" style="color:#f87171;" id="k-alpha">ALPHA</button>
+          </div>
+        </div>
+
+        <div class="dpad-container">
+          <span class="dpad-center">REPLAY</span>
+          <button class="dpad-btn dpad-up" id="k-up">▲</button>
+          <button class="dpad-btn dpad-down" id="k-down">▼</button>
+          <button class="dpad-btn dpad-left" id="k-left">◀</button>
+          <button class="dpad-btn dpad-right" id="k-right">▶</button>
+        </div>
+
+        <div class="col-keys">
+          <div class="key-cell">
+            <div class="key-labels"><span class="label-shift">SETUP</span><span></span></div>
+            <button class="calc-btn btn-fun pill" id="k-mode">MODE</button>
+          </div>
+          <div class="key-cell">
+            <div class="key-labels"><span></span><span></span></div>
+            <button class="calc-btn btn-fun pill" style="background:#555e69;" id="k-on">ON</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Function Grid (3 Rows x 6 Columns) -->
+      <div class="function-grid">
+        <!-- Row 1 -->
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">■/□</span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-frac">■/□</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">³√</span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-sqrt">√■</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-sqr">x²</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">x√</span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-pow">x^■</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">10^■</span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-log">log</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">e^■</span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-ln">ln</button>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span class="label-alpha">A</span></div>
+          <button class="calc-btn btn-fun" id="k-neg">(-)</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">FACT</span><span class="label-alpha">B</span></div>
+          <button class="calc-btn btn-fun" id="k-dms">° ' "</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span class="label-alpha">C</span></div>
+          <button class="calc-btn btn-fun" id="k-hyp">hyp</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">sin⁻¹</span><span class="label-alpha">D</span></div>
+          <button class="calc-btn btn-fun" id="k-sin">sin</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">cos⁻¹</span><span class="label-alpha">E</span></div>
+          <button class="calc-btn btn-fun" id="k-cos">cos</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">tan⁻¹</span><span class="label-alpha">F</span></div>
+          <button class="calc-btn btn-fun" id="k-tan">tan</button>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">STO</span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-rcl">RCL</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">←</span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-eng">ENG</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-lpar">(</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span class="label-alpha">X</span></div>
+          <button class="calc-btn btn-fun" id="k-rpar">)</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">a b/c</span><span class="label-alpha">Y</span></div>
+          <button class="calc-btn btn-fun" id="k-sd">S<=>D</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">M-</span><span class="label-alpha">M</span></div>
+          <button class="calc-btn btn-fun" id="k-mplus">M+</button>
+        </div>
+      </div>
+
+      <!-- Main Grid (4 Rows x 5 Columns) - Every cell uniformly aligned -->
+      <div class="main-grid">
+        <!-- Row 1: 7, 8, 9, DEL, AC -->
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-7">7</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-8">8</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-9">9</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">INS</span><span></span></div>
+          <button class="calc-btn btn-del" id="k-del">DEL</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">OFF</span><span></span></div>
+          <button class="calc-btn btn-del" id="k-ac">AC</button>
+        </div>
+
+        <!-- Row 2: 4, 5, 6, *, / -->
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-4">4</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-5">5</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-6">6</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">nPr</span><span class="label-alpha">GCD</span></div>
+          <button class="calc-btn btn-fun" id="k-mul">×</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">nCr</span><span class="label-alpha">LCM</span></div>
+          <button class="calc-btn btn-fun" id="k-div">÷</button>
+        </div>
+
+        <!-- Row 3: 1, 2, 3, +, - -->
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">STAT</span><span></span></div>
+          <button class="calc-btn btn-num" id="k-1">1</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-2">2</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-3">3</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">Pol</span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-add">+</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">Rec</span><span></span></div>
+          <button class="calc-btn btn-fun" id="k-sub">-</button>
+        </div>
+
+        <!-- Row 4: 0, ., x10^x, Ans, = -->
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">Rnd</span><span></span></div>
+          <button class="calc-btn btn-num" id="k-0">0</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">Ran#</span><span class="label-alpha">RanInt</span></div>
+          <button class="calc-btn btn-num" id="k-dot">.</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">π</span><span class="label-alpha">e</span></div>
+          <button class="calc-btn btn-fun" id="k-exp">×10ˣ</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">DRG►</span><span class="label-alpha">%</span></div>
+          <button class="calc-btn btn-fun" id="k-ans">Ans</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span class="label-shift">VERIFY</span><span></span></div>
+          <button class="calc-btn btn-num" style="background: linear-gradient(180deg, #d3dbe3 0%, #b8c1ca 100%);" id="k-eq">=</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Right-Click Context Menu for Colors -->
+<div class="custom-ctx-menu" id="customCtxMenu">
+  <div class="ctx-header">
+    <span id="ctxTitle">Color Options</span>
+    <span class="ctx-close" id="ctxClose">✕</span>
+  </div>
+  <div class="ctx-palette-grid" id="ctxGrid"></div>
+</div>
+
+<div class="screen-tip">
+  💡 <strong>Pop-Outs:</strong> Top-Left for <strong>Keyboard</strong> • Top-Right for <strong>Screen (with 1.0x~4.0x Zoom Slider on Right-Click)</strong>
+</div>
+
+<script>
+(function(){
+  // Auto-scaling handler for main window
+  const resizer = document.getElementById('resizer');
+  const chassis = document.getElementById('calcChassis');
+  const BASE_WIDTH = 440;
+  const BASE_HEIGHT = 950; // Optimized tight height
+
+  function handleResize() {
+    const w = resizer.clientWidth - 12;
+    const h = resizer.clientHeight - 12;
+    const scale = Math.min(w / BASE_WIDTH, h / BASE_HEIGHT);
+    chassis.style.transform = `scale(${scale})`;
+  }
+  new ResizeObserver(handleResize).observe(resizer);
+  handleResize();
+
+  // 12 Chassis Color Palettes
+  const chassisColors = [
+    { name: "Classic Charcoal", swatch: "#272b30", grad: "linear-gradient(175deg, #33383f 0%, #202428 55%, #181b1e 100%)", border: "#141618" },
+    { name: "Obsidian Black", swatch: "#0d0f12", grad: "linear-gradient(175deg, #1d1f24 0%, #0d0f12 55%, #050607 100%)", border: "#000000" },
+    { name: "Phillips Navy", swatch: "#004b87", grad: "linear-gradient(175deg, #005ea8 0%, #00437a 55%, #002b4f 100%)", border: "#001f3f" },
+    { name: "Slate Blue", swatch: "#1e293b", grad: "linear-gradient(175deg, #2e3e54 0%, #1a2433 55%, #0f1722 100%)", border: "#0b111a" },
+    { name: "Deep Teal", swatch: "#0d3535", grad: "linear-gradient(175deg, #174d4d 0%, #0d3535 55%, #051c1c 100%)", border: "#041414" },
+    { name: "Forest Pine", swatch: "#132d1c", grad: "linear-gradient(175deg, #1e452c 0%, #132d1c 55%, #09170e 100%)", border: "#050f09" },
+    { name: "Burgundy Wine", swatch: "#3b1218", grad: "linear-gradient(175deg, #571b24 0%, #351016 55%, #1d070b 100%)", border: "#120306" },
+    { name: "Imperial Violet", swatch: "#2a1338", grad: "linear-gradient(175deg, #421e57 0%, #261133 55%, #14071c 100%)", border: "#0d0413" },
+    { name: "Vintage Beige", swatch: "#857e70", grad: "linear-gradient(175deg, #a39b8c 0%, #827b6e 55%, #595349 100%)", border: "#423e37" },
+    { name: "Gunmetal Silver", swatch: "#535963", grad: "linear-gradient(175deg, #6c7582 0%, #4a5059 55%, #30343a 100%)", border: "#22252a" },
+    { name: "Dark Copper", swatch: "#3d2218", grad: "linear-gradient(175deg, #593325 0%, #381f16 55%, #1c0e09 100%)", border: "#120805" },
+    { name: "Midnight Rose", swatch: "#381a29", grad: "linear-gradient(175deg, #54273d 0%, #331725 55%, #1a0a12 100%)", border: "#10050b" }
+  ];
+
+  // 12 Keypad Color Palettes
+  const keyPalettes = [
+    {
+      name: "Classic Two-Tone",
+      swatch: "#dbe0e6",
+      numGrad: "linear-gradient(180deg, #f8fafc 0%, #dbe0e6 100%)",
+      numText: "#1d2024",
+      funGrad: "linear-gradient(180deg, #444b54 0%, #2f343b 100%)",
+      funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #c53c33 0%, #92261e 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Obsidian Stealth",
+      swatch: "#2b2d30",
+      numGrad: "linear-gradient(180deg, #3b3f45 0%, #232629 100%)",
+      numText: "#f1f5f9",
+      funGrad: "linear-gradient(180deg, #24272c 0%, #15171a 100%)",
+      funText: "#94a3b8",
+      delGrad: "linear-gradient(180deg, #8c2424 0%, #571212 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Phillips Blue & Ice",
+      swatch: "#0062b0",
+      numGrad: "linear-gradient(180deg, #ffffff 0%, #e0f2fe 100%)",
+      numText: "#004b87",
+      funGrad: "linear-gradient(180deg, #0066b3 0%, #004b87 100%)",
+      funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Arctic Teal",
+      swatch: "#0d9488",
+      numGrad: "linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 100%)",
+      numText: "#115e59",
+      funGrad: "linear-gradient(180deg, #14b8a6 0%, #0f766e 100%)",
+      funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #f43f5e 0%, #be123c 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Emerald Matrix",
+      swatch: "#16a34a",
+      numGrad: "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%)",
+      numText: "#14532d",
+      funGrad: "linear-gradient(180deg, #22c55e 0%, #15803d 100%)",
+      funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #ea580c 0%, #9a3412 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Golden Amber",
+      swatch: "#f59e0b",
+      numGrad: "linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)",
+      numText: "#78350f",
+      funGrad: "linear-gradient(180deg, #f59e0b 0%, #b45309 100%)",
+      funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #dc2626 0%, #991b1b 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Cyber Neon Pink",
+      swatch: "#ec4899",
+      numGrad: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%)",
+      numText: "#831843",
+      funGrad: "linear-gradient(180deg, #ec4899 0%, #be185d 100%)",
+      funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #6366f1 0%, #4338ca 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Retro 80s Khaki",
+      swatch: "#c8bca7",
+      numGrad: "linear-gradient(180deg, #f2ece1 0%, #dfd5c4 100%)",
+      numText: "#3b3429",
+      funGrad: "linear-gradient(180deg, #7c705e 0%, #574d3f 100%)",
+      funText: "#f7f3ea",
+      delGrad: "linear-gradient(180deg, #b44335 0%, #83271d 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Electric Violet",
+      swatch: "#8b5cf6",
+      numGrad: "linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%)",
+      numText: "#581c87",
+      funGrad: "linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%)",
+      funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #e11d48 0%, #9f1239 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Crimson Blaze",
+      swatch: "#dc2626",
+      numGrad: "linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%)",
+      numText: "#7f1d1d",
+      funGrad: "linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)",
+      funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #475569 0%, #1e293b 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "High-Contrast Yellow",
+      swatch: "#eab308",
+      numGrad: "linear-gradient(180deg, #fef08a 0%, #fde047 100%)",
+      numText: "#000000",
+      funGrad: "linear-gradient(180deg, #27272a 0%, #18181b 100%)",
+      funText: "#facc15",
+      delGrad: "linear-gradient(180deg, #dc2626 0%, #991b1b 100%)",
+      delText: "#ffffff"
+    },
+    {
+      name: "Steel Blue Mono",
+      swatch: "#64748b",
+      numGrad: "linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%)",
+      numText: "#0f172a",
+      funGrad: "linear-gradient(180deg, #64748b 0%, #475569 100%)",
+      funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #0284c7 0%, #0369a1 100%)",
+      delText: "#ffffff"
+    }
+  ];
+
+  // Pop-Out Windows State
+  let popoutScreenWin = null;
+  let popoutKeypadWin = null;
+
+  // Context Menu Handling
+  const ctxMenu = document.getElementById('customCtxMenu');
+  const ctxTitle = document.getElementById('ctxTitle');
+  const ctxGrid = document.getElementById('ctxGrid');
+  const ctxClose = document.getElementById('ctxClose');
+
+  ctxClose.addEventListener('click', hideContextMenu);
+  window.addEventListener('click', (e) => {
+    if (!ctxMenu.contains(e.target)) hideContextMenu();
+  });
+
+  function hideContextMenu() {
+    ctxMenu.style.display = 'none';
+  }
+
+  function applyChassisPalette(item) {
+    document.documentElement.style.setProperty('--chassis-grad', item.grad);
+    document.documentElement.style.setProperty('--chassis-border', item.border);
+    if (popoutKeypadWin && !popoutKeypadWin.closed) {
+      popoutKeypadWin.document.documentElement.style.setProperty('--chassis-grad', item.grad);
+      popoutKeypadWin.document.documentElement.style.setProperty('--chassis-border', item.border);
+    }
+  }
+
+  function applyKeyPalette(item) {
+    document.documentElement.style.setProperty('--key-num-grad', item.numGrad);
+    document.documentElement.style.setProperty('--key-num-text', item.numText);
+    document.documentElement.style.setProperty('--key-fun-grad', item.funGrad);
+    document.documentElement.style.setProperty('--key-fun-text', item.funText);
+    document.documentElement.style.setProperty('--key-del-grad', item.delGrad);
+    document.documentElement.style.setProperty('--key-del-text', item.delText);
+    if (popoutKeypadWin && !popoutKeypadWin.closed) {
+      popoutKeypadWin.document.documentElement.style.setProperty('--key-num-grad', item.numGrad);
+      popoutKeypadWin.document.documentElement.style.setProperty('--key-num-text', item.numText);
+      popoutKeypadWin.document.documentElement.style.setProperty('--key-fun-grad', item.funGrad);
+      popoutKeypadWin.document.documentElement.style.setProperty('--key-fun-text', item.funText);
+      popoutKeypadWin.document.documentElement.style.setProperty('--key-del-grad', item.delGrad);
+      popoutKeypadWin.document.documentElement.style.setProperty('--key-del-text', item.delText);
+    }
+  }
+
+  function showContextMenu(x, y, type) {
+    ctxMenu.style.display = 'flex';
+    ctxGrid.innerHTML = '';
+
+    if (type === 'chassis') {
+      ctxTitle.textContent = 'Chassis Color (12)';
+      chassisColors.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'palette-btn';
+        btn.innerHTML = `<span class="color-swatch" style="background:${item.swatch};"></span><span>${item.name}</span>`;
+        btn.addEventListener('click', () => {
+          applyChassisPalette(item);
+          hideContextMenu();
+        });
+        ctxGrid.appendChild(btn);
+      });
+    } else {
+      ctxTitle.textContent = 'Keys Palette (12)';
+      keyPalettes.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'palette-btn';
+        btn.innerHTML = `<span class="color-swatch" style="background:${item.swatch};"></span><span>${item.name}</span>`;
+        btn.addEventListener('click', () => {
+          applyKeyPalette(item);
+          hideContextMenu();
+        });
+        ctxGrid.appendChild(btn);
+      });
+    }
+
+    const menuWidth = 250;
+    const menuHeight = 360;
+    let posX = Math.min(x, window.innerWidth - menuWidth - 10);
+    let posY = Math.min(y, window.innerHeight - menuHeight - 10);
+    ctxMenu.style.left = `${Math.max(10, posX)}px`;
+    ctxMenu.style.top = `${Math.max(10, posY)}px`;
+  }
+
+  // Intercept Right Click on Main Chassis
+  window.addEventListener('contextmenu', (e) => {
+    const isButton = e.target.closest('.calc-btn, .dpad-btn');
+    const isChassis = e.target.closest('#calcChassis');
+
+    if (isButton) {
+      e.preventDefault();
+      showContextMenu(e.clientX, e.clientY, 'keys');
+    } else if (isChassis && !e.target.closest('.pop-btn')) {
+      e.preventDefault();
+      showContextMenu(e.clientX, e.clientY, 'chassis');
+    }
+  });
+
+  // State Management
+  const state = {
+    power: true,
+    mode: 'COMP',
+    statType: '1-VAR',
+    statData: [],
+    statCurRow: 0,
+    statCurCol: 0,
+    showFreq: false,
+    statEditing: false,
+
+    displayFormat: 'MthIO-LineO',
+    angleUnit: 'Deg',
+    numFormat: 'Norm',
+    fixVal: 3,
+    sciVal: 3,
+    normVal: 2,
+    fractionFormat: 'd/c',
+    decPoint: '.',
+
+    shift: false,
+    alpha: false,
+    sto: false,
+    rcl: false,
+    insertMode: true,
+
+    ans: 0,
+    independentM: 0,
+    vars: { A:0, B:0, C:0, D:0, E:0, F:0, X:0, Y:0, M:0 },
+
+    expr: '',
+    cursorPos: 0,
+    calcHistory: [],
+    histIndex: -1,
+    multiStatements: [],
+    multiIndex: 0,
+    lastResult: null,
+    engOffset: 0,
+    factoredForm: null,
+    sdToggleState: 0,
+
+    activeMenu: null
+  };
+
+  // Screen DOM Elements
+  const indS = document.getElementById('ind-s');
+  const indA = document.getElementById('ind-a');
+  const indM = document.getElementById('ind-m');
+  const indSto = document.getElementById('ind-sto');
+  const indRcl = document.getElementById('ind-rcl');
+  const indStat = document.getElementById('ind-stat');
+  const indAng = document.getElementById('ind-ang');
+  const indFix = document.getElementById('ind-fix');
+  const indSci = document.getElementById('ind-sci');
+  const indMath = document.getElementById('ind-math');
+  const indArrow = document.getElementById('ind-arrow');
+  const indDisp = document.getElementById('ind-disp');
+
+  const line1 = document.getElementById('line1');
+  const line2 = document.getElementById('line2');
+  const historyTape = document.getElementById('historyTape');
+  const menuOverlay = document.getElementById('menuOverlay');
+
+  function updateIndicators() {
+    indS.classList.toggle('active', state.shift);
+    indA.classList.toggle('active', state.alpha);
+    indM.classList.toggle('active', state.independentM !== 0 || state.vars.M !== 0);
+    indSto.classList.toggle('active', state.sto);
+    indRcl.classList.toggle('active', state.rcl);
+    indStat.classList.toggle('active', state.mode === 'STAT');
+    indAng.textContent = state.angleUnit === 'Deg' ? 'D' : (state.angleUnit === 'Rad' ? 'R' : 'G');
+    indAng.classList.add('active');
+    indFix.classList.toggle('active', state.numFormat === 'Fix');
+    indSci.classList.toggle('active', state.numFormat === 'Sci');
+    indMath.classList.toggle('active', state.displayFormat.startsWith('MthIO'));
+    indArrow.classList.toggle('active', state.calcHistory.length > 0);
+    indDisp.classList.toggle('active', state.multiStatements.length > 1 && state.multiIndex < state.multiStatements.length - 1);
+  }
+
+  function renderHistoryTape() {
+    historyTape.innerHTML = '';
+    state.calcHistory.forEach((item) => {
+      const el = document.createElement('div');
+      el.className = 'hist-item';
+      el.title = 'Click to copy to input line';
+      el.innerHTML = `
+        <div class="hist-expr">${escapeHtml(item.expr)}</div>
+        <div class="hist-res">${escapeHtml(formatOutputNumber(item.result))}</div>
+      `;
+      el.addEventListener('click', () => {
+        state.expr = item.expr;
+        state.cursorPos = state.expr.length;
+        renderScreen();
+      });
+      historyTape.appendChild(el);
+    });
+    historyTape.scrollTop = historyTape.scrollHeight;
+  }
+
+  function renderScreen() {
+    updateIndicators();
+
+    if (!state.power) {
+      line1.innerHTML = '';
+      line2.innerHTML = '';
+      historyTape.innerHTML = '';
+      menuOverlay.style.display = 'none';
+      syncPopoutScreen();
+      return;
+    }
+
+    if (state.activeMenu) {
+      renderMenu();
+      menuOverlay.style.display = 'flex';
+      syncPopoutScreen();
+      return;
+    } else {
+      menuOverlay.style.display = 'none';
+    }
+
+    if (state.mode === 'STAT' && state.statEditing) {
+      renderStatEditor();
+      menuOverlay.style.display = 'flex';
+      syncPopoutScreen();
+      return;
+    }
+
+    let displayText = state.expr;
+    if (state.factoredForm) {
+      line1.textContent = state.expr || (state.lastResult !== null ? String(state.lastResult) : '');
+      line2.textContent = state.factoredForm;
+      syncPopoutScreen();
+      return;
+    }
+
+    if (displayText.length === 0) {
+      line1.innerHTML = '<span class="cursor ' + (!state.insertMode ? 'overwrite' : '') + '"></span>';
+    } else {
+      let before = escapeHtml(displayText.slice(0, state.cursorPos));
+      let after = escapeHtml(displayText.slice(state.cursorPos));
+      line1.innerHTML = before + '<span class="cursor ' + (!state.insertMode ? 'overwrite' : '') + '"></span>' + after;
+    }
+
+    if (state.lastResult !== null) {
+      line2.textContent = formatOutputNumber(state.lastResult);
+    } else {
+      line2.textContent = '';
+    }
+
+    syncPopoutScreen();
+  }
+
+  function syncPopoutScreen() {
+    if (!popoutScreenWin || popoutScreenWin.closed) return;
+    try {
+      const popDoc = popoutScreenWin.document;
+      const target = popDoc.getElementById('popLcdInner');
+      if (target) {
+        target.innerHTML = document.getElementById('lcdBezelContainer').outerHTML;
+        // Re-attach history item clicks inside pop-out screen
+        target.querySelectorAll('.hist-item').forEach((el, index) => {
+          el.addEventListener('click', () => {
+            if (state.calcHistory[index]) {
+              state.expr = state.calcHistory[index].expr;
+              state.cursorPos = state.expr.length;
+              renderScreen();
+            }
+          });
+        });
+      }
+    } catch (e) {}
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function renderMenu() {
+    const menu = state.activeMenu;
+    let html = `<div style="font-size:12px; margin-bottom:5px; border-bottom:1px solid #555; padding-bottom:3px;">${menu.title}</div>`;
+    menu.items.forEach(item => {
+      html += `<div class="menu-row"><span>${item.id}:${item.label}</span></div>`;
+    });
+    menuOverlay.innerHTML = html;
+  }
+
+  function renderStatEditor() {
+    let hasY = state.statType !== '1-VAR';
+    let html = `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+      <span>STAT: ${state.statType}</span><span>Rows: ${state.statData.length}</span></div>`;
+    html += '<div class="stat-table"><table><thead><tr><th></th><th>X</th>';
+    if (hasY) html += '<th>Y</th>';
+    if (state.showFreq) html += '<th>FREQ</th>';
+    html += '</tr></thead><tbody>';
+
+    let maxShow = Math.max(state.statData.length + 1, 12);
+    for (let i = 0; i < maxShow; i++) {
+      let row = state.statData[i] || { x: '', y: '', freq: '' };
+      let sel = i === state.statCurRow;
+      html += `<tr class="${sel ? 'selected' : ''}"><td>${i+1}</td><td>${row.x}</td>`;
+      if (hasY) html += `<td>${row.y}</td>`;
+      if (state.showFreq) html += `<td>${row.freq || 1}</td>`;
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    menuOverlay.innerHTML = html;
+  }
+
+  function formatOutputNumber(val) {
+    if (typeof val === 'string') return val;
+    if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
+    if (isNaN(val) || !isFinite(val)) return 'Math ERROR';
+
+    if (state.engOffset !== 0) {
+      let shifted = val / Math.pow(10, state.engOffset);
+      return shifted + '×10^' + state.engOffset;
+    }
+
+    if (state.sdToggleState === 2 || state.sdToggleState === 3) {
+      let frac = toFraction(val);
+      if (frac) {
+        if (state.sdToggleState === 3 && Math.abs(frac.n) >= frac.d) {
+          let whole = Math.trunc(frac.n / frac.d);
+          let rem = Math.abs(frac.n % frac.d);
+          return `${whole}⌟${rem}⌟${frac.d}`;
+        }
+        return `${frac.n}⌟${frac.d}`;
+      }
+    }
+
+    if (state.numFormat === 'Fix') {
+      return val.toFixed(state.fixVal);
+    } else if (state.numFormat === 'Sci') {
+      return val.toExponential(state.sciVal);
+    } else {
+      let abs = Math.abs(val);
+      let limitLow = state.normVal === 1 ? 1e-2 : 1e-9;
+      if (abs !== 0 && (abs < limitLow || abs >= 1e10)) {
+        return val.toExponential(4).replace('e', '×10^');
+      }
+      let s = parseFloat(val.toPrecision(10)).toString();
+      if (state.decPoint === ',') s = s.replace('.', ',');
+      return s;
+    }
+  }
+
+  function toFraction(val, maxDenom = 10000) {
+    let sign = val < 0 ? -1 : 1;
+    val = Math.abs(val);
+    let bestN = 1, bestD = 1, bestErr = Math.abs(val - 1);
+    for (let d = 1; d <= maxDenom; d++) {
+      let n = Math.round(val * d);
+      let err = Math.abs(val - n / d);
+      if (err < 1e-10) return { n: sign * n, d: d };
+      if (err < bestErr) {
+        bestErr = err; bestN = n; bestD = d;
+      }
+    }
+    if (bestErr < 1e-5) return { n: sign * bestN, d: bestD };
+    return null;
+  }
+
+  function primeFactorize(n) {
+    n = Math.round(n);
+    if (n <= 1 || n > 9999999999) return null;
+    let original = n;
+    let factors = {};
+    for (let d = 2; d * d <= n; d++) {
+      while (n % d === 0) {
+        factors[d] = (factors[d] || 0) + 1;
+        n /= d;
+      }
+    }
+    if (n > 1) {
+      if (n > 999 && n !== original) factors[`(${n})`] = 1;
+      else factors[n] = (factors[n] || 0) + 1;
+    }
+    let parts = [];
+    for (let k in factors) {
+      if (factors[k] > 1) parts.push(`${k}^${factors[k]}`);
+      else parts.push(`${k}`);
+    }
+    return parts.join('×');
+  }
+
+  function insertToken(token) {
+    state.factoredForm = null;
+    if (state.insertMode) {
+      state.expr = state.expr.slice(0, state.cursorPos) + token + state.expr.slice(state.cursorPos);
+    } else {
+      state.expr = state.expr.slice(0, state.cursorPos) + token + state.expr.slice(state.cursorPos + 1);
+    }
+    state.cursorPos += token.length;
+    renderScreen();
+  }
+
+  function deleteToken() {
+    state.factoredForm = null;
+    if (state.cursorPos > 0) {
+      state.expr = state.expr.slice(0, state.cursorPos - 1) + state.expr.slice(state.cursorPos);
+      state.cursorPos--;
+    }
+    renderScreen();
+  }
+
+  function clearAll() {
+    state.expr = '';
+    state.cursorPos = 0;
+    state.lastResult = null;
+    state.factoredForm = null;
+    state.engOffset = 0;
+    state.activeMenu = null;
+    state.sdToggleState = 0;
+    if (state.mode === 'STAT') state.statEditing = false;
+    renderScreen();
+  }
+
+  // Menus
+  function openModeMenu() {
+    state.activeMenu = {
+      title: "Calculation Mode",
+      items: [
+        { id: 1, label: "COMP", action: () => setMode('COMP') },
+        { id: 2, label: "STAT", action: () => openStatTypeMenu() },
+        { id: 3, label: "VERIF", action: () => setMode('VERIF') },
+        { id: 0, label: "Authenticity", action: () => showAuthenticity() }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openSetupMenu(page = 1) {
+    if (page === 1) {
+      state.activeMenu = {
+        title: "Setup (1/2) ▼",
+        items: [
+          { id: 1, label: "MthIO", action: () => openMthIOMenu() },
+          { id: 2, label: "LineIO", action: () => { state.displayFormat = 'LineIO'; closeMenu(); } },
+          { id: 3, label: "Deg", action: () => { state.angleUnit = 'Deg'; closeMenu(); } },
+          { id: 4, label: "Rad", action: () => { state.angleUnit = 'Rad'; closeMenu(); } },
+          { id: 5, label: "Gra", action: () => { state.angleUnit = 'Gra'; closeMenu(); } },
+          { id: 6, label: "Fix", action: () => promptFix() },
+          { id: 7, label: "Sci", action: () => promptSci() },
+          { id: 8, label: "Norm", action: () => promptNorm() }
+        ],
+        onNext: () => openSetupMenu(2)
+      };
+    } else {
+      state.activeMenu = {
+        title: "Setup (2/2) ▲",
+        items: [
+          { id: 1, label: "ab/c", action: () => { state.fractionFormat = 'ab/c'; closeMenu(); } },
+          { id: 2, label: "d/c", action: () => { state.fractionFormat = 'd/c'; closeMenu(); } },
+          { id: 3, label: "STAT", action: () => openStatFreqMenu() },
+          { id: 4, label: "Disp", action: () => openDispPointMenu() },
+          { id: 5, label: "CONT", action: () => closeMenu() }
+        ],
+        onPrev: () => openSetupMenu(1)
+      };
+    }
+    renderScreen();
+  }
+
+  function openMthIOMenu() {
+    state.activeMenu = {
+      title: "MthIO Format",
+      items: [
+        { id: 1, label: "MathO", action: () => { state.displayFormat = 'MthIO-MathO'; closeMenu(); } },
+        { id: 2, label: "LineO", action: () => { state.displayFormat = 'MthIO-LineO'; closeMenu(); } }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openStatFreqMenu() {
+    state.activeMenu = {
+      title: "STAT Frequency?",
+      items: [
+        { id: 1, label: "ON", action: () => { state.showFreq = true; closeMenu(); } },
+        { id: 2, label: "OFF", action: () => { state.showFreq = false; closeMenu(); } }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openDispPointMenu() {
+    state.activeMenu = {
+      title: "Decimal Display",
+      items: [
+        { id: 1, label: "Dot (.)", action: () => { state.decPoint = '.'; closeMenu(); } },
+        { id: 2, label: "Comma (,)", action: () => { state.decPoint = ','; closeMenu(); } }
+      ]
+    };
+    renderScreen();
+  }
+
+  function promptFix() {
+    closeMenu();
+    let val = parseInt(prompt("Fix 0~9?", "3"), 10);
+    if (!isNaN(val) && val >= 0 && val <= 9) {
+      state.numFormat = 'Fix'; state.fixVal = val;
+    }
+    renderScreen();
+  }
+  function promptSci() {
+    closeMenu();
+    let val = parseInt(prompt("Sci 0~9?", "3"), 10);
+    if (!isNaN(val) && val >= 0 && val <= 9) {
+      state.numFormat = 'Sci'; state.sciVal = val;
+    }
+    renderScreen();
+  }
+  function promptNorm() {
+    closeMenu();
+    let val = parseInt(prompt("Norm 1 or 2?", "2"), 10);
+    if (val === 1 || val === 2) {
+      state.numFormat = 'Norm'; state.normVal = val;
+    }
+    renderScreen();
+  }
+
+  function openStatTypeMenu() {
+    state.activeMenu = {
+      title: "Select Stat Type",
+      items: [
+        { id: 1, label: "1-VAR", action: () => startStat('1-VAR') },
+        { id: 2, label: "A+BX", action: () => startStat('A+BX') },
+        { id: 3, label: "_+CX²", action: () => startStat('_+CX2') },
+        { id: 4, label: "ln X", action: () => startStat('ln X') },
+        { id: 5, label: "e^X", action: () => startStat('e^X') },
+        { id: 6, label: "A·B^X", action: () => startStat('A*B^X') },
+        { id: 7, label: "A·X^B", action: () => startStat('A*X^B') },
+        { id: 8, label: "1/X", action: () => startStat('1/X') }
+      ]
+    };
+    renderScreen();
+  }
+
+  function startStat(type) {
+    state.mode = 'STAT';
+    state.statType = type;
+    state.statData = [];
+    state.statCurRow = 0;
+    state.statCurCol = 0;
+    state.statEditing = true;
+    closeMenu();
+  }
+
+  function openStatMenu() {
+    let items = [
+      { id: 1, label: "Type", action: () => openStatTypeMenu() },
+      { id: 2, label: "Data", action: () => { state.statEditing = true; closeMenu(); } },
+      { id: 3, label: "Sum", action: () => openStatSumMenu() },
+      { id: 4, label: "Var", action: () => openStatVarMenu() },
+      { id: 5, label: "MinMax", action: () => openStatMinMaxMenu() }
+    ];
+    if (state.statType !== '1-VAR') {
+      items.push({ id: 6, label: "Reg", action: () => openStatRegMenu() });
+    }
+    state.activeMenu = { title: "STAT Menu", items };
+    renderScreen();
+  }
+
+  function openStatSumMenu() {
+    let items = [
+      { id: 1, label: "∑x²", action: () => { insertToken("∑x²"); closeMenu(); } },
+      { id: 2, label: "∑x", action: () => { insertToken("∑x"); closeMenu(); } }
+    ];
+    if (state.statType !== '1-VAR') {
+      items.push({ id: 3, label: "∑y²", action: () => { insertToken("∑y²"); closeMenu(); } });
+      items.push({ id: 4, label: "∑y", action: () => { insertToken("∑y"); closeMenu(); } });
+      items.push({ id: 5, label: "∑xy", action: () => { insertToken("∑xy"); closeMenu(); } });
+    }
+    state.activeMenu = { title: "STAT Sum", items };
+    renderScreen();
+  }
+
+  function openStatVarMenu() {
+    let items = [
+      { id: 1, label: "n", action: () => { insertToken("stat_n"); closeMenu(); } },
+      { id: 2, label: "x̄", action: () => { insertToken("x̄"); closeMenu(); } },
+      { id: 3, label: "σx", action: () => { insertToken("σx"); closeMenu(); } },
+      { id: 4, label: "sx", action: () => { insertToken("sx"); closeMenu(); } }
+    ];
+    if (state.statType !== '1-VAR') {
+      items.push({ id: 5, label: "ȳ", action: () => { insertToken("ȳ"); closeMenu(); } });
+      items.push({ id: 6, label: "σy", action: () => { insertToken("σy"); closeMenu(); } });
+      items.push({ id: 7, label: "sy", action: () => { insertToken("sy"); closeMenu(); } });
+    }
+    state.activeMenu = { title: "STAT Var", items };
+    renderScreen();
+  }
+
+  function openStatMinMaxMenu() {
+    let items = [
+      { id: 1, label: "minX", action: () => { insertToken("minX"); closeMenu(); } },
+      { id: 2, label: "maxX", action: () => { insertToken("maxX"); closeMenu(); } },
+      { id: 3, label: "Q1", action: () => { insertToken("stat_Q1"); closeMenu(); } },
+      { id: 4, label: "med", action: () => { insertToken("stat_med"); closeMenu(); } },
+      { id: 5, label: "Q3", action: () => { insertToken("stat_Q3"); closeMenu(); } }
+    ];
+    state.activeMenu = { title: "STAT MinMax", items };
+    renderScreen();
+  }
+
+  function openStatRegMenu() {
+    let items = [
+      { id: 1, label: "A", action: () => { insertToken("reg_A"); closeMenu(); } },
+      { id: 2, label: "B", action: () => { insertToken("reg_B"); closeMenu(); } },
+      { id: 3, label: "r", action: () => { insertToken("reg_r"); closeMenu(); } }
+    ];
+    if (state.statType === '_+CX2') {
+      items.push({ id: 4, label: "C", action: () => { insertToken("reg_C"); closeMenu(); } });
+    }
+    state.activeMenu = { title: "STAT Reg", items };
+    renderScreen();
+  }
+
+  function openHypMenu() {
+    state.activeMenu = {
+      title: "Hyperbolic Functions",
+      items: [
+        { id: 1, label: "sinh", action: () => { insertToken("sinh("); closeMenu(); } },
+        { id: 2, label: "cosh", action: () => { insertToken("cosh("); closeMenu(); } },
+        { id: 3, label: "tanh", action: () => { insertToken("tanh("); closeMenu(); } },
+        { id: 4, label: "sinh⁻¹", action: () => { insertToken("sinh⁻¹("); closeMenu(); } },
+        { id: 5, label: "cosh⁻¹", action: () => { insertToken("cosh⁻¹("); closeMenu(); } },
+        { id: 6, label: "tanh⁻¹", action: () => { insertToken("tanh⁻¹("); closeMenu(); } }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openVerifyMenu() {
+    state.activeMenu = {
+      title: "VERIFY Relational",
+      items: [
+        { id: 1, label: "=", action: () => { insertToken(" = "); closeMenu(); } },
+        { id: 2, label: "≠", action: () => { insertToken(" ≠ "); closeMenu(); } },
+        { id: 3, label: ">", action: () => { insertToken(" > "); closeMenu(); } },
+        { id: 4, label: "<", action: () => { insertToken(" < "); closeMenu(); } },
+        { id: 5, label: "≧", action: () => { insertToken(" ≧ "); closeMenu(); } },
+        { id: 6, label: "≦", action: () => { insertToken(" ≦ "); closeMenu(); } }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openDrgMenu() {
+    state.activeMenu = {
+      title: "Angle Symbol",
+      items: [
+        { id: 1, label: "° (deg)", action: () => { insertToken("°"); closeMenu(); } },
+        { id: 2, label: "r (rad)", action: () => { insertToken("ʳ"); closeMenu(); } },
+        { id: 3, label: "g (grad)", action: () => { insertToken("ᵍ"); closeMenu(); } }
+      ]
+    };
+    renderScreen();
+  }
+
+  function showAuthenticity() {
+    closeMenu();
+    line1.textContent = "ID: PHILLIPS-82AU-2026";
+    line2.textContent = "phillips.com/calc/";
+  }
+
+  function closeMenu() {
+    state.activeMenu = null;
+    renderScreen();
+  }
+
+  function setMode(newMode) {
+    state.mode = newMode;
+    closeMenu();
+  }
+
+  // Calculator Math Evaluation
+  function evaluateExpression(raw) {
+    if (!raw || raw.trim() === '') return 0;
+    if (raw.includes(':')) {
+      state.multiStatements = raw.split(':').map(s => s.trim()).filter(Boolean);
+      state.multiIndex = 0;
+      return executeSingleExpr(state.multiStatements[0]);
+    }
+    return executeSingleExpr(raw);
+  }
+
+  function executeSingleExpr(exprStr) {
+    const relOps = [' ≧ ', ' ≦ ', ' ≠ ', ' = ', ' > ', ' < '];
+    for (let op of relOps) {
+      if (exprStr.includes(op)) return evaluateVerifyExpr(exprStr);
+    }
+    let code = preprocessMath(exprStr);
+    try {
+      let result = Function('ctx', `with(ctx) { return (${code}); }`)(createMathContext());
+      return result;
+    } catch (e) {
+      return NaN;
+    }
+  }
+
+  function evaluateVerifyExpr(exprStr) {
+    let parts = exprStr.split(/\s*(=|≠|>|<|≧|≦)\s*/);
+    if (parts.length < 3) return false;
+    for (let i = 0; i < parts.length - 2; i += 2) {
+      let left = executeSingleExpr(parts[i]);
+      let op = parts[i+1];
+      let right = executeSingleExpr(parts[i+2]);
+      let ok = false;
+      if (op === '=') ok = Math.abs(left - right) < 1e-11;
+      else if (op === '≠') ok = Math.abs(left - right) >= 1e-11;
+      else if (op === '>') ok = left > right;
+      else if (op === '<') ok = left < right;
+      else if (op === '≧') ok = left >= right - 1e-12;
+      else if (op === '≦') ok = left <= right + 1e-12;
+      if (!ok) return false;
+    }
+    return true;
+  }
+
+  function preprocessMath(str) {
+    let s = str;
+    s = s.replace(/×/g, '*').replace(/÷/g, '/');
+    s = s.replace(/Ans/g, ' Ans ');
+    s = s.replace(/π/g, ' Math.PI ');
+    s = s.replace(/\be\b/g, ' Math.E ');
+
+    s = s.replace(/Pol\(([^,]+),([^)]+)\)/g, 'Pol($1,$2)');
+    s = s.replace(/Rec\(([^,]+),([^)]+)\)/g, 'Rec($1,$2)');
+
+    s = s.replace(/sin⁻¹\(/g, 'asin(').replace(/cos⁻¹\(/g, 'acos(').replace(/tan⁻¹\(/g, 'atan(');
+    s = s.replace(/sinh⁻¹\(/g, 'asinh(').replace(/cosh⁻¹\(/g, 'acosh(').replace(/tanh⁻¹\(/g, 'atanh(');
+    s = s.replace(/sin\(/g, 'sin(').replace(/cos\(/g, 'cos(').replace(/tan\(/g, 'tan(');
+    s = s.replace(/sinh\(/g, 'sinh(').replace(/cosh\(/g, 'cosh(').replace(/tanh\(/g, 'tanh(');
+
+    s = s.replace(/ln\(/g, 'Math.log(').replace(/log\(/g, 'log10(').replace(/√\(/g, 'Math.sqrt(');
+    s = s.replace(/Abs\(/g, 'Math.abs(').replace(/³√\(/g, 'Math.cbrt(');
+
+    s = s.replace(/RanInt#\(([^,]+),([^)]+)\)/g, 'RanInt($1,$2)');
+    s = s.replace(/Ran#/g, 'Ran()');
+    s = s.replace(/GCD\(([^,]+),([^)]+)\)/g, 'gcd($1,$2)').replace(/LCM\(([^,]+),([^)]+)\)/g, 'lcm($1,$2)');
+
+    s = s.replace(/(\d+)\s*⌟\s*(\d+)\s*⌟\s*(\d+)/g, 'mixedFrac($1,$2,$3)');
+    s = s.replace(/(\d+)\s*⌟\s*(\d+)/g, '($1/$2)');
+    s = s.replace(/\^/g, '**');
+
+    // Casio implicit multiplication rule
+    s = s.replace(/(\d+)\s*\(/g, '$1*(');
+    s = s.replace(/\)\s*\(/g, ')*(');
+    s = s.replace(/\)\s*(\d+)/g, ')*$1');
+
+    s = s.replace(/(\d+)\s*°\s*(\d+)\s*'\s*(\d+(\.\d+)?)\s*"/g, 'dmsToDec($1,$2,$3)');
+    s = s.replace(/(\d+)\s*°\s*(\d+)\s*'/g, 'dmsToDec($1,$2,0)');
+    s = s.replace(/(\d+)\s*°/g, 'dmsToDec($1,0,0)');
+
+    s = s.replace(/(\d+(\.\d+)?)ʳ/g, 'fromRad($1)');
+    s = s.replace(/(\d+(\.\d+)?)ᵍ/g, 'fromGrad($1)');
+    s = s.replace(/(\d+)!/g, 'fact($1)');
+    return s;
+  }
+
+  function createMathContext() {
+    let toDeg = val => state.angleUnit === 'Deg' ? (val * Math.PI / 180) : (state.angleUnit === 'Gra' ? (val * Math.PI / 200) : val);
+    let fromDeg = val => state.angleUnit === 'Deg' ? (val * 180 / Math.PI) : (state.angleUnit === 'Gra' ? (val * 200 / Math.PI) : val);
+
+    let ctx = {
+      Math: Math,
+      Ans: state.ans,
+      A: state.vars.A, B: state.vars.B, C: state.vars.C,
+      D: state.vars.D, E: state.vars.E, F: state.vars.F,
+      X: state.vars.X, Y: state.vars.Y, M: state.independentM,
+      sin: x => Math.sin(toDeg(x)),
+      cos: x => Math.cos(toDeg(x)),
+      tan: x => Math.tan(toDeg(x)),
+      asin: x => fromDeg(Math.asin(x)),
+      acos: x => fromDeg(Math.acos(x)),
+      atan: x => fromDeg(Math.atan(x)),
+      sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh,
+      asinh: Math.asinh, acosh: Math.acosh, atanh: Math.atanh,
+      log10: x => Math.log10(x),
+      fact: n => {
+        let r = 1;
+        for (let i = 2; i <= n; i++) r *= i;
+        return r;
+      },
+      nPr: (n, r) => {
+        if (r < 0 || r > n) return 0;
+        let p = 1;
+        for (let i = 0; i < r; i++) p *= (n - i);
+        return p;
+      },
+      nCr: (n, r) => {
+        if (r < 0 || r > n) return 0;
+        let c = 1;
+        for (let i = 1; i <= r; i++) c = c * (n - i + 1) / i;
+        return c;
+      },
+      Pol: (x, y) => {
+        let r = Math.hypot(x, y);
+        let th = fromDeg(Math.atan2(y, x));
+        state.vars.X = r; state.vars.Y = th;
+        return r;
+      },
+      Rec: (r, th) => {
+        let rad = toDeg(th);
+        let x = r * Math.cos(rad);
+        let y = r * Math.sin(rad);
+        state.vars.X = x; state.vars.Y = y;
+        return x;
+      },
+      Ran: () => Math.random(),
+      RanInt: (a, b) => Math.floor(Math.random() * (b - a + 1)) + a,
+      gcd: (a, b) => {
+        a = Math.abs(a); b = Math.abs(b);
+        while (b) { let t = b; b = a % b; a = t; }
+        return a;
+      },
+      lcm: (a, b) => (!a || !b) ? 0 : Math.abs(a * b) / ctx.gcd(a, b),
+      mixedFrac: (w, n, d) => (w >= 0) ? (w + n / d) : (w - n / d),
+      dmsToDec: (d, m, s) => Number(d) + Number(m)/60 + Number(s)/3600,
+      fromRad: v => state.angleUnit === 'Deg' ? (v * 180 / Math.PI) : (state.angleUnit === 'Gra' ? (v * 200 / Math.PI) : v),
+      fromGrad: v => state.angleUnit === 'Deg' ? (v * 0.9) : (state.angleUnit === 'Rad' ? (v * Math.PI / 200) : v)
+    };
+
+    if (state.statData.length > 0) {
+      Object.assign(ctx, computeStats(state.statData));
+    }
+    return ctx;
+  }
+
+  function computeStats(data) {
+    let n = 0, sumX = 0, sumX2 = 0, sumY = 0, sumY2 = 0, sumXY = 0;
+    let xs = [], ys = [];
+    data.forEach(d => {
+      let freq = d.freq ? Number(d.freq) : 1;
+      let x = Number(d.x) || 0;
+      let y = Number(d.y) || 0;
+      n += freq;
+      sumX += x * freq;
+      sumX2 += x * x * freq;
+      sumY += y * freq;
+      sumY2 += y * y * freq;
+      sumXY += x * y * freq;
+      for (let k = 0; k < freq; k++) { xs.push(x); ys.push(y); }
+    });
+
+    xs.sort((a,b) => a - b);
+    let xbar = n ? sumX / n : 0;
+    let ybar = n ? sumY / n : 0;
+    let sx = n > 1 ? Math.sqrt((sumX2 - sumX*sumX/n)/(n - 1)) : 0;
+    let sigx = n ? Math.sqrt((sumX2 - sumX*sumX/n)/n) : 0;
+    let sy = n > 1 ? Math.sqrt((sumY2 - sumY*sumY/n)/(n - 1)) : 0;
+    let sigy = n ? Math.sqrt((sumY2 - sumY*sumY/n)/n) : 0;
+
+    let minX = xs[0] || 0;
+    let maxX = xs[xs.length - 1] || 0;
+    let q1 = xs[Math.floor(xs.length * 0.25)] || 0;
+    let med = xs[Math.floor(xs.length * 0.5)] || 0;
+    let q3 = xs[Math.floor(xs.length * 0.75)] || 0;
+
+    let denom = (n * sumX2 - sumX * sumX);
+    let regB = denom !== 0 ? (n * sumXY - sumX * sumY) / denom : 0;
+    let regA = ybar - regB * xbar;
+    let rDenom = Math.sqrt((n * sumX2 - sumX*sumX) * (n * sumY2 - sumY*sumY));
+    let regR = rDenom ? (n * sumXY - sumX * sumY) / rDenom : 0;
+
+    return {
+      stat_n: n, 'x̄': xbar, 'ȳ': ybar,
+      σx: sigx, sx: sx, σy: sigy, sy: sy,
+      '∑x': sumX, '∑x²': sumX2, '∑y': sumY, '∑y²': sumY2, '∑xy': sumXY,
+      minX: minX, maxX: maxX, stat_Q1: q1, stat_med: med, stat_Q3: q3,
+      reg_A: regA, reg_B: regB, reg_r: regR
+    };
+  }
+
+  // Key Actions
+  const keyMap = {
+    'k-on': () => {
+      state.power = true;
+      state.activeMenu = null;
+      renderScreen();
+    },
+    'k-ac': () => {
+      if (state.shift) {
+        state.power = false;
+        state.shift = false;
+      } else {
+        clearAll();
+      }
+      renderScreen();
+    },
+    'k-shift': () => {
+      state.shift = !state.shift;
+      state.alpha = false;
+      renderScreen();
+    },
+    'k-alpha': () => {
+      state.alpha = !state.alpha;
+      state.shift = false;
+      renderScreen();
+    },
+    'k-mode': () => {
+      if (state.shift) openSetupMenu(1);
+      else openModeMenu();
+    },
+    'k-del': () => {
+      if (state.shift) state.insertMode = !state.insertMode;
+      else deleteToken();
+      renderScreen();
+    },
+    'k-up': () => {
+      if (state.activeMenu && state.activeMenu.onPrev) state.activeMenu.onPrev();
+      else if (state.mode === 'STAT' && state.statEditing) {
+        if (state.statCurRow > 0) state.statCurRow--;
+      } else if (state.calcHistory.length > 0) {
+        if (state.histIndex < state.calcHistory.length - 1) {
+          state.histIndex++;
+          state.expr = state.calcHistory[state.calcHistory.length - 1 - state.histIndex].expr;
+          state.cursorPos = state.expr.length;
+        }
+      }
+      renderScreen();
+    },
+    'k-down': () => {
+      if (state.activeMenu && state.activeMenu.onNext) state.activeMenu.onNext();
+      else if (state.mode === 'STAT' && state.statEditing) state.statCurRow++;
+      else if (state.histIndex > 0) {
+        state.histIndex--;
+        state.expr = state.calcHistory[state.calcHistory.length - 1 - state.histIndex].expr;
+        state.cursorPos = state.expr.length;
+      }
+      renderScreen();
+    },
+    'k-left': () => {
+      if (state.mode === 'STAT' && state.statEditing) {
+        if (state.statCurCol > 0) state.statCurCol--;
+      } else if (state.cursorPos > 0) state.cursorPos--;
+      renderScreen();
+    },
+    'k-right': () => {
+      if (state.mode === 'STAT' && state.statEditing) state.statCurCol++;
+      else if (state.cursorPos < state.expr.length) state.cursorPos++;
+      renderScreen();
+    },
+    'k-eq': () => {
+      if (state.shift) {
+        openVerifyMenu();
+        state.shift = false;
+        return;
+      }
+      if (state.activeMenu) return;
+
+      if (state.multiStatements.length > 1 && state.multiIndex < state.multiStatements.length - 1) {
+        state.multiIndex++;
+        let res = executeSingleExpr(state.multiStatements[state.multiIndex]);
+        state.lastResult = res;
+        state.ans = res;
+        state.calcHistory.push({ expr: state.multiStatements[state.multiIndex], result: res });
+        renderHistoryTape();
+        renderScreen();
+        return;
+      }
+
+      if (state.expr.trim() === '') return;
+
+      let res = evaluateExpression(state.expr);
+      state.lastResult = res;
+      if (typeof res === 'number' && !isNaN(res)) state.ans = res;
+
+      state.calcHistory.push({ expr: state.expr, result: res });
+      if (state.calcHistory.length > 40) state.calcHistory.shift();
+      state.histIndex = -1;
+      state.sdToggleState = 0;
+      renderHistoryTape();
+      renderScreen();
+    },
+
+    'k-0': () => handleNumericKey('0'),
+    'k-1': () => {
+      if (state.shift) { openStatMenu(); state.shift = false; }
+      else handleNumericKey('1');
+    },
+    'k-2': () => handleNumericKey('2'),
+    'k-3': () => handleNumericKey('3'),
+    'k-4': () => handleNumericKey('4'),
+    'k-5': () => handleNumericKey('5'),
+    'k-6': () => handleNumericKey('6'),
+    'k-7': () => handleNumericKey('7'),
+    'k-8': () => handleNumericKey('8'),
+    'k-9': () => handleNumericKey('9'),
+
+    'k-dot': () => {
+      if (state.shift) { insertToken('Ran#'); state.shift = false; }
+      else if (state.alpha) { insertToken('RanInt#('); state.alpha = false; }
+      else insertToken('.');
+    },
+    'k-add': () => {
+      if (state.shift) { insertToken('Pol('); state.shift = false; }
+      else insertToken('+');
+    },
+    'k-sub': () => {
+      if (state.shift) { insertToken('Rec('); state.shift = false; }
+      else insertToken('-');
+    },
+    'k-mul': () => {
+      if (state.shift) { insertToken(' nPr '); state.shift = false; }
+      else if (state.alpha) { insertToken('GCD('); state.alpha = false; }
+      else insertToken('×');
+    },
+    'k-div': () => {
+      if (state.shift) { insertToken(' nCr '); state.shift = false; }
+      else if (state.alpha) { insertToken('LCM('); state.alpha = false; }
+      else insertToken('÷');
+    },
+    'k-lpar': () => insertToken('('),
+    'k-rpar': () => {
+      if (state.alpha) { insertToken('X'); state.alpha = false; }
+      else insertToken(')');
+    },
+    'k-frac': () => insertToken('⌟'),
+    'k-sqrt': () => {
+      if (state.shift) { insertToken('³√('); state.shift = false; }
+      else insertToken('√(');
+    },
+    'k-sqr': () => {
+      if (state.shift) { insertToken('^3'); state.shift = false; }
+      else insertToken('^2');
+    },
+    'k-pow': () => insertToken('^'),
+    'k-log': () => {
+      if (state.shift) { insertToken('10^('); state.shift = false; }
+      else insertToken('log(');
+    },
+    'k-ln': () => {
+      if (state.shift) { insertToken('e^('); state.shift = false; }
+      else insertToken('ln(');
+    },
+    'k-hyp': () => {
+      if (state.alpha) { insertToken('C'); state.alpha = false; }
+      else openHypMenu();
+    },
+    'k-sin': () => {
+      if (state.shift) { insertToken('sin⁻¹('); state.shift = false; }
+      else if (state.alpha) { insertToken('D'); state.alpha = false; }
+      else insertToken('sin(');
+    },
+    'k-cos': () => {
+      if (state.shift) { insertToken('cos⁻¹('); state.shift = false; }
+      else if (state.alpha) { insertToken('E'); state.alpha = false; }
+      else insertToken('cos(');
+    },
+    'k-tan': () => {
+      if (state.shift) { insertToken('tan⁻¹('); state.shift = false; }
+      else if (state.alpha) { insertToken('F'); state.alpha = false; }
+      else insertToken('tan(');
+    },
+    'k-neg': () => {
+      if (state.alpha) { insertToken('A'); state.alpha = false; }
+      else insertToken('(-)');
+    },
+    'k-dms': () => {
+      if (state.shift) {
+        if (state.lastResult !== null && !isNaN(state.lastResult)) {
+          let fact = primeFactorize(state.lastResult);
+          if (fact) state.factoredForm = fact;
+        }
+        state.shift = false;
+        renderScreen();
+      } else if (state.alpha) {
+        insertToken('B'); state.alpha = false;
+      } else {
+        insertToken('°');
+      }
+    },
+    'k-eng': () => {
+      if (state.shift) { state.engOffset -= 3; state.shift = false; }
+      else state.engOffset += 3;
+      renderScreen();
+    },
+    'k-sd': () => {
+      if (state.shift) state.sdToggleState = 3;
+      else state.sdToggleState = (state.sdToggleState + 1) % 4;
+      renderScreen();
+    },
+    'k-mplus': () => {
+      let val = state.lastResult !== null ? state.lastResult : evaluateExpression(state.expr);
+      if (state.shift) {
+        state.independentM -= val;
+        state.shift = false;
+      } else if (state.alpha) {
+        insertToken('M');
+        state.alpha = false;
+      } else {
+        state.independentM += val;
+      }
+      renderScreen();
+    },
+    'k-ans': () => {
+      if (state.shift) { openDrgMenu(); state.shift = false; }
+      else if (state.alpha) { insertToken('%'); state.alpha = false; }
+      else insertToken('Ans');
+    },
+    'k-exp': () => {
+      if (state.shift) { insertToken('π'); state.shift = false; }
+      else if (state.alpha) { insertToken('e'); state.alpha = false; }
+      else insertToken('×10^');
+    },
+    'k-rcl': () => {
+      if (state.shift) { state.sto = true; state.shift = false; }
+      else state.rcl = true;
+      renderScreen();
+    }
+  };
+
+  function handleNumericKey(ch) {
+    if (state.activeMenu) {
+      let num = parseInt(ch, 10);
+      let match = state.activeMenu.items.find(it => it.id === num);
+      if (match && match.action) match.action();
+      return;
+    }
+    if (state.sto) {
+      let varName = getVarNameFromKey(ch);
+      if (varName) {
+        let val = state.lastResult !== null ? state.lastResult : (Number(state.expr) || 0);
+        state.vars[varName] = val;
+        state.sto = false;
+        renderScreen();
+      }
+      return;
+    }
+    if (state.rcl) {
+      let varName = getVarNameFromKey(ch);
+      if (varName) {
+        insertToken(varName);
+        state.rcl = false;
+        renderScreen();
+      }
+      return;
+    }
+    insertToken(ch);
+  }
+
+  function getVarNameFromKey(ch) {
+    const varMap = { '1':'A', '2':'B', '3':'C', '4':'D', '5':'E', '6':'F', '7':'X', '8':'Y', '9':'M' };
+    return varMap[ch] || null;
+  }
+
+  // Attach button event listeners on main keypad
+  function bindKeyEvents(scope) {
+    for (let id in keyMap) {
+      const el = scope.querySelector ? scope.querySelector('#' + id) : document.getElementById(id);
+      if (el) {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          keyMap[id]();
+        });
+      }
+    }
+  }
+  bindKeyEvents(document);
+
+  // Keyboard Support
+  window.addEventListener('keydown', (e) => {
+    if (e.key >= '0' && e.key <= '9') handleNumericKey(e.key);
+    else if (e.key === '+') keyMap['k-add']();
+    else if (e.key === '-') keyMap['k-sub']();
+    else if (e.key === '*' || e.key === 'x') keyMap['k-mul']();
+    else if (e.key === '/') keyMap['k-div']();
+    else if (e.key === 'Enter' || e.key === '=') keyMap['k-eq']();
+    else if (e.key === 'Backspace') keyMap['k-del']();
+    else if (e.key === 'Escape') keyMap['k-ac']();
+    else if (e.key === 'ArrowLeft') keyMap['k-left']();
+    else if (e.key === 'ArrowRight') keyMap['k-right']();
+    else if (e.key === 'ArrowUp') keyMap['k-up']();
+    else if (e.key === 'ArrowDown') keyMap['k-down']();
+    else if (e.key === '(') keyMap['k-lpar']();
+    else if (e.key === ')') keyMap['k-rpar']();
+    else if (e.key === '.') keyMap['k-dot']();
+  });
+
+  // ==========================================
+  // POP-OUT SCREEN WINDOW WITH 1.0x-4.0x ZOOM
+  // ==========================================
+  document.getElementById('btnPopScreen').addEventListener('click', () => {
+    if (popoutScreenWin && !popoutScreenWin.closed) {
+      popoutScreenWin.focus();
+      return;
+    }
+
+    popoutScreenWin = window.open('', 'PhillipsPopoutScreen', 'width=520,height=520,resizable=yes');
+    if (!popoutScreenWin) {
+      alert("Pop-up was blocked. Please allow pop-ups for this emulator.");
+      return;
+    }
+
+    const cssContent = document.getElementById('calcThemeStyles').innerHTML;
+    popoutScreenWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>PHILLIPS Screen Display - Resizable with Zoom</title>
+        <style>
+          ${cssContent}
+          body {
+            background: #111417;
+            margin: 0;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: auto;
+            position: relative;
+          }
+          #popLcdWrapper {
+            transform-origin: center center;
+            transition: transform 0.15s ease;
+            width: 400px;
+          }
+          .zoom-ctx-menu {
+            position: fixed;
+            background: #1e2227;
+            border: 2px solid #3b424d;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+            padding: 12px 14px;
+            z-index: 9999;
+            color: #fff;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 13px;
+            width: 220px;
+          }
+          .zoom-ctx-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 13px;
+            border-bottom: 1px solid #374151;
+            padding-bottom: 5px;
+          }
+          .zoom-slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+          }
+          .zoom-slider-row input[type=range] {
+            width: 100%;
+            cursor: pointer;
+          }
+          .zoom-val-badge {
+            font-weight: 800;
+            color: #38bdf8;
+            font-size: 14px;
+            text-align: center;
+          }
+          .zoom-ticks {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #94a3b8;
+          }
+          .zoom-close {
+            cursor: pointer;
+            color: #9ca3af;
+          }
+          .zoom-close:hover { color: #fff; }
+        </style>
+      </head>
+      <body>
+        <div id="popLcdWrapper">
+          <div id="popLcdInner"></div>
+        </div>
+
+        <!-- Right-Click Zoom Slider Menu -->
+        <div class="zoom-ctx-menu" id="popZoomMenu">
+          <div class="zoom-ctx-header">
+            <span>Display Zoom (1x - 4x)</span>
+            <span class="zoom-close" id="btnZoomClose">✕</span>
+          </div>
+          <div class="zoom-slider-row">
+            <div class="zoom-val-badge" id="zoomValDisplay">1.0×</div>
+            <input type="range" id="zoomSlider" min="1.0" max="4.0" step="0.5" value="1.0">
+            <div class="zoom-ticks">
+              <span>1x</span><span>1.5</span><span>2x</span><span>2.5</span><span>3x</span><span>3.5</span><span>4x</span>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `);
+    popoutScreenWin.document.close();
+
+    popoutScreenWin.addEventListener('load', () => {
+      const popDoc = popoutScreenWin.document;
+      const zoomMenu = popDoc.getElementById('popZoomMenu');
+      const zoomSlider = popDoc.getElementById('zoomSlider');
+      const zoomVal = popDoc.getElementById('zoomValDisplay');
+      const zoomWrapper = popDoc.getElementById('popLcdWrapper');
+      const zoomClose = popDoc.getElementById('btnZoomClose');
+
+      let currentZoom = 1.0;
+
+      function updateZoom(z) {
+        currentZoom = z;
+        zoomSlider.value = z;
+        zoomVal.textContent = parseFloat(z).toFixed(1) + '×';
+        zoomWrapper.style.transform = `scale(${z})`;
+      }
+
+      zoomSlider.addEventListener('input', (e) => {
+        updateZoom(e.target.value);
+      });
+
+      zoomClose.addEventListener('click', () => {
+        zoomMenu.style.display = 'none';
+      });
+
+      // Right-click anywhere in screen window opens zoom slider
+      popDoc.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        zoomMenu.style.display = 'flex';
+        let px = Math.min(e.clientX, popoutScreenWin.innerWidth - 240);
+        let py = Math.min(e.clientY, popoutScreenWin.innerHeight - 150);
+        zoomMenu.style.left = `${Math.max(10, px)}px`;
+        zoomMenu.style.top = `${Math.max(10, py)}px`;
+      });
+
+      popDoc.addEventListener('click', (e) => {
+        if (!zoomMenu.contains(e.target)) zoomMenu.style.display = 'none';
+      });
+
+      syncPopoutScreen();
+    });
+  });
+
+  // ==========================================
+  // POP-OUT KEYBOARD WINDOW (PROPORTIONALLY SCALED)
+  // ==========================================
+  document.getElementById('btnPopKeypad').addEventListener('click', () => {
+    if (popoutKeypadWin && !popoutKeypadWin.closed) {
+      popoutKeypadWin.focus();
+      return;
+    }
+
+    popoutKeypadWin = window.open('', 'PhillipsPopoutKeypad', 'width=460,height=580,resizable=yes');
+    if (!popoutKeypadWin) {
+      alert("Pop-up was blocked. Please allow pop-ups for this emulator.");
+      return;
+    }
+
+    const cssContent = document.getElementById('calcThemeStyles').innerHTML;
+    const keypadHTML = document.getElementById('calcKeypad').outerHTML;
+
+    popoutKeypadWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>PHILLIPS Keyboard - Proportional Scaling</title>
+        <style>
+          ${cssContent}
+          body {
+            background: #111417;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            width: 100vw;
+          }
+          #popKeypadContainer {
+            width: 404px;
+            height: 480px;
+            transform-origin: center center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        </style>
+      </head>
+      <body>
+        <div id="popKeypadContainer">
+          ${keypadHTML}
+        </div>
+      </body>
+      </html>
+    `);
+    popoutKeypadWin.document.close();
+
+    popoutKeypadWin.addEventListener('load', () => {
+      const popDoc = popoutKeypadWin.document;
+      const container = popDoc.getElementById('popKeypadContainer');
+      const BASE_KP_W = 404;
+      const BASE_KP_H = 480;
+
+      // Scaling to limiting dimensions of aspect ratio
+      function scaleKeypadWindow() {
+        const w = popoutKeypadWin.innerWidth;
+        const h = popoutKeypadWin.innerHeight;
+        const scale = Math.min(w / BASE_KP_W, h / BASE_KP_H) * 0.94;
+        container.style.transform = `scale(${scale})`;
+      }
+
+      popoutKeypadWin.addEventListener('resize', scaleKeypadWindow);
+      scaleKeypadWindow();
+
+      // Bind all button clicks back to main emulator engine
+      bindKeyEvents(popDoc);
+
+      // Context menu for color styling inside pop-out keyboard
+      popDoc.addEventListener('contextmenu', (e) => {
+        const isButton = e.target.closest('.calc-btn, .dpad-btn');
+        if (isButton) {
+          e.preventDefault();
+          showContextMenu(window.screenX + 40, window.screenY + 60, 'keys');
+        } else {
+          e.preventDefault();
+          showContextMenu(window.screenX + 40, window.screenY + 60, 'chassis');
+        }
+      });
+    });
+  });
+
+  renderHistoryTape();
+  renderScreen();
+})();
+</script>
+</body>
+</html>
