@@ -1,0 +1,3483 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VCE STEM Interactive Studio — Mathematical Visualizers</title>
+  <style>
+    :root {
+      --bg-dark: #070b14;
+      --panel-bg: #0f172a;
+      --card-bg: rgba(18, 26, 47, 0.85);
+      --border: #1e293b;
+      --border-bright: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --accent-blue: #38bdf8;
+      --accent-purple: #c084fc;
+      --accent-green: #34d399;
+      --accent-orange: #fb923c;
+      --accent-rose: #f43f5e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOP GLOBAL NAVIGATION BAR */
+    #navbar {
+      height: 56px;
+      min-height: 56px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #fff;
+    }
+
+    .brand-text p {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1;
+    }
+
+    /* APP LAUNCHER BUTTONS IN TOPBAR */
+    .nav-buttons {
+      display: flex;
+      gap: 6px;
+      background: #0b1120;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .nav-btn {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-btn.active {
+      background: #1e293b;
+      color: #fff;
+      border-color: var(--border-bright);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .nav-btn.active[data-app="trig"] { border-color: var(--accent-blue); color: var(--accent-blue); }
+    .nav-btn.active[data-app="vector"] { border-color: var(--accent-purple); color: var(--accent-purple); }
+    .nav-btn.active[data-app="sphere"] { border-color: var(--accent-green); color: var(--accent-green); }
+    .nav-btn.active[data-app="exp"] { border-color: var(--accent-orange); color: var(--accent-orange); }
+
+    /* ACTION UTILITY BUTTONS */
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .util-btn {
+      background: #1e293b;
+      border: 1px solid var(--border-bright);
+      color: var(--text-muted);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .util-btn:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    /* MAIN CONTAINER WORKSPACE */
+    #workspace {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* DASHBOARD CARD GRID (HOME VIEW) */
+    #dashboard-view {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: 36px 40px;
+      background: radial-gradient(circle at 50% 20%, #151d33 0%, #070b14 70%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    #dashboard-view.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.98);
+    }
+
+    .hero-title {
+      text-align: center;
+      max-width: 700px;
+      margin-bottom: 34px;
+    }
+
+    .hero-title h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 40%, var(--accent-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .hero-title p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1240px;
+    }
+
+    .app-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .app-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .app-card[data-app="trig"]::before { background: var(--accent-blue); }
+    .app-card[data-app="vector"]::before { background: var(--accent-purple); }
+    .app-card[data-app="sphere"]::before { background: var(--accent-green); }
+    .app-card[data-app="exp"]::before { background: var(--accent-orange); }
+
+    .app-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-bright);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .app-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .app-badge.blue { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .app-badge.purple { background: rgba(192, 132, 252, 0.15); color: var(--accent-purple); border: 1px solid rgba(192, 132, 252, 0.3); }
+    .app-badge.green { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .app-badge.orange { background: rgba(251, 146, 60, 0.15); color: var(--accent-orange); border: 1px solid rgba(251, 146, 60, 0.3); }
+
+    .card-icon {
+      font-size: 1.8rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 18px;
+      flex-grow: 1;
+    }
+
+    .card-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 20px;
+      font-size: 0.75rem;
+      color: #cbd5e1;
+    }
+
+    .card-features li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-features li::before {
+      content: "•";
+      color: var(--accent-blue);
+      font-size: 1.1rem;
+      line-height: 0;
+    }
+
+    .launch-btn {
+      width: 100%;
+      padding: 9px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: filter 0.2s;
+    }
+
+    .app-card[data-app="trig"] .launch-btn { background: #0284c7; }
+    .app-card[data-app="vector"] .launch-btn { background: #7c3aed; }
+    .app-card[data-app="sphere"] .launch-btn { background: #059669; }
+    .app-card[data-app="exp"] .launch-btn { background: #ea580c; }
+    .launch-btn:hover { filter: brightness(1.15); }
+
+    /* RUNNING APP IFRAME VIEWPORT */
+    #iframe-container {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      z-index: 1;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER & CONTROLS -->
+  <nav id="navbar">
+    <div class="brand" onclick="showDashboard()">
+      <div class="brand-icon">∑</div>
+      <div class="brand-text">
+        <h1>VCE Math Visualizers</h1>
+        <p>Interactive STEM Suite</p>
+      </div>
+    </div>
+
+    <!-- CLEANLY ARRANGED APPLICATION SWITCHER BUTTONS -->
+    <div class="nav-buttons">
+      <button class="nav-btn active" id="nav-dash" onclick="showDashboard()">
+        <span>🏠</span> Dashboard
+      </button>
+      <button class="nav-btn" data-app="trig" onclick="launchApp('trig')">
+        <span>📈</span> Circular Functions
+      </button>
+      <button class="nav-btn" data-app="vector" onclick="launchApp('vector')">
+        <span>📐</span> 2D / 3D Vectors
+      </button>
+      <button class="nav-btn" data-app="sphere" onclick="launchApp('sphere')">
+        <span>🌍</span> Spherical Centroid
+      </button>
+      <button class="nav-btn" data-app="exp" onclick="launchApp('exp')">
+        <span>📊</span> 3D Exponential
+      </button>
+    </div>
+
+    <!-- WORKSPACE UTILITIES -->
+    <div class="nav-actions">
+      <button class="util-btn" title="Reload active visualizer" onclick="reloadCurrentApp()">
+        <span>⟳</span> Reload
+      </button>
+      <button class="util-btn" title="Open active tool in new browser tab" onclick="popoutApp()">
+        <span>↗</span> Pop Out
+      </button>
+      <button class="util-btn" title="Toggle Fullscreen" onclick="toggleFullScreen()">
+        <span>⛶</span> Fullscreen
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN VIEWPORT WORKSPACE -->
+  <main id="workspace">
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view">
+      <div class="hero-title">
+        <h2>Interactive Mathematics Studio</h2>
+        <p>Select any application below or use the top navigation buttons to instantly launch each visualizer.</p>
+      </div>
+
+      <div class="cards-grid">
+
+        <!-- CARD 1: TRIG FUNCTION GRAPHER -->
+        <div class="app-card" data-app="trig" onclick="launchApp('trig')">
+          <div>
+            <div class="card-top">
+              <span class="app-badge blue">VCE Methods 1 &amp; 2</span>
+              <span class="card-icon">📈</span>
+            </div>
+            <h3 class="card-title">Circular Functions Grapher</h3>
+            <p class="card-desc">Interactive sine, cosine, and tangent function explorer with real-time transformations and intersection solvers.</p>
+            <ul class="card-features">
+              <li>Transformations: y = a·f(b(x - h)) + k</li>
+              <li>Calculates Amplitude, Period &amp; Range</li>
+              <li>Horizontal line y = c intersection finder</li>
+              <li>Grid marked in exact multiples of π/6</li>
+            </ul>
+          </div>
+          <button class="launch-btn"><span>▶</span> Launch Trig Grapher</button>
+        </div>
+
+        <!-- CARD 2: VECTOR VISUALISER -->
+        <div class="app-card" data-app="vector" onclick="launchApp('vector')">
+          <div>
+            <div class="card-top">
+              <span class="app-badge purple">Specialist Maths</span>
+              <span class="card-icon">📐</span>
+            </div>
+            <h3 class="card-title">2D / 3D Vector Geometry</h3>
+            <p class="card-desc">Full 3D WebGL vector visualizer featuring cross products, plane creation, normal vectors, and perpendicular distance.</p>
+            <ul class="card-features">
+              <li>Draggable points with whole integer grid snapping</li>
+              <li>Cartesian plane r·n = c computation</li>
+              <li>Perpendicular distance triangle ΔAD D_proj</li>
+              <li>Seamless toggle between 2D and 3D modes</li>
+            </ul>
+          </div>
+          <button class="launch-btn"><span>▶</span> Launch Vector Studio</button>
+        </div>
+
+        <!-- CARD 3: SPHERICAL CENTROID -->
+        <div class="app-card" data-app="sphere" onclick="launchApp('sphere')">
+          <div>
+            <div class="card-top">
+              <span class="app-badge green">Year 9 Ext / Specialist</span>
+              <span class="card-icon">🌍</span>
+            </div>
+            <h3 class="card-title">Spherical Geometry Centroid</h3>
+            <p class="card-desc">High-resolution 3D shaded globe calculating weighted spherical centers of mass and geographical surface projections.</p>
+            <ul class="card-features">
+              <li>Detailed vector continental landmasses</li>
+              <li>Interactive multi-city weightings</li>
+              <li>3D interior center of mass vs surface projection</li>
+              <li>OrbitControls 360° celestial view</li>
+            </ul>
+          </div>
+          <button class="launch-btn"><span>▶</span> Launch Globe Centroid</button>
+        </div>
+
+        <!-- CARD 4: EXPONENTIAL FUNCTION VISUALISER -->
+        <div class="app-card" data-app="exp" onclick="launchApp('exp')">
+          <div>
+            <div class="card-top">
+              <span class="app-badge orange">VCE Methods 1 &amp; 2</span>
+              <span class="card-icon">📊</span>
+            </div>
+            <h3 class="card-title">3D Exponential Functions</h3>
+            <p class="card-desc">Fully continuous 360° all-axis rotating canvas for exploring dual exponential graphs, asymptotes, and intersections.</p>
+            <ul class="card-features">
+              <li>Side-by-side comparative exponential plotting</li>
+              <li>Continuous pitch/yaw 3D perspective projection</li>
+              <li>Automatic bisection intersection solver</li>
+              <li>Core region [−5, 5] × [−20, 20] highlighted</li>
+            </ul>
+          </div>
+          <button class="launch-btn"><span>▶</span> Launch 3D Exponentials</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- HOSTED APP IFRAME -->
+    <div id="iframe-container">
+      <iframe id="app-frame" sandbox="allow-scripts allow-same-origin allow-modals allow-popups"></iframe>
+    </div>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- EMBEDDED APPLICATION TEMPLATES (SELF-CONTAINED IN ONE FILE)     -->
+  <!-- ============================================================== -->
+
+  <!-- APP 1 TEMPLATE -->
+  <template id="app-trig">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VCE Math Methods — Circular Functions Grapher</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --sin-color: #3b82f6;
+      --cos-color: #a855f7;
+      --tan-color: #10b981;
+      --line-color: #f43f5e;
+      --grid: rgba(148, 163, 184, 0.15);
+      --axis: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    #sidebar {
+      width: 420px;
+      min-width: 380px;
+      height: 100%;
+      background: var(--panel);
+      border-right: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+
+    .header {
+      padding: 20px;
+      background: rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #0284c7;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .content {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .selector-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .toggle-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      background: rgba(30, 41, 59, 0.8);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .toggle-pill input[type="radio"],
+    .toggle-pill input[type="checkbox"] {
+      display: none;
+    }
+
+    .toggle-pill.sin.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--sin-color);
+      color: var(--sin-color);
+    }
+    .toggle-pill.cos.active {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: var(--cos-color);
+      color: var(--cos-color);
+    }
+    .toggle-pill.tan.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--tan-color);
+      color: var(--tan-color);
+    }
+
+    .param-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+      gap: 4px;
+    }
+    .param-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .param-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+
+    .param-name {
+      font-weight: 600;
+      font-style: italic;
+      color: #e2e8f0;
+    }
+
+    .param-val {
+      font-family: "Courier New", monospace;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #334155;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric-box {
+      background: rgba(15, 23, 42, 0.7);
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .metric-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-top: 2px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    button.btn {
+      flex: 1;
+      padding: 8px 12px;
+      background: #334155;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.btn:hover {
+      background: #475569;
+    }
+
+    #main-area {
+      flex: 1;
+      height: 100%;
+      position: relative;
+      background: #090d16;
+      display: flex;
+      flex-direction: column;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .hud {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      pointer-events: none;
+      display: flex;
+      gap: 14px;
+    }
+
+    .hud span b {
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <aside id="sidebar">
+    <div class="header">
+      <div class="badge">VCE Unit 1 &amp; 2</div>
+      <h1>Circular Functions</h1>
+      <div class="subtitle">Mathematical Methods — Grapher &amp; Solver</div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-title">Select Active Function</div>
+        <div class="selector-group">
+          <label class="toggle-pill sin active" id="pill-sin">
+            <input type="radio" name="func-choice" value="sin" checked> Sine
+          </label>
+          <label class="toggle-pill cos" id="pill-cos">
+            <input type="radio" name="func-choice" value="cos"> Cosine
+          </label>
+          <label class="toggle-pill tan" id="pill-tan">
+            <input type="radio" name="func-choice" value="tan"> Tangent
+          </label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Transformations: y = a·f(b(x - h)) + k</div>
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Dilation from x-axis (a):</span>
+            <span class="param-val" id="val-a">1.00</span>
+          </div>
+          <input type="range" id="slider-a" min="-4" max="4" step="0.25" value="1">
+        </div>
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Dilation from y-axis (b):</span>
+            <span class="param-val" id="val-b">1.00</span>
+          </div>
+          <input type="range" id="slider-b" min="0.25" max="4" step="0.25" value="1">
+        </div>
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Horizontal Translation (h):</span>
+            <span class="param-val" id="val-h">0</span>
+          </div>
+          <input type="range" id="slider-h" min="-24" max="24" step="1" value="0">
+        </div>
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Vertical Translation (k):</span>
+            <span class="param-val" id="val-k">0.00</span>
+          </div>
+          <input type="range" id="slider-k" min="-5" max="5" step="0.25" value="0">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Analytical Properties</div>
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <div class="metric-label">Amplitude</div>
+            <div class="metric-value" id="disp-amp">1.00</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Period (T)</div>
+            <div class="metric-value" id="disp-period">2π</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Range</div>
+            <div class="metric-value" id="disp-range">[-1, 1]</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Mean Position</div>
+            <div class="metric-value" id="disp-mean">y = 0</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span>Horizontal Line y = c</span>
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; text-transform:none; cursor:pointer;">
+            <input type="checkbox" id="check-line" checked> Show Line
+          </label>
+        </div>
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Constant value (c):</span>
+            <span class="param-val" id="val-c" style="color:var(--line-color)">0.50</span>
+          </div>
+          <input type="range" id="slider-c" min="-5" max="5" step="0.1" value="0.5">
+        </div>
+        <div style="margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="font-weight:600; color:#e2e8f0;">Solutions in visible domain:</span>
+            <span id="solution-count" style="color:var(--primary); font-weight:700;">0 points</span>
+          </div>
+          <div id="solutions-list" style="max-height: 80px; overflow-y:auto; font-family:'Courier New', monospace; font-size:0.75rem; color:#cbd5e1; line-height:1.4;">
+            None
+          </div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-reset-view">Reset Zoom / Pan</button>
+        <button class="btn" id="btn-standard-domain">[0, 2π] View</button>
+      </div>
+    </div>
+  </aside>
+  <main id="main-area">
+    <canvas id="graphCanvas"></canvas>
+    <div class="hud">
+      <span>🖱️ <b>Right-Click + Drag:</b> Pan</span>
+      <span>📜 <b>Scroll Wheel:</b> Zoom</span>
+      <span>⚡ <b>Grid:</b> Every π/6 (x) &amp; 1 unit (y)</span>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    let currentFunc = 'sin';
+    let a = 1.0, b = 1.0, h = 0.0, k = 0.0, cVal = 0.5, showLine = true;
+    let originX = 0, originY = 0, scaleX = 120, scaleY = 60;
+    let isRightDragging = false, isLeftDragging = false, dragStartX = 0, dragStartY = 0;
+
+    function formatPiFraction(multipleOfPiOver6) {
+      if (multipleOfPiOver6 === 0) return "0";
+      const sign = multipleOfPiOver6 < 0 ? "-" : "";
+      const num = Math.abs(multipleOfPiOver6);
+      const den = 6;
+      function gcd(x, y) { return y === 0 ? x : gcd(y, x % y); }
+      const g = gcd(num, den);
+      const simNum = num / g;
+      const simDen = den / g;
+      let piPart = "π";
+      if (simNum > 1) piPart = `${simNum}π`;
+      return simDen === 1 ? `${sign}${piPart}` : `${sign}${piPart}/${simDen}`;
+    }
+
+    function formatNumber(num) {
+      return Number(num).toFixed(2).replace(/\.00$/, '');
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      if (originX === 0 && originY === 0) {
+        originX = rect.width * 0.18;
+        originY = rect.height * 0.55;
+      }
+      draw();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function toScreenX(x) { return originX + x * scaleX; }
+    function toScreenY(y) { return originY - y * scaleY; }
+    function toMathX(px) { return (px - originX) / scaleX; }
+    function toMathY(py) { return (originY - py) / scaleY; }
+
+    function evaluateFunc(xVal, fType = currentFunc) {
+      const arg = b * (xVal - h);
+      if (fType === 'sin') return a * Math.sin(arg) + k;
+      if (fType === 'cos') return a * Math.cos(arg) + k;
+      if (fType === 'tan') return a * Math.tan(arg) + k;
+      return 0;
+    }
+
+    function updateMetrics() {
+      const dispAmp = document.getElementById('disp-amp');
+      const dispPeriod = document.getElementById('disp-period');
+      const dispRange = document.getElementById('disp-range');
+      const dispMean = document.getElementById('disp-mean');
+      dispMean.textContent = `y = ${formatNumber(k)}`;
+      const basePeriodPi = (currentFunc === 'tan') ? 1 : 2;
+      const numer = basePeriodPi;
+      const denom = Math.abs(b);
+      const factor = 100;
+      const nInt = Math.round(numer * factor);
+      const dInt = Math.round(denom * factor);
+      function gcd(x,y){return y===0?x:gcd(y, x%y);}
+      const g = gcd(nInt, dInt);
+      const pN = nInt / g;
+      const pD = dInt / g;
+      let periodStr = pD === 1 ? ((pN === 1 ? "" : pN) + "π") : (((pN === 1 ? "π" : `${pN}π`) + `/${pD}`));
+      dispPeriod.textContent = periodStr;
+
+      if (currentFunc === 'tan') {
+        dispAmp.textContent = 'Undefined';
+        dispRange.textContent = 'R (-∞, ∞)';
+      } else {
+        const amplitude = Math.abs(a);
+        dispAmp.textContent = formatNumber(amplitude);
+        const yMin = k - amplitude;
+        const yMax = k + amplitude;
+        dispRange.textContent = `[${formatNumber(yMin)}, ${formatNumber(yMax)}]`;
+      }
+    }
+
+    function findIntersections(xMin, xMax) {
+      if (!showLine || Math.abs(a) < 1e-9) return [];
+      const solutions = [];
+      const target = (cVal - k) / a;
+
+      if (currentFunc === 'sin') {
+        if (Math.abs(target) > 1) return [];
+        const principal = Math.asin(target);
+        const period = (2 * Math.PI) / Math.abs(b);
+        const cycleMin = Math.floor((xMin - h) / period) - 2;
+        const cycleMax = Math.ceil((xMax - h) / period) + 2;
+        for (let n = cycleMin; n <= cycleMax; n++) {
+          const x1 = h + (principal + 2 * Math.PI * n) / b;
+          if (x1 >= xMin && x1 <= xMax) solutions.push(x1);
+          const x2 = h + (Math.PI - principal + 2 * Math.PI * n) / b;
+          if (x2 >= xMin && x2 <= xMax) solutions.push(x2);
+        }
+      } else if (currentFunc === 'cos') {
+        if (Math.abs(target) > 1) return [];
+        const principal = Math.acos(target);
+        const period = (2 * Math.PI) / Math.abs(b);
+        const cycleMin = Math.floor((xMin - h) / period) - 2;
+        const cycleMax = Math.ceil((xMax - h) / period) + 2;
+        for (let n = cycleMin; n <= cycleMax; n++) {
+          const x1 = h + (principal + 2 * Math.PI * n) / b;
+          if (x1 >= xMin && x1 <= xMax) solutions.push(x1);
+          if (principal > 1e-7) {
+            const x2 = h + (-principal + 2 * Math.PI * n) / b;
+            if (x2 >= xMin && x2 <= xMax) solutions.push(x2);
+          }
+        }
+      } else if (currentFunc === 'tan') {
+        const principal = Math.atan(target);
+        const period = Math.PI / Math.abs(b);
+        const cycleMin = Math.floor((xMin - h) / period) - 2;
+        const cycleMax = Math.ceil((xMax - h) / period) + 2;
+        for (let n = cycleMin; n <= cycleMax; n++) {
+          const x = h + (principal + Math.PI * n) / b;
+          if (x >= xMin && x <= xMax) solutions.push(x);
+        }
+      }
+
+      solutions.sort((x1, x2) => x1 - x2);
+      const uniqueSolutions = [];
+      for (const sol of solutions) {
+        if (uniqueSolutions.length === 0 || Math.abs(sol - uniqueSolutions[uniqueSolutions.length - 1]) > 1e-5) {
+          uniqueSolutions.push(sol);
+        }
+      }
+      return uniqueSolutions;
+    }
+
+    function draw() {
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      ctx.clearRect(0, 0, width, height);
+
+      const xMin = toMathX(0);
+      const xMax = toMathX(width);
+      const yMin = toMathY(height);
+      const yMax = toMathY(0);
+
+      const stepX = Math.PI / 6;
+      const startMultipleX = Math.floor(xMin / stepX);
+      const endMultipleX = Math.ceil(xMax / stepX);
+
+      ctx.lineWidth = 1;
+      for (let m = startMultipleX; m <= endMultipleX; m++) {
+        const xVal = m * stepX;
+        const sx = toScreenX(xVal);
+        const isAxis = Math.abs(xVal) < 1e-7;
+        const isPi = (m % 6 === 0);
+        ctx.strokeStyle = isAxis ? 'rgba(255,255,255,0.7)' : (isPi ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.12)');
+        ctx.beginPath();
+        ctx.moveTo(sx, 0);
+        ctx.lineTo(sx, height);
+        ctx.stroke();
+
+        if (!isAxis) {
+          ctx.fillStyle = isPi ? '#e2e8f0' : '#94a3b8';
+          ctx.font = isPi ? 'bold 11px system-ui' : '10px system-ui';
+          ctx.textAlign = 'center';
+          const labelY = Math.min(Math.max(toScreenY(0) + 16, 16), height - 8);
+          ctx.fillText(formatPiFraction(m), sx, labelY);
+        }
+      }
+
+      const startYInt = Math.floor(yMin);
+      const endYInt = Math.ceil(yMax);
+      for (let y = startYInt; y <= endYInt; y++) {
+        const sy = toScreenY(y);
+        const isAxis = (y === 0);
+        ctx.strokeStyle = isAxis ? 'rgba(255,255,255,0.7)' : 'rgba(148, 163, 184, 0.15)';
+        ctx.beginPath();
+        ctx.moveTo(0, sy);
+        ctx.lineTo(width, sy);
+        ctx.stroke();
+        if (!isAxis) {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '10px system-ui';
+          ctx.textAlign = 'right';
+          const labelX = Math.min(Math.max(toScreenX(0) - 8, 24), width - 8);
+          ctx.fillText(y.toString(), labelX, sy + 4);
+        }
+      }
+
+      const originScreenX = toScreenX(0);
+      const originScreenY = toScreenY(0);
+      if (originScreenX >= 0 && originScreenX <= width && originScreenY >= 0 && originScreenY <= height) {
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = 'bold 11px system-ui';
+        ctx.textAlign = 'right';
+        ctx.fillText("0", originScreenX - 6, originScreenY + 14);
+      }
+
+      if (currentFunc === 'tan') {
+        ctx.save();
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.4)';
+        ctx.lineWidth = 1.2;
+        const p = Math.PI / Math.abs(b);
+        const firstAsymptote = h + (Math.PI / (2 * b));
+        const kStart = Math.floor((xMin - firstAsymptote) / p) - 1;
+        const kEnd = Math.ceil((xMax - firstAsymptote) / p) + 1;
+        for (let i = kStart; i <= kEnd; i++) {
+          const asympX = firstAsymptote + i * p;
+          const sx = toScreenX(asympX);
+          if (sx >= -10 && sx <= width + 10) {
+            ctx.beginPath();
+            ctx.moveTo(sx, 0);
+            ctx.lineTo(sx, height);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+
+      ctx.save();
+      let funcColor = '#3b82f6';
+      if (currentFunc === 'cos') funcColor = '#a855f7';
+      if (currentFunc === 'tan') funcColor = '#10b981';
+      ctx.strokeStyle = funcColor;
+      ctx.lineWidth = 2.6;
+      ctx.beginPath();
+
+      let isDrawingSegment = false;
+      let prevY = 0;
+      for (let px = 0; px <= width; px += 1) {
+        const x = toMathX(px);
+        const y = evaluateFunc(x);
+        const py = toScreenY(y);
+
+        if (currentFunc === 'tan') {
+          if (isNaN(y) || Math.abs(y) > 40 || (isDrawingSegment && Math.abs(py - prevY) > height * 0.7)) {
+            isDrawingSegment = false;
+            continue;
+          }
+        }
+
+        if (!isDrawingSegment) {
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          isDrawingSegment = true;
+        } else {
+          ctx.lineTo(px, py);
+        }
+        prevY = py;
+
+        if (currentFunc === 'tan' && (px % 4 === 0)) {
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+        }
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      if (showLine) {
+        const lineSy = toScreenY(cVal);
+        ctx.save();
+        ctx.strokeStyle = '#f43f5e';
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(0, lineSy);
+        ctx.lineTo(width, lineSy);
+        ctx.stroke();
+        ctx.restore();
+        ctx.fillStyle = '#f43f5e';
+        ctx.font = 'bold 11px system-ui';
+        ctx.textAlign = 'left';
+        ctx.fillText(`y = ${formatNumber(cVal)}`, 14, lineSy - 6);
+      }
+
+      const intersections = findIntersections(xMin, xMax);
+      const solCountBadge = document.getElementById('solution-count');
+      const solListEl = document.getElementById('solutions-list');
+      solCountBadge.textContent = `${intersections.length} point${intersections.length === 1 ? '' : 's'}`;
+
+      if (intersections.length > 0) {
+        solListEl.innerHTML = intersections.map(xSol => `(${xSol.toFixed(3)}, ${cVal.toFixed(2)})`).join('<br>');
+      } else {
+        solListEl.textContent = showLine ? 'No intersections in visible domain' : 'Line hidden';
+      }
+
+      if (showLine) {
+        intersections.forEach(xSol => {
+          const sx = toScreenX(xSol);
+          const sy = toScreenY(cVal);
+          ctx.fillStyle = 'rgba(244, 63, 94, 0.3)';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#f43f5e';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.fillStyle = '#f8fafc';
+          ctx.font = '10px "Courier New", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`(${xSol.toFixed(2)}, ${cVal.toFixed(2)})`, sx, sy - 12);
+        });
+      }
+
+      drawEquationBadge();
+    }
+
+    function drawEquationBadge() {
+      let funcName = currentFunc;
+      let aStr = a === -1 ? '-' : (a !== 1 ? `${formatNumber(a)}` : '');
+      let bStr = b !== 1 ? `${formatNumber(b)}` : '';
+      let hStr = '';
+      if (Math.abs(h) > 1e-4) {
+        const hPiStep = Math.round(h / (Math.PI / 12));
+        const sign = hPiStep > 0 ? ' - ' : ' + ';
+        hStr = `${sign}${formatPiFraction(Math.abs(hPiStep * 0.5))}`;
+      }
+
+      let inside = (bStr && hStr) ? `${bStr}(x${hStr})` : (bStr ? `${bStr}x` : (hStr ? `(x${hStr})` : 'x'));
+      let kStr = Math.abs(k) > 1e-4 ? (k > 0 ? ` + ${formatNumber(k)}` : ` - ${formatNumber(Math.abs(k))}`) : '';
+      const eqText = `y = ${aStr}${funcName}(${inside})${kStr}`;
+
+      ctx.save();
+      ctx.font = 'bold 15px system-ui';
+      const textMetrics = ctx.measureText(eqText);
+      const boxW = textMetrics.width + 24;
+      const boxH = 34;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.strokeStyle = 'rgba(51, 65, 85, 0.9)';
+      ctx.lineWidth = 1;
+      ctx.roundRect(16, 16, boxW, boxH, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      let badgeColor = currentFunc === 'cos' ? '#c084fc' : (currentFunc === 'tan' ? '#34d399' : '#38bdf8');
+      ctx.fillStyle = badgeColor;
+      ctx.textAlign = 'left';
+      ctx.fillText(eqText, 28, 38);
+      ctx.restore();
+    }
+
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+    canvas.addEventListener('mousedown', e => {
+      if (e.button === 2 || e.button === 0) {
+        if (e.button === 2) isRightDragging = true;
+        if (e.button === 0) isLeftDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+      }
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (isRightDragging || isLeftDragging) {
+        originX += (e.clientX - dragStartX);
+        originY += (e.clientY - dragStartY);
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        draw();
+      }
+    });
+
+    window.addEventListener('mouseup', e => {
+      if (e.button === 2) isRightDragging = false;
+      if (e.button === 0) isLeftDragging = false;
+    });
+
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
+      const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+      const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+      originX = mouseX - (mouseX - originX) * zoomFactor;
+      originY = mouseY - (mouseY - originY) * zoomFactor;
+      scaleX = Math.max(15, Math.min(scaleX * zoomFactor, 800));
+      scaleY = Math.max(10, Math.min(scaleY * zoomFactor, 600));
+      draw();
+    }, { passive: false });
+
+    ['sin', 'cos', 'tan'].forEach(type => {
+      document.getElementById(`pill-${type}`).addEventListener('click', () => {
+        ['sin', 'cos', 'tan'].forEach(t => document.getElementById(`pill-${t}`).classList.remove('active'));
+        document.getElementById(`pill-${type}`).classList.add('active');
+        currentFunc = type;
+        updateMetrics();
+        draw();
+      });
+    });
+
+    document.getElementById('slider-a').addEventListener('input', e => {
+      a = parseFloat(e.target.value);
+      document.getElementById('val-a').textContent = formatNumber(a);
+      updateMetrics();
+      draw();
+    });
+
+    document.getElementById('slider-b').addEventListener('input', e => {
+      b = parseFloat(e.target.value);
+      document.getElementById('val-b').textContent = formatNumber(b);
+      updateMetrics();
+      draw();
+    });
+
+    document.getElementById('slider-h').addEventListener('input', e => {
+      const stepIdx = parseInt(e.target.value);
+      h = stepIdx * (Math.PI / 12);
+      document.getElementById('val-h').textContent = formatPiFraction(stepIdx * 0.5);
+      draw();
+    });
+
+    document.getElementById('slider-k').addEventListener('input', e => {
+      k = parseFloat(e.target.value);
+      document.getElementById('val-k').textContent = formatNumber(k);
+      updateMetrics();
+      draw();
+    });
+
+    document.getElementById('slider-c').addEventListener('input', e => {
+      cVal = parseFloat(e.target.value);
+      document.getElementById('val-c').textContent = formatNumber(cVal);
+      draw();
+    });
+
+    document.getElementById('check-line').addEventListener('change', e => {
+      showLine = e.target.checked;
+      draw();
+    });
+
+    document.getElementById('btn-reset-view').addEventListener('click', () => {
+      const rect = canvas.getBoundingClientRect();
+      originX = rect.width * 0.18;
+      originY = rect.height * 0.55;
+      scaleX = 120;
+      scaleY = 60;
+      draw();
+    });
+
+    document.getElementById('btn-standard-domain').addEventListener('click', () => {
+      const rect = canvas.getBoundingClientRect();
+      scaleX = (rect.width * 0.75) / (2 * Math.PI);
+      scaleY = rect.height * 0.12;
+      originX = rect.width * 0.12;
+      originY = rect.height * 0.5;
+      draw();
+    });
+
+    resizeCanvas();
+    updateMetrics();
+  </script>
+</body>
+</html>
+  </template>
+
+  <!-- APP 2 TEMPLATE -->
+  <template id="app-vector">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCE Specialist Mathematics - 2D/3D Vectors & Geometry</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f17;
+            --panel-bg: rgba(18, 24, 38, 0.94);
+            --border-color: #2b3548;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-purple: #c084fc;
+            --accent-yellow: #facc15;
+            --accent-orange: #fb923c;
+            --accent-red: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #webgl-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        #header-banner {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px 18px;
+            border-radius: 10px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #header-banner h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+        }
+
+        #header-banner p {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 3px;
+        }
+
+        .mode-switch-wrapper {
+            display: flex;
+            background: #1e293b;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .mode-switch-btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+
+        .mode-switch-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+        }
+
+        #controls-hint {
+            position: absolute;
+            bottom: 16px;
+            left: 20px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            pointer-events: none;
+            line-height: 1.45;
+        }
+
+        #controls-hint span {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        #sidebar {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            bottom: 16px;
+            width: 380px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+            padding: 18px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .panel-section {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 13px;
+        }
+        .panel-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-dim);
+            margin-bottom: 9px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .points-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .pt-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 0.82rem;
+            transition: all 0.2s ease;
+        }
+        .pt-card.active {
+            border-color: var(--accent-yellow);
+            background: rgba(250, 204, 21, 0.12);
+        }
+
+        .pt-name {
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .pt-A { color: var(--accent-blue); }
+        .pt-B { color: var(--accent-green); }
+        .pt-C { color: var(--accent-purple); }
+        .pt-D { color: var(--accent-orange); }
+
+        .math-block {
+            background: rgba(0, 0, 0, 0.42);
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-family: "SF Mono", Monaco, "Courier New", monospace;
+            font-size: 0.81rem;
+            line-height: 1.55;
+            margin-top: 5px;
+        }
+
+        .math-val {
+            font-weight: 600;
+            color: #38bdf8;
+        }
+
+        .highlight-distance {
+            color: var(--accent-yellow);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .key-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.79rem;
+        }
+
+        .key-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .key-marker {
+            width: 13px;
+            height: 13px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .key-circle {
+            border-radius: 50%;
+        }
+
+        .key-dashed {
+            width: 15px;
+            height: 2px;
+            border-top: 2px dashed #facc15;
+            background: transparent;
+        }
+
+        .control-group {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .slider-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.79rem;
+        }
+
+        input[type="range"] {
+            width: 145px;
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 7px 10px;
+            background: #1e293b;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .action-btn:hover {
+            background: #334155;
+        }
+
+        #snap-pill {
+            display: inline-block;
+            background: #15803d;
+            color: #ffffff;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="header-banner">
+        <h1 id="title-text">2D / 3D Vector Geometry</h1>
+        <p id="subtitle-text">VCE Specialist Mathematics &bull; Lines, Planes &amp; Distance</p>
+    </div>
+
+    <div id="controls-hint">
+        &bull; <span>Hover &amp; Drag Points:</span> Drag points (snaps to whole integer grid)<br>
+        &bull; <span>Left Mouse Drag:</span> <span id="hint-rot">Rotate camera (3D)</span><br>
+        &bull; <span>Right Mouse Drag:</span> Pan coordinate space<br>
+        &bull; <span>Scroll Wheel:</span> Zoom in / out
+    </div>
+
+    <div id="sidebar">
+        <div>
+            <div class="mode-switch-wrapper">
+                <button class="mode-switch-btn" id="btn-mode-2d">2D Mode (Line &amp; Point)</button>
+                <button class="mode-switch-btn active" id="btn-mode-3d">3D Mode (Plane &amp; Point)</button>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title">
+                <span>Coordinates</span>
+                <span id="snap-pill">INTEGER SNAP</span>
+            </div>
+            <div class="points-grid">
+                <div class="pt-card" id="card-A"><span class="pt-name pt-A">A:</span> <span id="val-A">(0, 0, 0)</span></div>
+                <div class="pt-card" id="card-B"><span class="pt-name pt-B">B:</span> <span id="val-B">(4, 2, 0)</span></div>
+                <div class="pt-card" id="card-C"><span class="pt-name pt-C">C:</span> <span id="val-C">(0, 4, 2)</span></div>
+                <div class="pt-card" id="card-D"><span class="pt-name pt-D">D:</span> <span id="val-D">(2, 4, 4)</span></div>
+            </div>
+            <div class="btn-row">
+                <button class="action-btn" id="btn-reset">Reset Points</button>
+                <button class="action-btn" id="btn-preset">Preset Exam Question</button>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title" id="lbl-vec-title">Vectors on Plane</div>
+            <div class="math-block" id="box-math-vectors"></div>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title" id="lbl-dist-title">Distance Calculation</div>
+            <div class="math-block" id="box-math-dist"></div>
+            <div style="font-size:0.75rem; color:var(--text-dim); margin-top:6px; line-height:1.35;" id="desc-triangle-note">
+                The shaded yellow triangle represents ΔAD D<sub>proj</sub>. The hypotenuse is <b>AD</b>, adjacent side is in the plane/line, and perpendicular distance <b>d</b> is the height.
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title">Legend &amp; Visual Key</div>
+            <div class="key-list" id="legend-list"></div>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title">Adjustments</div>
+            <div class="control-group">
+                <div class="slider-row" id="row-plane-opacity">
+                    <span>Surface Opacity:</span>
+                    <input type="range" id="slider-opacity" min="0.1" max="0.8" step="0.05" value="0.32">
+                </div>
+                <div class="slider-row" id="row-plane-size">
+                    <span>Boundary Size:</span>
+                    <input type="range" id="slider-planesize" min="1.0" max="4.0" step="0.2" value="2.0">
+                </div>
+                <div class="slider-row">
+                    <span>Normal Vector Scale:</span>
+                    <input type="range" id="slider-normalscale" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="webgl-container"></div>
+
+    <script>
+        let currentMode = '3D';
+        const container = document.getElementById('webgl-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0b0f17);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(13, 14, 16);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.target.set(1.5, 1.5, 1.5);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight1.position.set(20, 30, 20);
+        scene.add(dirLight1);
+        const dirLight2 = new THREE.DirectionalLight(0x94a3b8, 0.4);
+        dirLight2.position.set(-20, -10, -20);
+        scene.add(dirLight2);
+
+        function createArrow(dir, origin, length, color, headLength = 0.45, headWidth = 0.22, shaftRadius = 0.035) {
+            const group = new THREE.Group();
+            const normDir = dir.clone().normalize();
+            const effectiveHeadLength = Math.min(headLength, length * 0.35);
+            const effectiveHeadWidth = headWidth * (effectiveHeadLength / headLength);
+            const shaftLen = Math.max(0.001, length - effectiveHeadLength);
+            const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.25, metalness: 0.2 });
+
+            const shaftGeom = new THREE.CylinderGeometry(shaftRadius, shaftRadius, shaftLen, 20);
+            shaftGeom.translate(0, shaftLen / 2, 0);
+            const shaft = new THREE.Mesh(shaftGeom, mat);
+            group.add(shaft);
+
+            const headGeom = new THREE.ConeGeometry(effectiveHeadWidth, effectiveHeadLength, 24);
+            headGeom.translate(0, effectiveHeadLength / 2, 0);
+            const head = new THREE.Mesh(headGeom, mat);
+            head.position.set(0, shaftLen, 0);
+            group.add(head);
+
+            const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normDir);
+            group.quaternion.copy(quat);
+            group.position.copy(origin);
+            return { group, mat };
+        }
+
+        function makeTextSprite(message, parameters = {}) {
+            const fontface = parameters.fontface || "Helvetica, Arial, sans-serif";
+            const fontsize = parameters.fontsize || 28;
+            const textColor = parameters.color || "#ffffff";
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+            context.font = "Bold " + fontsize + "px " + fontface;
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillStyle = textColor;
+            context.fillText(message, 128, 64);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(1.4, 0.7, 1.0);
+            return sprite;
+        }
+
+        const axesGroup = new THREE.Group();
+        const AXIS_LEN = 8.5;
+        const axisX = createArrow(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), AXIS_LEN, 0xf87171, 0.45, 0.20, 0.025);
+        const axisY = createArrow(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), AXIS_LEN, 0x34d399, 0.45, 0.20, 0.025);
+        const axisZ = createArrow(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), AXIS_LEN, 0x38bdf8, 0.45, 0.20, 0.025);
+        axesGroup.add(axisX.group);
+        axesGroup.add(axisY.group);
+        axesGroup.add(axisZ.group);
+
+        const lblX = makeTextSprite("X (i)", { color: "#f87171", fontsize: 30 });
+        lblX.position.set(AXIS_LEN + 0.6, 0, 0);
+        axesGroup.add(lblX);
+        const lblY = makeTextSprite("Y (j)", { color: "#34d399", fontsize: 30 });
+        lblY.position.set(0, AXIS_LEN + 0.6, 0);
+        axesGroup.add(lblY);
+        const lblZ = makeTextSprite("Z (k)", { color: "#38bdf8", fontsize: 30 });
+        lblZ.position.set(0, 0, AXIS_LEN + 0.6);
+        axesGroup.add(lblZ);
+        scene.add(axesGroup);
+
+        const groundGrid3D = new THREE.GridHelper(24, 24, 0x334155, 0x1e293b);
+        groundGrid3D.position.set(0, -0.01, 0);
+        scene.add(groundGrid3D);
+
+        const gridXY = new THREE.GridHelper(24, 24, 0x475569, 0x1e293b);
+        gridXY.rotation.x = Math.PI / 2;
+        gridXY.position.set(0, 0, -0.01);
+        gridXY.visible = false;
+        scene.add(gridXY);
+
+        const ptData3D = {
+            A: new THREE.Vector3(1, 1, 1),
+            B: new THREE.Vector3(5, 2, 0),
+            C: new THREE.Vector3(1, 5, 3),
+            D: new THREE.Vector3(3, 5, 6)
+        };
+        const ptData2D = {
+            A: new THREE.Vector3(1, 1, 0),
+            B: new THREE.Vector3(5, 3, 0),
+            C: new THREE.Vector3(0, 0, 0),
+            D: new THREE.Vector3(2, 6, 0)
+        };
+        let currentPts = ptData3D;
+
+        const pointSpheres = {};
+        const pointMeshes = [];
+        const pointColors = { A: 0x38bdf8, B: 0x34d399, C: 0xc084fc, D: 0xfb923c };
+        const sphereGeom = new THREE.SphereGeometry(0.18, 32, 32);
+        const hitSphereGeom = new THREE.SphereGeometry(0.45, 16, 16);
+
+        ['A', 'B', 'C', 'D'].forEach(key => {
+            const mat = new THREE.MeshStandardMaterial({
+                color: pointColors[key],
+                roughness: 0.2,
+                metalness: 0.3,
+                emissive: pointColors[key],
+                emissiveIntensity: 0.35
+            });
+            const mesh = new THREE.Mesh(sphereGeom, mat);
+            mesh.position.copy(currentPts[key]);
+            mesh.userData = { id: key };
+            const hitMesh = new THREE.Mesh(hitSphereGeom, new THREE.MeshBasicMaterial({ visible: false }));
+            mesh.add(hitMesh);
+            const lbl = makeTextSprite(key, { color: "#ffffff", fontsize: 34 });
+            lbl.position.set(0, 0.48, 0);
+            mesh.add(lbl);
+            scene.add(mesh);
+            pointSpheres[key] = mesh;
+            pointMeshes.push(mesh);
+        });
+
+        const planeMaterial = new THREE.MeshStandardMaterial({
+            color: 0x0284c7,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.32,
+            roughness: 0.3,
+            metalness: 0.1,
+            depthWrite: false
+        });
+        const planeMesh = new THREE.Mesh(new THREE.BufferGeometry(), planeMaterial);
+        scene.add(planeMesh);
+
+        const planeBorderMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, linewidth: 2 });
+        const planeBorderLine = new THREE.LineSegments(new THREE.BufferGeometry(), planeBorderMat);
+        scene.add(planeBorderLine);
+
+        const line2DMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.3 });
+        const line2DMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1, 16), line2DMat);
+        line2DMesh.visible = false;
+        scene.add(line2DMesh);
+
+        let arrowAB = null, arrowAC = null, arrowNormal = null, arrowUnitNormal = null, arrowAD = null;
+        const lblAB = makeTextSprite("AB", { color: "#38bdf8", fontsize: 24 });
+        const lblAC = makeTextSprite("AC", { color: "#c084fc", fontsize: 24 });
+        const lblNormal = makeTextSprite("n", { color: "#e879f9", fontsize: 24 });
+        const lblUnitNormal = makeTextSprite("n^ (unit)", { color: "#facc15", fontsize: 22 });
+        const lblAD = makeTextSprite("AD", { color: "#fb923c", fontsize: 24 });
+        const lblDist = makeTextSprite("d (distance)", { color: "#fef08a", fontsize: 24 });
+        scene.add(lblAB); scene.add(lblAC); scene.add(lblNormal); scene.add(lblUnitNormal); scene.add(lblAD); scene.add(lblDist);
+
+        const dashedMat = new THREE.LineDashedMaterial({ color: 0xfacc15, dashSize: 0.25, gapSize: 0.18, linewidth: 2.5 });
+        const perpLineGeom = new THREE.BufferGeometry();
+        const perpLine = new THREE.Line(perpLineGeom, dashedMat);
+        scene.add(perpLine);
+
+        const projPointMesh = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xfacc15, emissiveIntensity: 0.5 }));
+        scene.add(projPointMesh);
+
+        const projTriMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false });
+        const projTriMesh = new THREE.Mesh(new THREE.BufferGeometry(), projTriMat);
+        scene.add(projTriMesh);
+
+        const rightAngleMat = new THREE.LineBasicMaterial({ color: 0xfef08a, linewidth: 2 });
+        const rightAngleLine = new THREE.LineSegments(new THREE.BufferGeometry(), rightAngleMat);
+        scene.add(rightAngleLine);
+
+        let planePaddingFactor = 2.0;
+        let normalDisplayScale = 1.0;
+
+        function updateSceneGeometry() {
+            const A = currentPts.A, B = currentPts.B, C = currentPts.C, D = currentPts.D;
+            ['A', 'B', 'C', 'D'].forEach(k => pointSpheres[k].position.copy(currentPts[k]));
+            if (arrowAB) scene.remove(arrowAB.group);
+            if (arrowAC) scene.remove(arrowAC.group);
+            if (arrowNormal) scene.remove(arrowNormal.group);
+            if (arrowUnitNormal) scene.remove(arrowUnitNormal.group);
+            if (arrowAD) scene.remove(arrowAD.group);
+
+            if (currentMode === '3D') updateGeometry3D(A, B, C, D);
+            else updateGeometry2D(A, B, D);
+        }
+
+        function updateGeometry3D(A, B, C, D) {
+            pointSpheres['C'].visible = true;
+            line2DMesh.visible = false;
+            const u = new THREE.Vector3().subVectors(B, A);
+            const v = new THREE.Vector3().subVectors(C, A);
+            const n = new THREE.Vector3().crossVectors(u, v);
+            const magN = n.length();
+            const isCollinear = magN < 0.0001;
+            const nHat = isCollinear ? new THREE.Vector3(0, 1, 0) : n.clone().normalize();
+            const w = new THREE.Vector3().subVectors(D, A);
+            const signedDist = isCollinear ? 0 : w.dot(nHat);
+            const dist = Math.abs(signedDist);
+            const D_proj = D.clone().sub(nHat.clone().multiplyScalar(signedDist));
+            projPointMesh.position.copy(D_proj);
+
+            perpLineGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array([D.x, D.y, D.z, D_proj.x, D_proj.y, D_proj.z]), 3));
+            perpLine.computeLineDistances();
+
+            projTriMesh.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([A.x, A.y, A.z, D.x, D.y, D.z, D_proj.x, D_proj.y, D_proj.z]), 3));
+            projTriMesh.geometry.computeVertexNormals();
+
+            updateRightAngleCorner(A, D, D_proj, dist, isCollinear);
+
+            if (u.length() > 0.05) {
+                arrowAB = createArrow(u, A, u.length(), 0x38bdf8, 0.45, 0.20, 0.038);
+                scene.add(arrowAB.group);
+                lblAB.position.copy(A.clone().add(u.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.3, 0));
+                lblAB.visible = true;
+            } else lblAB.visible = false;
+
+            if (v.length() > 0.05) {
+                arrowAC = createArrow(v, A, v.length(), 0xc084fc, 0.45, 0.20, 0.038);
+                scene.add(arrowAC.group);
+                lblAC.position.copy(A.clone().add(v.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.3, 0));
+                lblAC.visible = true;
+            } else lblAC.visible = false;
+
+            if (!isCollinear) {
+                const normLength = Math.max(1.2, Math.min(magN * 0.4 * normalDisplayScale, 7.5));
+                arrowNormal = createArrow(nHat, A, normLength, 0xe879f9, 0.55, 0.26, 0.045);
+                scene.add(arrowNormal.group);
+                lblNormal.position.copy(A.clone().add(nHat.clone().multiplyScalar(normLength + 0.4)));
+                lblNormal.visible = true;
+
+                arrowUnitNormal = createArrow(nHat, A, 1.0, 0xfacc15, 0.35, 0.22, 0.07);
+                scene.add(arrowUnitNormal.group);
+                lblUnitNormal.position.copy(A.clone().add(nHat.clone().multiplyScalar(1.0)).add(new THREE.Vector3(0.25, 0, 0.25)));
+                lblUnitNormal.visible = true;
+            } else {
+                lblNormal.visible = false; lblUnitNormal.visible = false;
+            }
+
+            if (w.length() > 0.05) {
+                arrowAD = createArrow(w, A, w.length(), 0xfb923c, 0.5, 0.22, 0.038);
+                scene.add(arrowAD.group);
+                lblAD.position.copy(A.clone().add(w.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.3, 0));
+                lblAD.visible = true;
+            } else lblAD.visible = false;
+
+            if (dist > 0.15) {
+                lblDist.position.copy(D.clone().add(D_proj).multiplyScalar(0.5)).add(new THREE.Vector3(0.35, 0, 0));
+                lblDist.visible = true;
+            } else lblDist.visible = false;
+
+            constructBoundedPlane(A, B, C, D_proj, nHat, isCollinear);
+            updateMathUI3D(u, v, n, magN, nHat, w, dist, signedDist, isCollinear);
+        }
+
+        function updateGeometry2D(A, B, D) {
+            pointSpheres['C'].visible = false;
+            lblAC.visible = false;
+            planeMesh.visible = false;
+            planeBorderLine.visible = false;
+
+            const u = new THREE.Vector3(B.x - A.x, B.y - A.y, 0);
+            const magU = u.length();
+            const isDegenerate = magU < 0.0001;
+            const n = isDegenerate ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(-u.y, u.x, 0);
+            const magN = n.length();
+            const nHat = isDegenerate ? new THREE.Vector3(0, 1, 0) : n.clone().normalize();
+
+            if (!isDegenerate) {
+                line2DMesh.visible = true;
+                line2DMesh.scale.set(1, 32, 1);
+                line2DMesh.position.copy(A);
+                const lineQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), u.clone().normalize());
+                line2DMesh.quaternion.copy(lineQuat);
+            } else {
+                line2DMesh.visible = false;
+            }
+
+            const w = new THREE.Vector3(D.x - A.x, D.y - A.y, 0);
+            const signedDist = isDegenerate ? 0 : w.dot(nHat);
+            const dist = Math.abs(signedDist);
+            const D_proj = D.clone().sub(nHat.clone().multiplyScalar(signedDist));
+            projPointMesh.position.copy(D_proj);
+
+            perpLineGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array([D.x, D.y, 0, D_proj.x, D_proj.y, 0]), 3));
+            perpLine.computeLineDistances();
+
+            projTriMesh.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([A.x, A.y, 0, D.x, D.y, 0, D_proj.x, D_proj.y, 0]), 3));
+            projTriMesh.geometry.computeVertexNormals();
+
+            updateRightAngleCorner(A, D, D_proj, dist, isDegenerate);
+
+            if (magU > 0.05) {
+                arrowAB = createArrow(u, A, magU, 0x38bdf8, 0.45, 0.20, 0.038);
+                scene.add(arrowAB.group);
+                lblAB.position.copy(A.clone().add(u.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.35, 0));
+                lblAB.visible = true;
+            } else lblAB.visible = false;
+
+            if (!isDegenerate) {
+                const normLength = Math.max(1.2, Math.min(magN * 0.4 * normalDisplayScale, 6.0));
+                arrowNormal = createArrow(nHat, A, normLength, 0xe879f9, 0.5, 0.24, 0.045);
+                scene.add(arrowNormal.group);
+                lblNormal.position.copy(A.clone().add(nHat.clone().multiplyScalar(normLength + 0.35)));
+                lblNormal.visible = true;
+
+                arrowUnitNormal = createArrow(nHat, A, 1.0, 0xfacc15, 0.35, 0.22, 0.07);
+                scene.add(arrowUnitNormal.group);
+                lblUnitNormal.position.copy(A.clone().add(nHat.clone().multiplyScalar(1.0)).add(new THREE.Vector3(0.25, 0.25, 0)));
+                lblUnitNormal.visible = true;
+            } else {
+                lblNormal.visible = false; lblUnitNormal.visible = false;
+            }
+
+            if (w.length() > 0.05) {
+                arrowAD = createArrow(w, A, w.length(), 0xfb923c, 0.5, 0.22, 0.038);
+                scene.add(arrowAD.group);
+                lblAD.position.copy(A.clone().add(w.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.3, 0));
+                lblAD.visible = true;
+            } else lblAD.visible = false;
+
+            if (dist > 0.15) {
+                lblDist.position.copy(D.clone().add(D_proj).multiplyScalar(0.5)).add(new THREE.Vector3(0.35, 0, 0));
+                lblDist.visible = true;
+            } else lblDist.visible = false;
+
+            updateMathUI2D(u, n, magN, nHat, w, dist, signedDist, isDegenerate);
+        }
+
+        function updateRightAngleCorner(A, D, D_proj, dist, isDegenerate) {
+            const toD = new THREE.Vector3().subVectors(D, D_proj).normalize();
+            const toA = new THREE.Vector3().subVectors(A, D_proj).normalize();
+            const sqSize = Math.min(0.4, Math.min(dist * 0.35, A.distanceTo(D_proj) * 0.35));
+
+            if (dist > 0.15 && A.distanceTo(D_proj) > 0.15 && !isDegenerate) {
+                const c1 = D_proj.clone().addScaledVector(toA, sqSize);
+                const c2 = c1.clone().addScaledVector(toD, sqSize);
+                const c3 = D_proj.clone().addScaledVector(toD, sqSize);
+                const raPositions = new Float32Array([
+                    c1.x, c1.y, c1.z,  c2.x, c2.y, c2.z,
+                    c2.x, c2.y, c2.z,  c3.x, c3.y, c3.z
+                ]);
+                rightAngleLine.geometry.setAttribute('position', new THREE.BufferAttribute(raPositions, 3));
+                rightAngleLine.visible = true;
+            } else {
+                rightAngleLine.visible = false;
+            }
+        }
+
+        function constructBoundedPlane(A, B, C, D_proj, nHat, isCollinear) {
+            if (isCollinear) {
+                planeMesh.visible = false;
+                planeBorderLine.visible = false;
+                return;
+            }
+            planeMesh.visible = true;
+            planeBorderLine.visible = true;
+
+            let arbitrary = Math.abs(nHat.x) < 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+            const e1 = new THREE.Vector3().crossVectors(nHat, arbitrary).normalize();
+            const e2 = new THREE.Vector3().crossVectors(nHat, e1).normalize();
+
+            const pts = [A, B, C, D_proj];
+            let minU = Infinity, maxU = -Infinity, minV = Infinity, maxV = -Infinity;
+            pts.forEach(p => {
+                const diff = new THREE.Vector3().subVectors(p, A);
+                const uCoord = diff.dot(e1);
+                const vCoord = diff.dot(e2);
+                if (uCoord < minU) minU = uCoord;
+                if (uCoord > maxU) maxU = uCoord;
+                if (vCoord < minV) minV = vCoord;
+                if (vCoord > maxV) maxV = vCoord;
+            });
+
+            const pad = planePaddingFactor;
+            minU -= pad; maxU += pad;
+            minV -= pad; maxV += pad;
+
+            const p00 = A.clone().addScaledVector(e1, minU).addScaledVector(e2, minV);
+            const p10 = A.clone().addScaledVector(e1, maxU).addScaledVector(e2, minV);
+            const p11 = A.clone().addScaledVector(e1, maxU).addScaledVector(e2, maxV);
+            const p01 = A.clone().addScaledVector(e1, minU).addScaledVector(e2, maxV);
+
+            const planeVertices = new Float32Array([
+                p00.x, p00.y, p00.z,  p10.x, p10.y, p10.z,  p11.x, p11.y, p11.z,
+                p00.x, p00.y, p00.z,  p11.x, p11.y, p11.z,  p01.x, p01.y, p01.z
+            ]);
+
+            planeMesh.geometry.dispose();
+            planeMesh.geometry = new THREE.BufferGeometry();
+            planeMesh.geometry.setAttribute('position', new THREE.BufferAttribute(planeVertices, 3));
+            planeMesh.geometry.computeVertexNormals();
+
+            const borderVertices = new Float32Array([
+                p00.x, p00.y, p00.z,  p10.x, p10.y, p10.z,
+                p10.x, p10.y, p10.z,  p11.x, p11.y, p11.z,
+                p11.x, p11.y, p11.z,  p01.x, p01.y, p01.z,
+                p01.x, p01.y, p01.z,  p00.x, p00.y, p00.z
+            ]);
+
+            planeBorderLine.geometry.dispose();
+            planeBorderLine.geometry = new THREE.BufferGeometry();
+            planeBorderLine.geometry.setAttribute('position', new THREE.BufferAttribute(borderVertices, 3));
+        }
+
+        function updateMathUI3D(u, v, n, magN, nHat, w, dist, signedDist, isCollinear) {
+            document.getElementById('val-A').innerText = `(${currentPts.A.x}, ${currentPts.A.y}, ${currentPts.A.z})`;
+            document.getElementById('val-B').innerText = `(${currentPts.B.x}, ${currentPts.B.y}, ${currentPts.B.z})`;
+            document.getElementById('val-C').innerText = `(${currentPts.C.x}, ${currentPts.C.y}, ${currentPts.C.z})`;
+            document.getElementById('val-D').innerText = `(${currentPts.D.x}, ${currentPts.D.y}, ${currentPts.D.z})`;
+            const planeC = n.x * currentPts.A.x + n.y * currentPts.A.y + n.z * currentPts.A.z;
+
+            document.getElementById('box-math-vectors').innerHTML = `
+                u = AB = <span class="math-val">[${u.x}, ${u.y}, ${u.z}]</span><br>
+                v = AC = <span class="math-val">[${v.x}, ${v.y}, ${v.z}]</span><br>
+                Normal n = u &times; v:<br>
+                &nbsp;&nbsp;<span class="math-val">[${n.x}, ${n.y}, ${n.z}]</span> (|n| = ${magN.toFixed(2)})<br>
+                Unit n&#770; = n / |n|:<br>
+                &nbsp;&nbsp;<span class="math-val">[${nHat.x.toFixed(3)}, ${nHat.y.toFixed(3)}, ${nHat.z.toFixed(3)}]</span>
+            `;
+
+            document.getElementById('box-math-dist').innerHTML = `
+                Plane: <span class="math-val">${n.x}x + ${n.y}y + ${n.z}z = ${planeC}</span><br>
+                w = AD = <span class="math-val">[${w.x}, ${w.y}, ${w.z}]</span><br>
+                Distance: d = |AD &bull; n&#770;|<br>
+                d = |<span class="math-val">${signedDist.toFixed(3)}</span>| = <span class="highlight-distance">${dist.toFixed(3)}</span>
+            `;
+        }
+
+        function updateMathUI2D(u, n, magN, nHat, w, dist, signedDist, isDegenerate) {
+            document.getElementById('val-A').innerText = `(${currentPts.A.x}, ${currentPts.A.y})`;
+            document.getElementById('val-B').innerText = `(${currentPts.B.x}, ${currentPts.B.y})`;
+            document.getElementById('val-C').innerText = `[Inactive in 2D]`;
+            document.getElementById('val-D').innerText = `(${currentPts.D.x}, ${currentPts.D.y})`;
+            const lineC = n.x * currentPts.A.x + n.y * currentPts.A.y;
+
+            document.getElementById('box-math-vectors').innerHTML = `
+                Direction u = AB = <span class="math-val">[${u.x}, ${u.y}]</span><br>
+                Normal vector n &perp; u ([-u<sub>y</sub>, u<sub>x</sub>]):<br>
+                &nbsp;&nbsp;<span class="math-val">[${n.x}, ${n.y}]</span> (|n| = ${magN.toFixed(2)})<br>
+                Unit normal n&#770; = n / |n|:<br>
+                &nbsp;&nbsp;<span class="math-val">[${nHat.x.toFixed(3)}, ${nHat.y.toFixed(3)}]</span>
+            `;
+
+            document.getElementById('box-math-dist').innerHTML = `
+                Line Eqn (r &bull; n = c): <span class="math-val">${n.x}x + ${n.y}y = ${lineC}</span><br>
+                w = AD = <span class="math-val">[${w.x}, ${w.y}]</span><br>
+                Distance to Line: d = |AD &bull; n&#770;|<br>
+                d = |<span class="math-val">${signedDist.toFixed(3)}</span>| = <span class="highlight-distance">${dist.toFixed(3)}</span>
+            `;
+        }
+
+        function updateLegendUI() {
+            const list = document.getElementById('legend-list');
+            if (currentMode === '3D') {
+                list.innerHTML = `
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-blue);"></div><span>Point A (Base Vertex in Plane)</span></div>
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-green);"></div><span>Point B, C (Plane Defining Points)</span></div>
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-orange);"></div><span>Point D (Point off Plane)</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:#0284c7;"></div><span>Vector AB, AC in plane</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-purple);"></div><span>Normal Vector n = AB &times; AC</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-yellow);"></div><span>Unit Normal Vector n&#770; (Length = 1)</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-orange);"></div><span>Vector AD from Point A to D</span></div>
+                    <div class="key-item"><div class="key-marker key-dashed"></div><span>Perpendicular Distance d to Plane</span></div>
+                `;
+                document.getElementById('card-C').style.opacity = '1';
+                document.getElementById('row-plane-opacity').style.display = 'flex';
+                document.getElementById('row-plane-size').style.display = 'flex';
+                document.getElementById('lbl-vec-title').innerText = "Vectors on Plane";
+                document.getElementById('lbl-dist-title').innerText = "Perpendicular Distance to Plane";
+            } else {
+                list.innerHTML = `
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-blue);"></div><span>Point A (Base Vertex on Line)</span></div>
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-green);"></div><span>Point B (Line Defining Point)</span></div>
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-orange);"></div><span>Point D (Point off Line)</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:#0284c7;"></div><span>Direction Vector AB along line</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-purple);"></div><span>Normal Vector n &perp; AB</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-yellow);"></div><span>Unit Normal Vector n&#770; (Length = 1)</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-orange);"></div><span>Vector AD from Point A to D</span></div>
+                    <div class="key-item"><div class="key-marker key-dashed"></div><span>Perpendicular Distance d to Line</span></div>
+                `;
+                document.getElementById('card-C').style.opacity = '0.3';
+                document.getElementById('row-plane-opacity').style.display = 'none';
+                document.getElementById('row-plane-size').style.display = 'none';
+                document.getElementById('lbl-vec-title').innerText = "Vectors on 2D Line";
+                document.getElementById('lbl-dist-title').innerText = "Distance to 2D Line";
+            }
+        }
+
+        let cameraAnimating = false;
+        let camStartPos = new THREE.Vector3(), camTargetPos = new THREE.Vector3();
+        let ctrlStartTarget = new THREE.Vector3(), ctrlEndTarget = new THREE.Vector3();
+        let animProgress = 1;
+
+        function setMode(mode) {
+            if (currentMode === mode || cameraAnimating) return;
+            currentMode = mode;
+            document.getElementById('btn-mode-2d').classList.toggle('active', mode === '2D');
+            document.getElementById('btn-mode-3d').classList.toggle('active', mode === '3D');
+
+            camStartPos.copy(camera.position);
+            ctrlStartTarget.copy(controls.target);
+            animProgress = 0;
+            cameraAnimating = true;
+
+            if (mode === '2D') {
+                currentPts = ptData2D;
+                camTargetPos.set(3, 3, 20);
+                ctrlEndTarget.set(3, 3, 0);
+                gridXY.visible = true;
+                groundGrid3D.visible = false;
+                axisZ.group.visible = false;
+                lblZ.visible = false;
+                controls.enableRotate = false;
+                document.getElementById('hint-rot').innerText = "Rotate disabled (2D)";
+                document.getElementById('title-text').innerText = "2D Vector Geometry (Line & Point)";
+                document.getElementById('subtitle-text').innerText = "VCE Specialist Mathematics &bull; Line, Normal Vector & Distance";
+            } else {
+                currentPts = ptData3D;
+                camTargetPos.set(13, 14, 16);
+                ctrlEndTarget.set(1.5, 1.5, 1.5);
+                gridXY.visible = false;
+                groundGrid3D.visible = true;
+                axisZ.group.visible = true;
+                lblZ.visible = true;
+                controls.enableRotate = true;
+                document.getElementById('hint-rot').innerText = "Rotate camera (3D)";
+                document.getElementById('title-text').innerText = "3D Vector Geometry (Plane & Point)";
+                document.getElementById('subtitle-text').innerText = "VCE Specialist Mathematics &bull; Planes, Cross Products & Distance";
+            }
+            updateLegendUI();
+            updateSceneGeometry();
+        }
+
+        document.getElementById('btn-mode-2d').addEventListener('click', () => setMode('2D'));
+        document.getElementById('btn-mode-3d').addEventListener('click', () => setMode('3D'));
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let hoveredMesh = null, draggedMesh = null;
+        const dragPlane = new THREE.Plane();
+        const planeIntersection = new THREE.Vector3();
+
+        function getPointerPos(event) {
+            return {
+                x: (event.clientX / window.innerWidth) * 2 - 1,
+                y: -(event.clientY / window.innerHeight) * 2 + 1
+            };
+        }
+
+        window.addEventListener('pointermove', (e) => {
+            const p = getPointerPos(e);
+            mouse.x = p.x;
+            mouse.y = p.y;
+
+            if (draggedMesh) {
+                raycaster.setFromCamera(mouse, camera);
+                if (raycaster.ray.intersectPlane(dragPlane, planeIntersection)) {
+                    const snappedX = Math.round(planeIntersection.x);
+                    const snappedY = Math.round(planeIntersection.y);
+                    const snappedZ = currentMode === '2D' ? 0 : Math.round(planeIntersection.z);
+                    const clX = Math.max(-8, Math.min(8, snappedX));
+                    const clY = Math.max(-8, Math.min(8, snappedY));
+                    const clZ = currentMode === '2D' ? 0 : Math.max(-8, Math.min(8, snappedZ));
+                    const id = draggedMesh.userData.id;
+                    if (currentPts[id].x !== clX || currentPts[id].y !== clY || currentPts[id].z !== clZ) {
+                        currentPts[id].set(clX, clY, clZ);
+                        updateSceneGeometry();
+                    }
+                }
+                return;
+            }
+
+            raycaster.setFromCamera(mouse, camera);
+            const selectable = currentMode === '2D' 
+                ? pointMeshes.filter(m => m.userData.id !== 'C') 
+                : pointMeshes;
+            const intersects = raycaster.intersectObjects(selectable, true);
+
+            if (intersects.length > 0) {
+                let hit = intersects[0].object;
+                while (hit.parent && !hit.userData.id) hit = hit.parent;
+                if (hit.userData.id) {
+                    if (hoveredMesh !== hit) {
+                        if (hoveredMesh) hoveredMesh.material.emissiveIntensity = 0.35;
+                        hoveredMesh = hit;
+                        hoveredMesh.material.emissiveIntensity = 0.9;
+                        document.body.style.cursor = 'grab';
+                        highlightCard(hoveredMesh.userData.id, true);
+                    }
+                    return;
+                }
+            }
+
+            if (hoveredMesh) {
+                hoveredMesh.material.emissiveIntensity = 0.35;
+                highlightCard(hoveredMesh.userData.id, false);
+                hoveredMesh = null;
+                document.body.style.cursor = 'default';
+            }
+        });
+
+        window.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+            raycaster.setFromCamera(mouse, camera);
+            const selectable = currentMode === '2D' 
+                ? pointMeshes.filter(m => m.userData.id !== 'C') 
+                : pointMeshes;
+            const intersects = raycaster.intersectObjects(selectable, true);
+
+            if (intersects.length > 0) {
+                let hit = intersects[0].object;
+                while (hit.parent && !hit.userData.id) hit = hit.parent;
+                if (hit.userData.id) {
+                    draggedMesh = hit;
+                    controls.enabled = false;
+                    document.body.style.cursor = 'grabbing';
+                    if (currentMode === '2D') {
+                        dragPlane.set(new THREE.Vector3(0, 0, 1), 0);
+                    } else {
+                        const camDir = new THREE.Vector3();
+                        camera.getWorldDirection(camDir);
+                        dragPlane.setFromNormalAndCoplanarPoint(camDir.negate(), draggedMesh.position);
+                    }
+                    highlightCard(draggedMesh.userData.id, true);
+                }
+            }
+        });
+
+        window.addEventListener('pointerup', () => {
+            if (draggedMesh) {
+                highlightCard(draggedMesh.userData.id, false);
+                draggedMesh = null;
+                controls.enabled = true;
+                document.body.style.cursor = hoveredMesh ? 'grab' : 'default';
+            }
+        });
+
+        function highlightCard(id, active) {
+            const card = document.getElementById('card-' + id);
+            if (card) {
+                if (active) card.classList.add('active');
+                else card.classList.remove('active');
+            }
+        }
+
+        document.getElementById('slider-opacity').addEventListener('input', (e) => {
+            planeMaterial.opacity = parseFloat(e.target.value);
+        });
+
+        document.getElementById('slider-planesize').addEventListener('input', (e) => {
+            planePaddingFactor = parseFloat(e.target.value);
+            updateSceneGeometry();
+        });
+
+        document.getElementById('slider-normalscale').addEventListener('input', (e) => {
+            normalDisplayScale = parseFloat(e.target.value);
+            updateSceneGeometry();
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if (currentMode === '3D') {
+                ptData3D.A.set(1, 1, 1);
+                ptData3D.B.set(5, 2, 0);
+                ptData3D.C.set(1, 5, 3);
+                ptData3D.D.set(3, 5, 6);
+                controls.target.set(1.5, 1.5, 1.5);
+            } else {
+                ptData2D.A.set(1, 1, 0);
+                ptData2D.B.set(5, 3, 0);
+                ptData2D.D.set(2, 6, 0);
+                controls.target.set(3, 3, 0);
+            }
+            updateSceneGeometry();
+        });
+
+        document.getElementById('btn-preset').addEventListener('click', () => {
+            if (currentMode === '3D') {
+                ptData3D.A.set(0, 0, 0);
+                ptData3D.B.set(4, 0, 1);
+                ptData3D.C.set(1, 4, 1);
+                ptData3D.D.set(2, 2, 5);
+                controls.target.set(2, 2, 2);
+            } else {
+                ptData2D.A.set(0, 2, 0);
+                ptData2D.B.set(4, 5, 0);
+                ptData2D.D.set(1, 6, 0);
+                controls.target.set(2, 4, 0);
+            }
+            updateSceneGeometry();
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        updateLegendUI();
+        updateSceneGeometry();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (cameraAnimating) {
+                animProgress += 0.04;
+                const t = Math.min(1, animProgress);
+                const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+                camera.position.lerpVectors(camStartPos, camTargetPos, ease);
+                controls.target.lerpVectors(ctrlStartTarget, ctrlEndTarget, ease);
+                if (t >= 1) cameraAnimating = false;
+            }
+            controls.update();
+            const time = performance.now() * 0.003;
+            pointMeshes.forEach(mesh => {
+                if (mesh !== hoveredMesh && mesh !== draggedMesh) {
+                    mesh.material.emissiveIntensity = 0.35 + 0.12 * Math.sin(time + mesh.position.x);
+                }
+            });
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
+  </template>
+
+  <!-- APP 3 TEMPLATE -->
+  <template id="app-sphere">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spherical Geometry Centroid Visualizer</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #050811;
+            color: #c9d1d9;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+        }
+        #canvas-container { flex: 1; height: 100%; position: relative; }
+        #ui-sidebar {
+            width: 440px;
+            height: 100%;
+            background: rgba(13, 19, 33, 0.96);
+            border-left: 1px solid #1f2c47;
+            padding: 24px;
+            overflow-y: auto;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: -6px 0 32px rgba(0,0,0,0.7);
+            z-index: 10;
+        }
+        h1 { font-size: 1.35rem; color: #38bdf8; font-weight: 700; line-height: 1.3; }
+        h2 { font-size: 0.88rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px; }
+        .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; }
+        .city-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; }
+        .city-label { font-size: 0.85rem; display: flex; align-items: center; gap: 8px; width: 130px; font-weight: 500; }
+        .city-dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
+        .slider-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+        input[type="range"] { flex: 1; accent-color: #38bdf8; cursor: pointer; }
+        .weight-val { font-size: 0.8rem; font-family: monospace; width: 32px; text-align: right; color: #f0f6fc; }
+        .result-badge { background: #111e38; border-left: 4px solid #f59e0b; padding: 14px; border-radius: 0 8px 8px 0; display: flex; flex-direction: column; gap: 6px; }
+        .result-title { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; }
+        .result-coords { font-size: 1.35rem; font-weight: 700; color: #f59e0b; font-family: monospace; letter-spacing: 0.02em; }
+        .result-cartesian { font-size: 0.8rem; color: #94a3b8; font-family: monospace; }
+        .data-source-tag { font-size: 0.72rem; color: #10b981; display: flex; align-items: center; gap: 5px; margin-top: 4px; }
+        .legend { font-size: 0.75rem; color: #94a3b8; display: flex; flex-direction: column; gap: 6px; line-height: 1.4; }
+        .instructions { position: absolute; bottom: 20px; left: 20px; background: rgba(15, 23, 42, 0.88); padding: 10px 16px; border-radius: 6px; border: 1px solid #1e293b; font-size: 0.8rem; color: #94a3b8; pointer-events: none; backdrop-filter: blur(6px); }
+        .btn-group { display: flex; gap: 8px; }
+        button { flex: 1; padding: 8px; background: #1e293b; border: 1px solid #334155; color: #cbd5e1; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        button:hover { background: #334155; color: #fff; }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <div class="instructions">
+            🖱️ <b>Left Click + Drag:</b> Rotate Globe &nbsp;|&nbsp; <b>Scroll:</b> Zoom &nbsp;|&nbsp; <b>Right Click:</b> Pan
+        </div>
+    </div>
+    <div id="ui-sidebar">
+        <div>
+            <h1>Spherical Centroid Calculator</h1>
+            <h2>Year 9 Mathematics Extension</h2>
+            <div class="data-source-tag">● Shaded Landmasses &amp; Vector Coastlines Active</div>
+        </div>
+        <div class="card result-badge">
+            <div class="result-title">Projected Surface Centroid</div>
+            <div class="result-coords" id="res-geo">0.00° N, 0.00° E</div>
+            <div class="result-cartesian" id="res-cart">Unit (x, y, z): [0.00, 0.00, 0.00]</div>
+            <div class="result-cartesian" id="res-interior">Interior Depth r: 0.000</div>
+        </div>
+        <div class="card">
+            <div style="font-size:0.85rem; font-weight:600; margin-bottom:12px; color:#f0f6fc;">City Weightings (w_i)</div>
+            <div id="sliders-container"></div>
+            <div class="btn-group" style="margin-top:10px;">
+                <button onclick="resetWeights()">Equal (1.0)</button>
+                <button onclick="focusNorthern()">North Bias</button>
+                <button onclick="focusSydney()">Sydney Bias</button>
+            </div>
+        </div>
+        <div class="card legend">
+            <div><strong style="color:#22c55e;">■ Green Shading:</strong> Semi-Transparent Landmass Continents</div>
+            <div><strong style="color:#1d4ed8;">■ Blue Shading:</strong> Semi-Transparent Water / Oceans</div>
+            <div><strong style="color:#38bdf8;">― Cyan Outlines:</strong> Coastlines &amp; Island Boundaries</div>
+            <div><strong style="color:#2ecc71;">― Green Equator:</strong> Great Circle (φ = 0°)</div>
+            <div><strong style="color:#ef4444;">― Red Meridian:</strong> Prime Meridian (λ = 0°)</div>
+            <div><strong style="color:#f59e0b;">● Gold Marker:</strong> Projected Surface Average Location</div>
+            <div><strong style="color:#ffffff;">● White Marker:</strong> Interior Center of Mass C_int</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        const CITIES = [
+            { name: "London", lat: 51.50, lon: 0.00, color: 0x00d2d3 },
+            { name: "Tokyo", lat: 35.68, lon: 139.77, color: 0xff6b6b },
+            { name: "New York", lat: 40.71, lon: -74.01, color: 0x38bdf8 },
+            { name: "Sydney", lat: -33.87, lon: 151.21, color: 0xa855f7 },
+            { name: "Cairo", lat: 30.04, lon: 31.24, color: 0x10b981 }
+        ];
+
+        let weights = [1.0, 1.0, 1.0, 1.0, 1.0];
+        const SPHERE_RADIUS = 5.0;
+
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050811);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(11, 7, 12);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(15, 20, 15);
+        scene.add(dirLight);
+
+        function geoToVector3(latDeg, lonDeg, radius = SPHERE_RADIUS) {
+            const phi = latDeg * Math.PI / 180;
+            const lam = lonDeg * Math.PI / 180;
+            const x = Math.cos(phi) * Math.cos(lam);
+            const y = Math.cos(phi) * Math.sin(lam);
+            const z = Math.sin(phi);
+            return new THREE.Vector3(radius * x, radius * z, radius * (-y));
+        }
+
+        const DETAILED_LANDMASSES = [
+            [[35.8, -5.8], [35.8, -0.6], [36.8, 3.0], [37.3, 10.2], [37.0, 11.0], [34.0, 10.5], [32.9, 13.2], [30.5, 19.0], [32.1, 20.0], [32.0, 24.0], [31.2, 29.9], [31.3, 32.3], [29.9, 32.5], [28.0, 34.0], [27.2, 33.8], [22.0, 37.0], [19.6, 37.2], [15.6, 39.5], [12.8, 42.8], [11.6, 43.1], [10.4, 45.0], [11.8, 51.2], [10.4, 51.3], [5.0, 48.5], [2.0, 45.3], [-0.4, 42.5], [-4.0, 39.7], [-6.8, 39.3], [-10.5, 40.5], [-15.0, 40.7], [-19.8, 34.8], [-25.9, 32.6], [-29.9, 31.0], [-34.0, 25.6], [-34.8, 20.0], [-34.4, 18.5], [-33.0, 17.9], [-28.6, 16.5], [-26.6, 15.2], [-22.9, 14.5], [-18.4, 12.0], [-12.6, 13.4], [-8.8, 13.2], [-6.0, 12.3], [-4.8, 11.8], [0.4, 9.4], [4.0, 9.7], [4.5, 7.0], [6.4, 3.4], [5.6, -0.2], [4.7, -2.1], [5.3, -4.0], [4.4, -7.7], [6.3, -10.8], [8.5, -13.2], [9.5, -13.7], [11.8, -15.8], [13.5, -16.6], [14.7, -17.5], [16.0, -16.5], [18.1, -16.0], [20.8, -17.0], [23.7, -15.9], [26.1, -14.5], [27.9, -12.9], [30.4, -9.6], [31.5, -9.8], [33.6, -7.6], [35.8, -5.8]],
+            [[36.0, -5.6], [37.0, -9.0], [38.8, -9.5], [41.2, -8.7], [43.4, -8.4], [43.5, -1.6], [48.4, -4.5], [49.5, 0.1], [51.3, 4.3], [52.9, 4.7], [53.9, 8.7], [57.7, 10.6], [54.3, 10.1], [54.4, 18.6], [57.0, 24.0], [59.4, 24.7], [59.9, 30.3], [60.2, 24.9], [65.0, 25.5], [59.3, 18.1], [55.6, 13.0], [58.1, 8.0], [60.4, 5.3], [63.4, 10.4], [67.3, 14.4], [71.2, 25.8], [69.0, 33.5], [64.5, 40.5], [68.0, 44.5], [72.5, 69.0], [73.5, 80.0], [77.7, 104.3], [73.5, 110.0], [73.5, 127.0], [71.5, 150.0], [69.5, 161.0], [69.8, 170.0], [66.5, 179.9], [64.5, 178.0], [56.0, 162.0], [50.9, 156.7], [59.5, 151.0], [53.0, 141.0], [43.1, 131.9], [39.2, 127.4], [35.1, 129.0], [37.5, 126.6], [39.0, 117.7], [36.0, 120.4], [31.2, 121.5], [28.0, 120.7], [24.5, 118.1], [22.3, 114.2], [21.0, 110.4], [16.1, 108.2], [10.5, 107.0], [8.6, 104.8], [13.5, 100.5], [7.2, 100.6], [1.3, 103.8], [5.4, 100.3], [14.1, 98.2], [16.8, 96.2], [22.3, 91.8], [21.8, 89.5], [19.8, 85.8], [13.1, 80.3], [8.1, 77.5], [12.9, 74.8], [18.9, 72.8], [21.5, 72.3], [20.7, 70.9], [24.8, 67.0], [25.1, 62.3], [27.2, 56.3], [29.4, 48.0], [25.3, 51.5], [24.5, 54.4], [22.5, 59.8], [17.0, 54.1], [12.8, 45.0], [14.8, 43.0], [21.5, 39.2], [29.5, 35.0], [31.5, 34.5], [33.9, 35.5], [36.6, 36.2], [36.9, 30.7], [38.4, 27.1], [40.6, 22.9], [37.9, 23.7], [36.4, 22.5], [38.2, 21.7], [40.5, 19.5], [42.6, 18.1], [45.4, 12.3], [43.6, 13.5], [40.1, 18.5], [38.1, 15.6], [40.8, 14.3], [43.5, 10.3], [44.4, 8.9], [43.3, 5.4], [41.4, 2.2], [37.6, -1.0], [36.7, -4.4], [36.0, -5.6]],
+            [[65.6, -168.1], [71.4, -156.8], [69.4, -136.0], [70.0, -124.0], [68.0, -112.0], [70.5, -96.0], [64.0, -83.0], [58.8, -94.2], [52.0, -80.5], [56.0, -76.5], [62.5, -74.0], [59.0, -66.0], [60.5, -64.4], [54.3, -57.5], [49.0, -64.5], [44.6, -63.6], [42.0, -70.0], [40.6, -74.0], [36.9, -76.3], [35.2, -75.5], [32.8, -79.9], [30.3, -81.7], [28.4, -80.6], [25.8, -80.2], [24.5, -81.8], [27.9, -82.5], [29.7, -85.0], [29.2, -89.3], [27.8, -97.4], [26.0, -97.2], [22.2, -97.8], [19.2, -96.1], [19.8, -90.5], [21.3, -89.7], [21.1, -86.8], [18.5, -88.3], [15.9, -86.0], [12.0, -83.7], [9.3, -82.2], [9.4, -79.9], [8.0, -77.5], [7.5, -80.5], [8.4, -83.6], [13.2, -87.7], [16.2, -95.2], [16.8, -99.9], [20.6, -105.3], [25.6, -109.1], [31.8, -114.8], [22.9, -109.9], [27.8, -115.0], [32.7, -117.2], [34.4, -120.5], [37.8, -122.5], [40.4, -124.4], [46.2, -124.0], [48.4, -124.7], [51.0, -128.0], [55.3, -131.6], [59.5, -139.7], [60.5, -147.0], [59.6, -151.4], [55.2, -162.7], [59.0, -158.5], [61.8, -166.0], [65.6, -168.1]],
+            [[8.5, -77.0], [11.0, -74.8], [12.4, -71.7], [10.6, -66.9], [8.6, -60.5], [5.8, -55.2], [4.4, -51.5], [-1.4, -48.5], [-2.5, -44.3], [-3.7, -38.5], [-5.5, -35.2], [-8.0, -34.9], [-13.0, -38.5], [-18.0, -39.6], [-22.9, -43.2], [-24.0, -46.3], [-27.6, -48.5], [-32.1, -52.1], [-34.9, -56.2], [-34.6, -58.4], [-38.0, -57.5], [-38.7, -62.3], [-42.5, -64.0], [-46.0, -67.5], [-49.3, -67.7], [-52.4, -68.4], [-54.8, -68.3], [-55.9, -67.3], [-53.0, -73.5], [-47.0, -75.0], [-41.5, -73.5], [-36.8, -73.1], [-33.0, -71.6], [-23.6, -70.4], [-18.5, -70.3], [-13.8, -76.3], [-12.0, -77.1], [-8.1, -79.0], [-4.7, -81.3], [-2.2, -80.9], [1.0, -79.7], [3.9, -77.1], [8.5, -77.0]],
+            [[-10.7, 142.5], [-14.5, 145.4], [-17.0, 146.0], [-20.0, 148.5], [-25.0, 152.5], [-28.2, 153.6], [-33.0, 151.7], [-34.0, 151.2], [-37.5, 150.0], [-38.8, 146.4], [-38.8, 143.5], [-35.8, 137.0], [-34.0, 135.5], [-32.0, 132.5], [-31.5, 128.0], [-33.5, 124.0], [-34.0, 122.0], [-35.0, 118.0], [-34.4, 115.1], [-32.0, 115.5], [-26.0, 113.2], [-21.8, 114.1], [-19.5, 120.0], [-16.5, 122.9], [-14.0, 127.5], [-12.5, 130.8], [-12.0, 136.8], [-15.8, 136.5], [-17.5, 139.5], [-13.0, 141.7], [-10.7, 142.5]]
+        ];
+
+        function createEarthTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(10, 32, 68, 0.88)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+            ctx.lineWidth = 1;
+            for (let lat = -60; lat <= 60; lat += 30) {
+                const y = ((90 - lat) / 180) * canvas.height;
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+            for (let lon = -150; lon <= 180; lon += 30) {
+                const x = ((lon + 180) / 360) * canvas.width;
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+
+            ctx.fillStyle = 'rgba(34, 197, 94, 0.50)';
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2.0;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            DETAILED_LANDMASSES.forEach(polygon => {
+                if (!polygon || polygon.length < 3) return;
+                ctx.beginPath();
+                polygon.forEach((pt, idx) => {
+                    const x = ((pt[1] + 180) / 360) * canvas.width;
+                    const y = ((90 - pt[0]) / 180) * canvas.height;
+                    if (idx === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            });
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.ClampToEdgeWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            return texture;
+        }
+
+        const earthTexture = createEarthTexture();
+        const sphereGeo = new THREE.SphereGeometry(SPHERE_RADIUS, 64, 64);
+        const sphereMat = new THREE.MeshPhongMaterial({
+            map: earthTexture,
+            transparent: true,
+            opacity: 0.95,
+            shininess: 35,
+            specular: 0x223344
+        });
+        const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+        scene.add(sphereMesh);
+
+        const createGridLines = () => {
+            const gridGroup = new THREE.Group();
+            const eqGeo = new THREE.BufferGeometry();
+            const eqPts = [];
+            for (let i = 0; i <= 64; i++) {
+                const theta = (i / 64) * Math.PI * 2;
+                eqPts.push(new THREE.Vector3((SPHERE_RADIUS + 0.02) * Math.cos(theta), 0, (SPHERE_RADIUS + 0.02) * Math.sin(theta)));
+            }
+            eqGeo.setFromPoints(eqPts);
+            gridGroup.add(new THREE.Line(eqGeo, new THREE.LineBasicMaterial({ color: 0x2ecc71, linewidth: 2 })));
+
+            const pmGeo = new THREE.BufferGeometry();
+            const pmPts = [];
+            for (let i = 0; i <= 64; i++) {
+                const t = (i / 64) * Math.PI * 2;
+                pmPts.push(new THREE.Vector3((SPHERE_RADIUS + 0.02) * Math.cos(t), (SPHERE_RADIUS + 0.02) * Math.sin(t), 0));
+            }
+            pmGeo.setFromPoints(pmPts);
+            gridGroup.add(new THREE.Line(pmGeo, new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 })));
+            return gridGroup;
+        };
+        scene.add(createGridLines());
+
+        CITIES.forEach((city) => {
+            const pos = geoToVector3(city.lat, city.lon, SPHERE_RADIUS + 0.04);
+            const dotGeo = new THREE.SphereGeometry(0.12, 16, 16);
+            const dotMat = new THREE.MeshBasicMaterial({ color: city.color });
+            const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+            dotMesh.position.copy(pos);
+            scene.add(dotMesh);
+
+            const stemGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), pos]);
+            const stemMat = new THREE.LineDashedMaterial({ color: city.color, dashSize: 0.25, gapSize: 0.15, transparent: true, opacity: 0.5 });
+            const stem = new THREE.Line(stemGeo, stemMat);
+            stem.computeLineDistances();
+            scene.add(stem);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 24px -apple-system, sans-serif';
+            ctx.shadowColor = 'black';
+            ctx.shadowBlur = 5;
+            ctx.fillText(city.name, 10, 42);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.position.copy(pos.clone().multiplyScalar(1.09));
+            sprite.scale.set(1.5, 0.38, 1.0);
+            scene.add(sprite);
+        });
+
+        const centroidGeo = new THREE.SphereGeometry(0.2, 24, 24);
+        const centroidMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+        const centroidMesh = new THREE.Mesh(centroidGeo, centroidMat);
+        scene.add(centroidMesh);
+
+        const ringGeo = new THREE.RingGeometry(0.25, 0.35, 32);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, side: THREE.DoubleSide, transparent: true, opacity: 0.75 });
+        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+        scene.add(ringMesh);
+
+        const interiorGeo = new THREE.SphereGeometry(0.09, 16, 16);
+        const interiorMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const interiorMesh = new THREE.Mesh(interiorGeo, interiorMat);
+        scene.add(interiorMesh);
+
+        const projGeo = new THREE.BufferGeometry();
+        const projMat = new THREE.LineBasicMaterial({ color: 0xf59e0b, linewidth: 2 });
+        const projLine = new THREE.Line(projGeo, projMat);
+        scene.add(projLine);
+
+        const slidersContainer = document.getElementById('sliders-container');
+        CITIES.forEach((city, i) => {
+            const row = document.createElement('div');
+            row.className = 'city-row';
+            row.innerHTML = `
+                <div class="city-label">
+                    <span class="city-dot" style="background: #${city.color.toString(16).padStart(6, '0')}; color: #${city.color.toString(16).padStart(6, '0')};"></span>
+                    <span>${city.name}</span>
+                </div>
+                <div class="slider-wrap">
+                    <input type="range" id="slider-${i}" min="0" max="5" step="0.1" value="1.0" oninput="updateWeights(${i}, this.value)">
+                    <span class="weight-val" id="val-${i}">1.0</span>
+                </div>
+            `;
+            slidersContainer.appendChild(row);
+        });
+
+        function updateWeights(index, val) {
+            weights[index] = parseFloat(val);
+            document.getElementById(`val-${index}`).innerText = parseFloat(val).toFixed(1);
+            recalculateCentroid();
+        }
+
+        function resetWeights() {
+            weights = [1.0, 1.0, 1.0, 1.0, 1.0];
+            weights.forEach((w, i) => {
+                document.getElementById(`slider-${i}`).value = w;
+                document.getElementById(`val-${i}`).innerText = w.toFixed(1);
+            });
+            recalculateCentroid();
+        }
+
+        function focusNorthern() {
+            weights = [3.0, 3.0, 3.0, 0.1, 2.0];
+            weights.forEach((w, i) => {
+                document.getElementById(`slider-${i}`).value = w;
+                document.getElementById(`val-${i}`).innerText = w.toFixed(1);
+            });
+            recalculateCentroid();
+        }
+
+        function focusSydney() {
+            weights = [0.1, 0.1, 0.1, 5.0, 0.1];
+            weights.forEach((w, i) => {
+                document.getElementById(`slider-${i}`).value = w;
+                document.getElementById(`val-${i}`).innerText = w.toFixed(1);
+            });
+            recalculateCentroid();
+        }
+
+        function recalculateCentroid() {
+            let sumX = 0, sumY = 0, sumZ = 0, totalWeight = 0;
+            CITIES.forEach((c, i) => {
+                const w = weights[i];
+                const phi = c.lat * Math.PI / 180;
+                const lam = c.lon * Math.PI / 180;
+                sumX += w * Math.cos(phi) * Math.cos(lam);
+                sumY += w * Math.cos(phi) * Math.sin(lam);
+                sumZ += w * Math.sin(phi);
+                totalWeight += w;
+            });
+            if (totalWeight === 0) totalWeight = 0.0001;
+            const xInt = sumX / totalWeight;
+            const yInt = sumY / totalWeight;
+            const zInt = sumZ / totalWeight;
+            const r = Math.sqrt(xInt * xInt + yInt * yInt + zInt * zInt);
+            const xUnit = r > 0.0001 ? xInt / r : 1;
+            const yUnit = r > 0.0001 ? yInt / r : 0;
+            const zUnit = r > 0.0001 ? zInt / r : 0;
+
+            const latAvg = Math.asin(zUnit) * 180 / Math.PI;
+            const lonAvg = Math.atan2(yUnit, xUnit) * 180 / Math.PI;
+
+            interiorMesh.position.copy(new THREE.Vector3(SPHERE_RADIUS * xInt, SPHERE_RADIUS * zInt, SPHERE_RADIUS * (-yInt)));
+            const surfacePos = new THREE.Vector3((SPHERE_RADIUS + 0.06) * xUnit, (SPHERE_RADIUS + 0.06) * zUnit, (SPHERE_RADIUS + 0.06) * (-yUnit));
+            centroidMesh.position.copy(surfacePos);
+            ringMesh.position.copy(surfacePos);
+            ringMesh.lookAt(surfacePos.clone().multiplyScalar(2));
+            projGeo.setFromPoints([new THREE.Vector3(0, 0, 0), surfacePos]);
+
+            document.getElementById('res-geo').innerText = `${Math.abs(latAvg).toFixed(2)}° ${latAvg >= 0 ? 'N' : 'S'}, ${Math.abs(lonAvg).toFixed(2)}° ${lonAvg >= 0 ? 'E' : 'W'}`;
+            document.getElementById('res-cart').innerText = `Unit (x, y, z): [${xUnit.toFixed(3)}, ${yUnit.toFixed(3)}, ${zUnit.toFixed(3)}]`;
+            document.getElementById('res-interior').innerText = `Interior Depth r: ${r.toFixed(3)} (Pull: ${(r * 100).toFixed(1)}% of R)`;
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        let clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            const pulse = 1.0 + 0.18 * Math.sin(time * 4.5);
+            centroidMesh.scale.set(pulse, pulse, pulse);
+            ringMesh.scale.set(pulse * 1.25, pulse * 1.25, 1);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        recalculateCentroid();
+        animate();
+    </script>
+</body>
+</html>
+  </template>
+
+  <!-- APP 4 TEMPLATE -->
+  <template id="app-exp">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VCE Mathematical Methods - Fully Unrestricted 3D Exponential Visualizer</title>
+  <style>
+    :root {
+      --bg-color: #f1f5f9;
+      --panel-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      --g1-color: #2563eb;
+      --g1-light: #dbeafe;
+      --g2-color: #dc2626;
+      --g2-light: #fee2e2;
+      --accent: #4f46e5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); padding: 12px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+    header { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    header h1 { font-size: 1.3rem; font-weight: 700; }
+    header p { font-size: 0.8rem; color: var(--text-muted); }
+    .main-layout { display: grid; grid-template-columns: 350px 1fr; gap: 12px; flex: 1; min-height: 0; }
+    @media (max-width: 950px) {
+      .main-layout { grid-template-columns: 1fr; overflow-y: auto; }
+      body { overflow-y: auto; height: auto; }
+    }
+    .sidebar { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-right: 4px; }
+    .card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card-title { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .graph1-card { border-top: 4px solid var(--g1-color); }
+    .graph2-card { border-top: 4px solid var(--g2-color); }
+    .formula-display { font-family: "Courier New", Courier, monospace; font-size: 0.85rem; font-weight: bold; padding: 5px 8px; border-radius: 5px; margin-bottom: 6px; text-align: center; white-space: nowrap; overflow-x: auto; }
+    .formula1 { background-color: var(--g1-light); color: var(--g1-color); }
+    .formula2 { background-color: var(--g2-light); color: var(--g2-color); }
+    .control-group { margin-bottom: 6px; }
+    .control-label { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 500; margin-bottom: 2px; }
+    input[type="range"] { width: 100%; height: 4px; border-radius: 2px; outline: none; accent-color: var(--accent); cursor: pointer; }
+    .checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; cursor: pointer; }
+    .toggles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.75rem; }
+    .btn-row { display: flex; gap: 5px; }
+    button { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 5px; padding: 4px 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.15s ease; }
+    button:hover { background: #e2e8f0; border-color: #94a3b8; }
+    .btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+    .btn-primary:hover { background: #4338ca; }
+    .canvas-container { background: #090d16; border-radius: 10px; display: flex; flex-direction: column; position: relative; overflow: hidden; flex: 1; min-height: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
+    canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+    canvas:active { cursor: grabbing; }
+    .viewport-overlay { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 10; }
+    .instructions-bar { position: absolute; bottom: 10px; left: 10px; right: 10px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.12); pointer-events: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Infinite 3D Exponential Function Visualizer</h1>
+      <p>Continuous 360° All-Axis Rotation &nbsp;|&nbsp; Core Reference: [−5, 5] × [−20, 20]</p>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <div class="sidebar">
+      <div class="card">
+        <div class="card-title">
+          <span>Camera &amp; Viewport</span>
+          <button class="btn-primary" onclick="resetView()">⟲ Reset &amp; Fit 2D</button>
+        </div>
+        <div class="btn-row" style="margin-top: 4px;">
+          <button style="flex:1;" onclick="setIsoView()">Isometric 3D</button>
+          <button style="flex:1;" onclick="zoomStep(1.2)">Zoom In (+)</button>
+          <button style="flex:1;" onclick="zoomStep(0.8)">Zoom Out (−)</button>
+        </div>
+      </div>
+
+      <div class="card graph1-card">
+        <div class="card-title">
+          <span>Graph 1 (Blue)</span>
+          <label class="checkbox-label">
+            <input type="checkbox" id="g1-enable" checked> Show
+          </label>
+        </div>
+        <div class="formula-display formula1" id="g1-formula">y = 2.00^x</div>
+        <div class="control-group">
+          <div class="control-label"><span>Base (b):</span><span id="g1-base-val">2.0</span></div>
+          <input type="range" id="g1-base" min="0.1" max="5.0" step="0.05" value="2.0">
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Power / Scale (k):</span><span id="g1-power-val">1.0</span></div>
+          <input type="range" id="g1-power" min="-3.0" max="3.0" step="0.1" value="1.0">
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Horizontal Shift (h):</span><span id="g1-hshift-val">0.0</span></div>
+          <input type="range" id="g1-hshift" min="-6.0" max="6.0" step="0.2" value="0.0">
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Vertical Shift (c):</span><span id="g1-shift-val">0.0</span></div>
+          <input type="range" id="g1-shift" min="-25.0" max="25.0" step="0.5" value="0.0">
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="g1-reflect"> Invert Sign (A = -1)
+          </label>
+          <div class="btn-row">
+            <button onclick="setPreset(1, 2, 1, 0, 0, false)">2ˣ</button>
+            <button onclick="setPreset(1, 0.5, 1, 0, 0, false)">(½)ˣ</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card graph2-card">
+        <div class="card-title">
+          <span>Graph 2 (Red)</span>
+          <label class="checkbox-label">
+            <input type="checkbox" id="g2-enable" checked> Show
+          </label>
+        </div>
+        <div class="formula-display formula2" id="g2-formula">y = 3.00^x</div>
+        <div class="control-group">
+          <div class="control-label"><span>Base (b):</span><span id="g2-base-val">3.0</span></div>
+          <input type="range" id="g2-base" min="0.1" max="5.0" step="0.05" value="3.0">
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Power / Scale (k):</span><span id="g2-power-val">1.0</span></div>
+          <input type="range" id="g2-power" min="-3.0" max="3.0" step="0.1" value="1.0">
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Horizontal Shift (h):</span><span id="g2-hshift-val">0.0</span></div>
+          <input type="range" id="g2-hshift" min="-6.0" max="6.0" step="0.2" value="0.0">
+        </div>
+        <div class="control-group">
+          <div class="control-label"><span>Vertical Shift (c):</span><span id="g2-shift-val">0.0</span></div>
+          <input type="range" id="g2-shift" min="-25.0" max="25.0" step="0.5" value="0.0">
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="g2-reflect"> Invert Sign (A = -1)
+          </label>
+          <div class="btn-row">
+            <button onclick="setPreset(2, 3, 1, 0, 0, false)">3ˣ</button>
+            <button onclick="setPreset(2, 2, 1, 0, -4, false)">2ˣ − 4</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Display Options</div>
+        <div class="toggles-grid">
+          <label class="checkbox-label"><input type="checkbox" id="show-asymptotes" checked> Asymptotes</label>
+          <label class="checkbox-label"><input type="checkbox" id="show-intercepts" checked> Key Points</label>
+          <label class="checkbox-label"><input type="checkbox" id="show-intersections" checked> Intersections</label>
+          <label class="checkbox-label"><input type="checkbox" id="show-grid" checked> Grid Lines</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas-container" id="canvas-wrapper">
+      <div class="viewport-overlay">
+        <button onclick="toggleFullScreen()">⛶ Fullscreen</button>
+        <button class="btn-primary" onclick="resetView()">Reset View Angle</button>
+      </div>
+      <canvas id="graphCanvas"></canvas>
+      <div class="instructions-bar">
+        <span id="status-readout">Click &amp; Drag to Rotate Continuously • Scroll to Zoom at Cursor</span>
+        <span id="coord-readout">Domain: [−5, 5] | Range: [−20, 20]</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    const CORE_X_MIN = -5, CORE_X_MAX = 5;
+    const CORE_Y_MIN = -20, CORE_Y_MAX = 20;
+    const FOCAL_LENGTH = 2000;
+
+    let rotX = 0, rotY = 0, panX = 0, panY = 0, zoomScale = 1.0;
+    let baseScaleX = 40, baseScaleY = 10;
+    let isDragging = false, dragMode = 'rotate', startMouseX = 0, startMouseY = 0;
+
+    const g1 = {
+      enable: document.getElementById('g1-enable'),
+      base: document.getElementById('g1-base'),
+      power: document.getElementById('g1-power'),
+      hshift: document.getElementById('g1-hshift'),
+      shift: document.getElementById('g1-shift'),
+      reflect: document.getElementById('g1-reflect'),
+      formula: document.getElementById('g1-formula'),
+      baseVal: document.getElementById('g1-base-val'),
+      powerVal: document.getElementById('g1-power-val'),
+      hshiftVal: document.getElementById('g1-hshift-val'),
+      shiftVal: document.getElementById('g1-shift-val')
+    };
+
+    const g2 = {
+      enable: document.getElementById('g2-enable'),
+      base: document.getElementById('g2-base'),
+      power: document.getElementById('g2-power'),
+      hshift: document.getElementById('g2-hshift'),
+      shift: document.getElementById('g2-shift'),
+      reflect: document.getElementById('g2-reflect'),
+      formula: document.getElementById('g2-formula'),
+      baseVal: document.getElementById('g2-base-val'),
+      powerVal: document.getElementById('g2-power-val'),
+      hshiftVal: document.getElementById('g2-hshift-val'),
+      shiftVal: document.getElementById('g2-shift-val')
+    };
+
+    const displayOpts = {
+      asymptotes: document.getElementById('show-asymptotes'),
+      intercepts: document.getElementById('show-intercepts'),
+      intersections: document.getElementById('show-intersections'),
+      grid: document.getElementById('show-grid')
+    };
+
+    const statusReadout = document.getElementById('status-readout');
+    const coordReadout = document.getElementById('coord-readout');
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+      else if (document.exitFullscreen) document.exitFullscreen();
+    }
+
+    function resetView() {
+      rotX = 0; rotY = 0; zoomScale = 1.0;
+      const rect = canvas.getBoundingClientRect();
+      panX = rect.width / 2; panY = rect.height / 2;
+      const margin = 45;
+      baseScaleX = Math.max(150, rect.width - margin * 2) / (CORE_X_MAX - CORE_X_MIN);
+      baseScaleY = Math.max(150, rect.height - margin * 2) / (CORE_Y_MAX - CORE_Y_MIN);
+      draw();
+    }
+
+    function setIsoView() { rotX = 0.55; rotY = -0.65; draw(); }
+    function zoomStep(factor) {
+      const rect = canvas.getBoundingClientRect();
+      zoomAtPoint(rect.width / 2, rect.height / 2, factor);
+    }
+
+    function zoomAtPoint(cx, cy, factor) {
+      const newScale = zoomScale * factor;
+      if (newScale < 0.0001 || newScale > 50.0) return;
+      panX = cx - (cx - panX) * factor;
+      panY = cy - (cy - panY) * factor;
+      zoomScale = newScale;
+      draw();
+    }
+
+    function handleResize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const oldW = canvas.width / dpr;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      if (oldW === 0 || (Math.abs(panX - oldW / 2) < 4)) {
+        panX = rect.width / 2; panY = rect.height / 2;
+        const margin = 45;
+        baseScaleX = Math.max(150, rect.width - margin * 2) / (CORE_X_MAX - CORE_X_MIN);
+        baseScaleY = Math.max(150, rect.height - margin * 2) / (CORE_Y_MAX - CORE_Y_MIN);
+      }
+      draw();
+    }
+    window.addEventListener('resize', handleResize);
+
+    function project3D(mathX, mathY, mathZ = 0) {
+      const Xm = mathX * baseScaleX, Ym = mathY * baseScaleY, Zm = mathZ;
+      const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+      const x1 = Xm * cosY + Zm * sinY;
+      const z1 = -Xm * sinY + Zm * cosY;
+      const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+      const y2 = Ym * cosX - z1 * sinX;
+      const z2 = Ym * sinX + z1 * cosX;
+      const depth = Math.max(100, FOCAL_LENGTH - z2);
+      const persp = (FOCAL_LENGTH / depth) * zoomScale;
+      return { x: panX + x1 * persp, y: panY - y2 * persp, depth: z2 };
+    }
+
+    function evaluateExp(x, base, power, hShift, vShift, reflect) {
+      return (reflect ? -1 : 1) * Math.pow(base, power * (x - hShift)) + vShift;
+    }
+
+    function formatFormula(base, power, hShift, vShift, reflect) {
+      let str = "y = " + (reflect ? "-" : "") + `(${parseFloat(base).toFixed(2)})`;
+      const p = parseFloat(power), h = parseFloat(hShift);
+      let exp = h === 0 ? (p === 1 ? "x" : (p === -1 ? "-x" : `${p.toFixed(1)}x`))
+                        : (p === 1 ? `(x - ${h.toFixed(1)})` : `${p.toFixed(1)}(x - ${h.toFixed(1)})`);
+      str += `^[${exp}]`;
+      const v = parseFloat(vShift);
+      if (v > 0) str += ` + ${v.toFixed(1)}`;
+      else if (v < 0) str += ` - ${Math.abs(v).toFixed(1)}`;
+      return str;
+    }
+
+    function setPreset(graphNum, base, power, hShift, vShift, reflect) {
+      const target = graphNum === 1 ? g1 : g2;
+      target.base.value = base; target.power.value = power;
+      target.hshift.value = hShift; target.shift.value = vShift;
+      target.reflect.checked = reflect;
+      updateControls();
+    }
+
+    function updateControls() {
+      g1.baseVal.innerText = parseFloat(g1.base.value).toFixed(2);
+      g1.powerVal.innerText = parseFloat(g1.power.value).toFixed(1);
+      g1.hshiftVal.innerText = parseFloat(g1.hshift.value).toFixed(1);
+      g1.shiftVal.innerText = parseFloat(g1.shift.value).toFixed(1);
+      g1.formula.innerText = formatFormula(g1.base.value, g1.power.value, g1.hshift.value, g1.shift.value, g1.reflect.checked);
+
+      g2.baseVal.innerText = parseFloat(g2.base.value).toFixed(2);
+      g2.powerVal.innerText = parseFloat(g2.power.value).toFixed(1);
+      g2.hshiftVal.innerText = parseFloat(g2.hshift.value).toFixed(1);
+      g2.shiftVal.innerText = parseFloat(g2.shift.value).toFixed(1);
+      g2.formula.innerText = formatFormula(g2.base.value, g2.power.value, g2.hshift.value, g2.shift.value, g2.reflect.checked);
+      draw();
+    }
+
+    [g1, g2].forEach(g => {
+      g.base.addEventListener('input', updateControls);
+      g.power.addEventListener('input', updateControls);
+      g.hshift.addEventListener('input', updateControls);
+      g.shift.addEventListener('input', updateControls);
+      g.reflect.addEventListener('change', updateControls);
+      g.enable.addEventListener('change', updateControls);
+    });
+
+    Object.values(displayOpts).forEach(opt => opt.addEventListener('change', draw));
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startMouseX = e.clientX; startMouseY = e.clientY;
+      dragMode = (e.button === 2 || e.shiftKey) ? 'pan' : 'rotate';
+    });
+
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startMouseX, dy = e.clientY - startMouseY;
+      startMouseX = e.clientX; startMouseY = e.clientY;
+      if (dragMode === 'rotate') {
+        rotY += dx * 0.008; rotX += dy * 0.008;
+        const degX = Math.round(((rotX * 180 / Math.PI) % 360 + 360) % 360);
+        const degY = Math.round(((rotY * 180 / Math.PI) % 360 + 360) % 360);
+        statusReadout.innerText = `Pitch (X): ${degX}° | Yaw (Y): ${degY}°`;
+      } else {
+        panX += dx; panY += dy;
+      }
+      draw();
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      zoomAtPoint(e.clientX - rect.left, e.clientY - rect.top, e.deltaY < 0 ? 1.12 : 0.89);
+    }, { passive: false });
+
+    function getAdaptiveStep(rangeSpan, targetTicks = 10) {
+      const raw = rangeSpan / targetTicks;
+      const p = Math.pow(10, Math.floor(Math.log10(raw)));
+      const n = raw / p;
+      if (n < 1.5) return 1 * p;
+      if (n < 3.5) return 2 * p;
+      if (n < 7.5) return 5 * p;
+      return 10 * p;
+    }
+
+    function draw() {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width, height = rect.height;
+      ctx.clearRect(0, 0, width, height);
+
+      const visibleSpanX = (width / (baseScaleX * zoomScale));
+      const visibleSpanY = (height / (baseScaleY * zoomScale));
+      const overscanFactor = 4.0;
+      const extX = Math.max(CORE_X_MAX, visibleSpanX * overscanFactor);
+      const extY = Math.max(CORE_Y_MAX, visibleSpanY * overscanFactor);
+
+      coordReadout.innerText = `Zoom: ${(zoomScale * 100).toFixed(0)}% | Range: [−${extX.toFixed(0)}, ${extX.toFixed(0)}] × [−${extY.toFixed(0)}, ${extY.toFixed(0)}]`;
+
+      const pTL_inf = project3D(-extX, extY), pTR_inf = project3D(extX, extY);
+      const pBR_inf = project3D(extX, -extY), pBL_inf = project3D(-extX, -extY);
+      ctx.beginPath();
+      ctx.moveTo(pTL_inf.x, pTL_inf.y); ctx.lineTo(pTR_inf.x, pTR_inf.y);
+      ctx.lineTo(pBR_inf.x, pBR_inf.y); ctx.lineTo(pBL_inf.x, pBL_inf.y);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+      ctx.fill();
+
+      const pTL_core = project3D(CORE_X_MIN, CORE_Y_MAX), pTR_core = project3D(CORE_X_MAX, CORE_Y_MAX);
+      const pBR_core = project3D(CORE_X_MAX, CORE_Y_MIN), pBL_core = project3D(CORE_X_MIN, CORE_Y_MIN);
+      ctx.beginPath();
+      ctx.moveTo(pTL_core.x, pTL_core.y); ctx.lineTo(pTR_core.x, pTR_core.y);
+      ctx.lineTo(pBR_core.x, pBR_core.y); ctx.lineTo(pBL_core.x, pBL_core.y);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
+      ctx.fill();
+      ctx.setLineDash([6, 6]);
+      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = "rgba(99, 102, 241, 0.85)";
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (displayOpts.grid.checked) {
+        const stepX = getAdaptiveStep(extX * 2, 12);
+        const stepY = getAdaptiveStep(extY * 2, 12);
+        ctx.lineWidth = 0.8;
+        for (let x = -extX; x <= extX; x += stepX) {
+          ctx.strokeStyle = Math.abs(x) <= CORE_X_MAX ? "rgba(255, 255, 255, 0.20)" : "rgba(255, 255, 255, 0.07)";
+          const p1 = project3D(x, -extY), p2 = project3D(x, extY);
+          ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        }
+        for (let y = -extY; y <= extY; y += stepY) {
+          ctx.strokeStyle = Math.abs(y) <= CORE_Y_MAX ? "rgba(255, 255, 255, 0.20)" : "rgba(255, 255, 255, 0.07)";
+          const p1 = project3D(-extX, y), p2 = project3D(extX, y);
+          ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        }
+      }
+
+      ctx.lineWidth = 2.0; ctx.strokeStyle = "#f8fafc"; ctx.fillStyle = "#cbd5e1"; ctx.font = "bold 10px monospace";
+      const xAxisStart = project3D(-extX, 0), xAxisEnd = project3D(extX + 0.5, 0);
+      ctx.beginPath(); ctx.moveTo(xAxisStart.x, xAxisStart.y); ctx.lineTo(xAxisEnd.x, xAxisEnd.y); ctx.stroke();
+      ctx.fillText("x", xAxisEnd.x + 5, xAxisEnd.y);
+
+      const yAxisStart = project3D(0, -extY), yAxisEnd = project3D(0, extY + 1.0);
+      ctx.beginPath(); ctx.moveTo(yAxisStart.x, yAxisStart.y); ctx.lineTo(yAxisEnd.x, yAxisEnd.y); ctx.stroke();
+      ctx.fillText("y", yAxisEnd.x - 4, yAxisEnd.y - 8);
+
+      const stepXTick = getAdaptiveStep(extX * 2, 10);
+      for (let x = -extX; x <= extX; x += stepXTick) {
+        if (Math.abs(x) > 0.001) {
+          const pt = project3D(x, 0);
+          ctx.fillText(Number(x.toFixed(1)), pt.x - 6, pt.y + 12);
+        }
+      }
+      const stepYTick = getAdaptiveStep(extY * 2, 10);
+      for (let y = -extY; y <= extY; y += stepYTick) {
+        if (Math.abs(y) > 0.001) {
+          const pt = project3D(0, y);
+          ctx.fillText(Number(y.toFixed(1)), pt.x - 22, pt.y + 3);
+        }
+      }
+
+      if (displayOpts.asymptotes.checked) {
+        ctx.setLineDash([6, 6]); ctx.lineWidth = 1.6;
+        if (g1.enable.checked) {
+          const s1 = parseFloat(g1.shift.value);
+          const p1 = project3D(-extX, s1), p2 = project3D(extX, s1);
+          ctx.strokeStyle = "rgba(59, 130, 246, 0.9)";
+          ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        }
+        if (g2.enable.checked) {
+          const s2 = parseFloat(g2.shift.value);
+          const p1 = project3D(-extX, s2), p2 = project3D(extX, s2);
+          ctx.strokeStyle = "rgba(239, 68, 68, 0.9)";
+          ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        }
+        ctx.setLineDash([]);
+      }
+
+      function renderCurve3D(base, power, hShift, vShift, reflect, color) {
+        ctx.beginPath(); ctx.lineWidth = 2.8; ctx.strokeStyle = color;
+        let started = false;
+        const curveStep = Math.max(0.015, extX / 500);
+        for (let x = -extX; x <= extX; x += curveStep) {
+          if (power * (x - hShift) * Math.log(base) > 16) { started = false; continue; }
+          const y = evaluateExp(x, base, power, hShift, vShift, reflect);
+          if (y >= -extY - 5 && y <= extY + 5) {
+            const pt = project3D(x, y);
+            if (!started) { ctx.moveTo(pt.x, pt.y); started = true; }
+            else ctx.lineTo(pt.x, pt.y);
+          } else started = false;
+        }
+        ctx.stroke();
+      }
+
+      if (g1.enable.checked) renderCurve3D(parseFloat(g1.base.value), parseFloat(g1.power.value), parseFloat(g1.hshift.value), parseFloat(g1.shift.value), g1.reflect.checked, "#3b82f6");
+      if (g2.enable.checked) renderCurve3D(parseFloat(g2.base.value), parseFloat(g2.power.value), parseFloat(g2.hshift.value), parseFloat(g2.shift.value), g2.reflect.checked, "#ef4444");
+
+      if (displayOpts.intercepts.checked) {
+        function drawKeyPoint3D(x, y, label, color) {
+          if (y >= -extY && y <= extY && x >= -extX && x <= extX) {
+            const pt = project3D(x, y);
+            ctx.fillStyle = color;
+            ctx.beginPath(); ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.fillStyle = "#f8fafc"; ctx.font = "bold 10px monospace";
+            ctx.fillText(label, pt.x + 8, pt.y - 4);
+          }
+        }
+        if (g1.enable.checked) {
+          const b1 = parseFloat(g1.base.value), k1 = parseFloat(g1.power.value), h1 = parseFloat(g1.hshift.value), c1 = parseFloat(g1.shift.value), r1 = g1.reflect.checked;
+          const yInt = evaluateExp(0, b1, k1, h1, c1, r1);
+          drawKeyPoint3D(0, yInt, `(0, ${yInt.toFixed(1)})`, "#3b82f6");
+        }
+        if (g2.enable.checked) {
+          const b2 = parseFloat(g2.base.value), k2 = parseFloat(g2.power.value), h2 = parseFloat(g2.hshift.value), c2 = parseFloat(g2.shift.value), r2 = g2.reflect.checked;
+          const yInt = evaluateExp(0, b2, k2, h2, c2, r2);
+          drawKeyPoint3D(0, yInt, `(0, ${yInt.toFixed(1)})`, "#ef4444");
+        }
+      }
+
+      drawOrientationGizmo(width - 45, height - 45);
+    }
+
+    function drawOrientationGizmo(ox, oy) {
+      const len = 24, cosY = Math.cos(rotY), sinY = Math.sin(rotY), cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+      function projectVec(vx, vy, vz) {
+        const x1 = vx * cosY + vz * sinY;
+        const z1 = -vx * sinY + vz * cosY;
+        const y2 = vy * cosX - z1 * sinX;
+        return { x: ox + x1, y: oy - y2 };
+      }
+      const pX = projectVec(len, 0, 0), pY = projectVec(0, len, 0), pZ = projectVec(0, 0, len);
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = "#ef4444"; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(pX.x, pX.y); ctx.stroke();
+      ctx.strokeStyle = "#22c55e"; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(pY.x, pY.y); ctx.stroke();
+      ctx.strokeStyle = "#38bdf8"; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(pZ.x, pZ.y); ctx.stroke();
+    }
+
+    updateControls();
+    handleResize();
+    resetView();
+  </script>
+</body>
+</html>
+  </template>
+
+  <!-- CONTAINER LOGIC & APPLICATION CONTROLLER -->
+  <script>
+    let activeApp = null;
+    const iframe = document.getElementById('app-frame');
+    const dashboardView = document.getElementById('dashboard-view');
+    const navButtons = document.querySelectorAll('.nav-btn');
+
+    function showDashboard() {
+      activeApp = null;
+      dashboardView.classList.remove('hidden');
+      iframe.srcdoc = "";
+      updateNavHighlight(null);
+    }
+
+    function launchApp(appId) {
+      activeApp = appId;
+      const tpl = document.getElementById(`app-${appId}`);
+      if (!tpl) return;
+
+      dashboardView.classList.add('hidden');
+      updateNavHighlight(appId);
+
+      // Feed template source directly into iframe srcdoc
+      iframe.srcdoc = tpl.innerHTML;
+    }
+
+    function updateNavHighlight(appId) {
+      navButtons.forEach(btn => {
+        if (!appId && btn.id === 'nav-dash') {
+          btn.classList.add('active');
+        } else if (btn.getAttribute('data-app') === appId) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function reloadCurrentApp() {
+      if (activeApp) {
+        launchApp(activeApp);
+      } else {
+        window.location.reload();
+      }
+    }
+
+    function popoutApp() {
+      if (!activeApp) return;
+      const tpl = document.getElementById(`app-${activeApp}`);
+      if (!tpl) return;
+
+      const blob = new Blob([tpl.innerHTML], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Keyboard Shortcuts (1-4 to launch apps, Esc for Dashboard)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') showDashboard();
+      if (e.key === '1') launchApp('trig');
+      if (e.key === '2') launchApp('vector');
+      if (e.key === '3') launchApp('sphere');
+      if (e.key === '4') launchApp('exp');
+    });
+  </script>
+</body>
+</html>
