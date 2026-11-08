@@ -75,19 +75,19 @@
       z-index: 100;
     }
 
-    /* Calculator Chassis - Extended length by an extra key-row height to prevent overflow */
+    /* Calculator Chassis */
     .calc-container {
       position: absolute;
       top: 0;
       left: 0;
       width: 440px;
-      height: 1030px; /* Extended to fully contain lower keys with generous bottom margin */
+      height: 1030px;
       transform-origin: top left;
       background: var(--chassis-grad);
       border-radius: 36px 36px 42px 42px;
       box-shadow: 0 18px 46px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.22), inset 0 -4px 6px rgba(0,0,0,0.5);
       border: 3px solid var(--chassis-border);
-      padding: 14px 18px 36px 18px; /* 36px bottom clearance matches side borders plus extra safety buffer */
+      padding: 14px 18px 36px 18px;
       display: flex;
       flex-direction: column;
       transition: background 0.25s ease;
@@ -259,7 +259,7 @@
       font-size: 13px;
       cursor: pointer;
       border-radius: 3px;
-      padding: 1px 4px;
+      padding: 2px 4px;
       transition: background 0.1s ease;
     }
     .hist-item:hover {
@@ -272,17 +272,20 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 2px;
+      gap: 1px;
     }
     .hist-item .hist-res {
       font-weight: 900;
       text-align: right;
       font-size: 14.5px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
     }
 
     /* Active Working Area */
     .lcd-active-area {
-      height: 84px;
+      min-height: 98px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
@@ -293,7 +296,7 @@
     .lcd-line1 {
       font-size: 17px;
       line-height: 22px;
-      min-height: 38px;
+      min-height: 48px;
       word-break: break-all;
       white-space: pre-wrap;
       font-weight: 700;
@@ -301,61 +304,85 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
+      overflow-x: auto;
     }
 
     .lcd-line2 {
-      font-size: 22px;
+      font-size: 21px;
       font-weight: 900;
       text-align: right;
       letter-spacing: 1px;
-      min-height: 26px;
+      min-height: 36px;
       white-space: nowrap;
       overflow: hidden;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: flex-end;
     }
 
-    /* Natural Display Authentic Vinculum Fraction */
-    .vinculum-frac {
+    /* Natural-V.P.A.M. Stacked Fractions & Blank Rectangle Templates */
+    .math-frac {
       display: inline-flex;
       flex-direction: column;
+      align-items: center;
       vertical-align: middle;
-      text-align: center;
-      margin: 0 3px;
-      font-size: 0.85em;
-      line-height: 1.1;
+      margin: 1px 3px;
+      font-size: 0.88em;
+      line-height: 1.05;
     }
-    .v-num, .v-den {
+    .math-mixed {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      margin: 1px 3px;
+      gap: 2px;
+    }
+    .math-whole {
+      display: inline-flex;
+      align-items: center;
+    }
+    .math-num, .math-den {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1px 3px;
+      min-height: 16px;
       min-width: 14px;
-      min-height: 15px;
-      padding: 0 3px;
-      display: inline-block;
-      border-radius: 2px;
     }
-    .v-bar {
-      border-top: 2px solid currentColor;
+    .math-bar {
       width: 100%;
+      min-width: 14px;
+      border-top: 2px solid currentColor;
       margin: 1px 0;
     }
-    .v-box-active {
-      outline: 1px dashed currentColor;
-      background: rgba(128,128,128,0.2);
+    /* Blank Rectangle Template (□ and ■) */
+    .slot-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 12px;
+      height: 14px;
+      border: 1.6px solid currentColor;
+      margin: 1px;
+      vertical-align: middle;
+    }
+    .slot-box.filled {
+      background: currentColor;
     }
 
     .cursor {
       display: inline-block;
-      width: 8px;
+      width: 2.5px;
       height: 16px;
       background: currentColor;
-      vertical-align: text-bottom;
-      animation: blink 0.9s steps(2, start) infinite;
-      margin-left: 1px;
+      vertical-align: middle;
+      animation: blink 0.85s steps(2, start) infinite;
+      margin: 0 1px;
     }
     .cursor.overwrite {
       width: 10px;
       height: 3px;
-      margin-bottom: 2px;
+      vertical-align: baseline;
     }
 
     @keyframes blink {
@@ -697,13 +724,13 @@
         </div>
 
         <!-- 3X Height Screen: History Tape -->
-        <div class="lcd-history-tape" id="historyTape" title="Click any item to copy expression">
+        <div class="lcd-history-tape" id="historyTape" title="Click any item to recall 2D expression">
           <!-- Populated by engine -->
         </div>
 
         <!-- Active Input & Result Area -->
         <div class="lcd-active-area">
-          <div class="lcd-line1" id="line1">0<span class="cursor"></span></div>
+          <div class="lcd-line1" id="line1"><span class="cursor"></span></div>
           <div class="lcd-line2" id="line2"></div>
         </div>
 
@@ -751,7 +778,7 @@
       <div class="function-grid">
         <!-- Row 1 -->
         <div class="key-cell">
-          <div class="key-labels"><span class="label-shift">■/□</span><span></span></div>
+          <div class="key-labels"><span class="label-shift">□■/□</span><span></span></div>
           <button class="calc-btn btn-fun" id="k-frac">■/□</button>
         </div>
         <div class="key-cell">
@@ -819,7 +846,7 @@
           <button class="calc-btn btn-fun" id="k-rpar">)</button>
         </div>
         <div class="key-cell">
-          <div class="key-labels"><span class="label-shift">a b/c</span><span class="label-alpha">Y</span></div>
+          <div class="key-labels"><span class="label-shift">a b/c↔d/c</span><span class="label-alpha">Y</span></div>
           <button class="calc-btn btn-fun" id="k-sd">S<=>D</button>
         </div>
         <div class="key-cell">
@@ -828,7 +855,7 @@
         </div>
       </div>
 
-      <!-- Main Grid (4 Rows x 5 Columns) - Every cell uniformly aligned -->
+      <!-- Main Grid (4 Rows x 5 Columns) -->
       <div class="main-grid">
         <!-- Row 1: 7, 8, 9, DEL, AC -->
         <div class="key-cell">
@@ -936,7 +963,7 @@
 </div>
 
 <div class="screen-tip">
-  💡 <strong>Pro Tips:</strong> Right-click <strong>Screen</strong> for 12 Background & 12 Text Colors • Right-click <strong>Keys</strong> or <strong>Chassis</strong> for Themes • Top-Right for <strong>Auto-Fit Pop-Out Screen</strong>
+  💡 <strong>Pro Tips:</strong> Press <strong>■/□</strong> repeatedly for stacked fractions • Use <strong>▲/▼/◀/▶</strong> to navigate boxes &amp; replay in 2D • Right-click <strong>Screen</strong>, <strong>Keys</strong>, or <strong>Chassis</strong> for 12-Color Palettes
 </div>
 
 <script>
@@ -945,7 +972,7 @@
   const resizer = document.getElementById('resizer');
   const chassis = document.getElementById('calcChassis');
   const BASE_WIDTH = 440;
-  const BASE_HEIGHT = 1030; // Matches extended chassis length
+  const BASE_HEIGHT = 1030;
 
   function handleResize() {
     const w = resizer.clientWidth - 12;
@@ -1048,7 +1075,7 @@
     }
   ];
 
-  // 12 Selectable LCD Background Colors (including plain white and plain black)
+  // 12 Selectable LCD Background Colors
   const lcdBgColors = [
     { name: "Pale Green (LCD)", hex: "#98ad95", id: "pale_green" },
     { name: "Plain White", hex: "#ffffff", id: "white" },
@@ -1064,7 +1091,7 @@
     { name: "Forest Night", hex: "#064e3b", id: "forest" }
   ];
 
-  // 12 Selectable LCD Text Colors (including plain white and plain black)
+  // 12 Selectable LCD Text Colors
   const lcdTextColors = [
     { name: "Inky Black", hex: "#1f271e", id: "black" },
     { name: "Crisp White", hex: "#ffffff", id: "white" },
@@ -1080,7 +1107,7 @@
     { name: "Silver Gray", hex: "#cbd5e1", id: "forest" }
   ];
 
-  // Active Theme Variable Registry for Seamless Cross-Window Synchronization
+  // Active Theme Variable Registry
   const currentTheme = {
     chassisGrad: "linear-gradient(175deg, #33383f 0%, #202428 55%, #181b1e 100%)",
     chassisBorder: "#141618",
@@ -1099,7 +1126,7 @@
   let popoutScreenWin = null;
   let popoutKeypadWin = null;
 
-  // Propagates all colors and gradients to main document and active pop-out windows
+  // Propagates all colors and gradients to main document AND active pop-out windows
   function syncAllThemes() {
     const applyToDoc = (doc) => {
       if (!doc || !doc.documentElement) return;
@@ -1114,6 +1141,13 @@
       root.style.setProperty('--key-fun-text', currentTheme.keyFunText);
       root.style.setProperty('--key-del-grad', currentTheme.keyDelGrad);
       root.style.setProperty('--key-del-text', currentTheme.keyDelText);
+
+      // Explicitly update pop-out keyboard chassis wrapper if present
+      const popKp = doc.getElementById('popKeypadChassis');
+      if (popKp) {
+        popKp.style.background = currentTheme.chassisGrad;
+        popKp.style.borderColor = currentTheme.chassisBorder;
+      }
     };
 
     applyToDoc(document);
@@ -1169,7 +1203,6 @@
       lcdBgColors.forEach(item => {
         const btn = document.createElement('button');
         btn.className = 'palette-btn';
-        // Exclude identical color to prevent invisible text
         const isExcluded = (item.id === currentTheme.lcdTextId) || (item.hex.toLowerCase() === currentTheme.lcdTextHex.toLowerCase());
         btn.disabled = isExcluded;
         btn.title = isExcluded ? "Excluded to prevent invisible text" : item.name;
@@ -1187,7 +1220,6 @@
       lcdTextColors.forEach(item => {
         const btn = document.createElement('button');
         btn.className = 'palette-btn';
-        // Exclude identical color to prevent invisible text
         const isExcluded = (item.id === currentTheme.lcdBgId) || (item.hex.toLowerCase() === currentTheme.lcdBgHex.toLowerCase());
         btn.disabled = isExcluded;
         btn.title = isExcluded ? "Excluded to prevent invisible text" : item.name;
@@ -1248,7 +1280,7 @@
     ctxMenu.style.top = `${Math.max(10, posY)}px`;
   }
 
-  // Intercept Right Clicks
+  // Intercept Right Clicks on Main Window
   window.addEventListener('contextmenu', (e) => {
     const isScreen = e.target.closest('#lcdBezelContainer');
     const isButton = e.target.closest('.calc-btn, .dpad-btn');
@@ -1266,7 +1298,16 @@
     }
   });
 
-  // State Management with Natural Display Fraction Template Engine
+  // =========================================================
+  // RECURSIVE 2D MATH TREE ENGINE (NATURAL-V.P.A.M.)
+  // =========================================================
+  // Each container is an Array of nodes.
+  // A node is either:
+  //   - string token (e.g. '2', '+', 'sin(', 'π')
+  //   - { type: 'frac', num: [...], den: [...] }
+  //   - { type: 'mixed', whole: [...], num: [...], den: [...] }
+
+  const initialRoot = [];
   const state = {
     power: true,
     mode: 'COMP',
@@ -1277,7 +1318,7 @@
     showFreq: false,
     statEditing: false,
 
-    displayFormat: 'MthIO-LineO',
+    displayFormat: 'MthIO-MathO', // Default to Natural MathO so fractions show naturally
     angleUnit: 'Deg',
     numFormat: 'Norm',
     fixVal: 3,
@@ -1296,23 +1337,140 @@
     independentM: 0,
     vars: { A:0, B:0, C:0, D:0, E:0, F:0, X:0, Y:0, M:0 },
 
-    // Tokenized calculation buffer
-    // Supports text strings and active natural fraction objects: { type:'frac', num:'', den:'', activePart:'num' }
-    tokens: [''],
-    activeTokenIndex: 0,
-    cursorPos: 0,
+    rootList: initialRoot,
+    cursorList: initialRoot,
+    cursorIndex: 0,
+    resultDisplayed: false, // True right after '=' is pressed
 
-    calcHistory: [],
+    calcHistory: [], // Stores { tree, result }
     histIndex: -1,
     multiStatements: [],
     multiIndex: 0,
     lastResult: null,
     engOffset: 0,
     factoredForm: null,
-    sdToggleState: 0,
+    sdToggleState: 0, // 0: default, 1: decimal, 2: improper frac, 3: mixed frac
 
     activeMenu: null
   };
+
+  function cloneTree(list) {
+    return list.map(node => {
+      if (typeof node === 'string') return node;
+      if (node.type === 'frac') {
+        return { type: 'frac', num: cloneTree(node.num), den: cloneTree(node.den) };
+      }
+      if (node.type === 'mixed') {
+        return { type: 'mixed', whole: cloneTree(node.whole), num: cloneTree(node.num), den: cloneTree(node.den) };
+      }
+      return node;
+    });
+  }
+
+  // Finds parent metadata for any sublist in the 2D expression tree
+  function findParentInfo(targetList, currentList = state.rootList) {
+    for (let i = 0; i < currentList.length; i++) {
+      const node = currentList[i];
+      if (node && typeof node === 'object') {
+        if (node.type === 'frac') {
+          if (node.num === targetList) return { parentList: currentList, parentIndex: i, node, part: 'num' };
+          if (node.den === targetList) return { parentList: currentList, parentIndex: i, node, part: 'den' };
+          const resNum = findParentInfo(targetList, node.num);
+          if (resNum) return resNum;
+          const resDen = findParentInfo(targetList, node.den);
+          if (resDen) return resDen;
+        } else if (node.type === 'mixed') {
+          if (node.whole === targetList) return { parentList: currentList, parentIndex: i, node, part: 'whole' };
+          if (node.num === targetList) return { parentList: currentList, parentIndex: i, node, part: 'num' };
+          if (node.den === targetList) return { parentList: currentList, parentIndex: i, node, part: 'den' };
+          const resW = findParentInfo(targetList, node.whole);
+          if (resW) return resW;
+          const resN = findParentInfo(targetList, node.num);
+          if (resN) return resN;
+          const resD = findParentInfo(targetList, node.den);
+          if (resD) return resD;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Serializes 2D tree into mathematical string for evaluation
+  function treeToMathString(list = state.rootList) {
+    let out = '';
+    for (let i = 0; i < list.length; i++) {
+      const node = list[i];
+      if (typeof node === 'string') {
+        out += node;
+      } else if (node.type === 'frac') {
+        const n = treeToMathString(node.num).trim() || '0';
+        const d = treeToMathString(node.den).trim() || '1';
+        // Check if preceded by a number or fraction (implicit multiplication, manual p.16)
+        const prev = i > 0 ? list[i - 1] : null;
+        const multPrefix = (prev && (typeof prev === 'object' || /[\d)πeA-FX-YM]$/.test(prev))) ? '*' : '';
+        out += `${multPrefix}((${n})/(${d}))`;
+      } else if (node.type === 'mixed') {
+        const w = treeToMathString(node.whole).trim() || '0';
+        const n = treeToMathString(node.num).trim() || '0';
+        const d = treeToMathString(node.den).trim() || '1';
+        const prev = i > 0 ? list[i - 1] : null;
+        const multPrefix = (prev && (typeof prev === 'object' || /[\d)πeA-FX-YM]$/.test(prev))) ? '*' : '';
+        out += `${multPrefix}mixedFrac(${w},(${n}),(${d}))`;
+      }
+    }
+    return out;
+  }
+
+  // Renders 2D tree into HTML with authentic vinculums and rectangular slot templates (■ / □)
+  function renderTreeToHTML(list = state.rootList, showCursor = true, isSubSlot = false) {
+    const isCurrentList = showCursor && (state.cursorList === list);
+    const cursorClass = !state.insertMode ? 'cursor overwrite' : 'cursor';
+
+    // If this is an empty fraction/mixed slot, render the authentic Casio rectangular template box!
+    if (list.length === 0 && isSubSlot) {
+      if (isCurrentList) {
+        // Active empty slot: solid rectangle ■ with blinking cursor next to it
+        return `<span class="slot-box filled"></span><span class="${cursorClass}"></span>`;
+      } else {
+        // Inactive empty slot: outlined blank rectangle □
+        return `<span class="slot-box"></span>`;
+      }
+    }
+
+    let html = '';
+    for (let i = 0; i <= list.length; i++) {
+      if (isCurrentList && state.cursorIndex === i) {
+        html += `<span class="${cursorClass}"></span>`;
+      }
+      if (i < list.length) {
+        const node = list[i];
+        if (typeof node === 'string') {
+          html += escapeHtml(node);
+        } else if (node.type === 'frac') {
+          const numHTML = renderTreeToHTML(node.num, showCursor, true);
+          const denHTML = renderTreeToHTML(node.den, showCursor, true);
+          html += `<span class="math-frac">
+            <span class="math-num">${numHTML}</span>
+            <span class="math-bar"></span>
+            <span class="math-den">${denHTML}</span>
+          </span>`;
+        } else if (node.type === 'mixed') {
+          const wholeHTML = renderTreeToHTML(node.whole, showCursor, true);
+          const numHTML = renderTreeToHTML(node.num, showCursor, true);
+          const denHTML = renderTreeToHTML(node.den, showCursor, true);
+          html += `<span class="math-mixed">
+            <span class="math-whole">${wholeHTML}</span>
+            <span class="math-frac">
+              <span class="math-num">${numHTML}</span>
+              <span class="math-bar"></span>
+              <span class="math-den">${denHTML}</span>
+            </span>
+          </span>`;
+        }
+      }
+    }
+    return html;
+  }
 
   // Screen Elements
   const indS = document.getElementById('ind-s');
@@ -1349,49 +1507,14 @@
     indDisp.classList.toggle('active', state.multiStatements.length > 1 && state.multiIndex < state.multiStatements.length - 1);
   }
 
-  // Convert internal tokens to mathematical evaluation string
-  function getFlattenedExpr() {
-    return state.tokens.map(t => {
-      if (typeof t === 'string') return t;
-      if (t && t.type === 'frac') {
-        const n = t.num.trim() === '' ? '0' : t.num;
-        const d = t.den.trim() === '' ? '1' : t.den;
-        return `(${n})/(${d})`;
-      }
-      return '';
-    }).join('');
-  }
-
-  // Convert tokens to screen HTML (with authentic vinculum)
-  function renderTokensToHTML(includeCursor = true) {
-    let html = '';
-    state.tokens.forEach((t, idx) => {
-      const isFocused = idx === state.activeTokenIndex;
-      if (typeof t === 'string') {
-        if (isFocused && includeCursor) {
-          const before = escapeHtml(t.slice(0, state.cursorPos));
-          const after = escapeHtml(t.slice(state.cursorPos));
-          const cursorClass = !state.insertMode ? 'cursor overwrite' : 'cursor';
-          html += before + `<span class="${cursorClass}"></span>` + after;
-        } else {
-          html += escapeHtml(t);
-        }
-      } else if (t && t.type === 'frac') {
-        const isNumActive = isFocused && t.activePart === 'num';
-        const isDenActive = isFocused && t.activePart === 'den';
-        const numCursor = (isNumActive && includeCursor) ? `<span class="cursor"></span>` : '';
-        const denCursor = (isDenActive && includeCursor) ? `<span class="cursor"></span>` : '';
-        const numContent = (t.num || '') + numCursor;
-        const denContent = (t.den || '') + denCursor;
-
-        html += `<span class="vinculum-frac">
-          <span class="v-num ${isNumActive ? 'v-box-active' : ''}">${numContent || '&nbsp;'}</span>
-          <span class="v-bar"></span>
-          <span class="v-den ${isDenActive ? 'v-box-active' : ''}">${denContent || '&nbsp;'}</span>
-        </span>`;
-      }
-    });
-    return html;
+  function loadHistoryEntry(entry) {
+    state.rootList = cloneTree(entry.tree);
+    state.cursorList = state.rootList;
+    state.cursorIndex = state.rootList.length;
+    state.lastResult = entry.result;
+    state.resultDisplayed = false;
+    state.factoredForm = null;
+    renderScreen();
   }
 
   function renderHistoryTape() {
@@ -1399,17 +1522,14 @@
     state.calcHistory.forEach((item) => {
       const el = document.createElement('div');
       el.className = 'hist-item';
-      el.title = 'Click to copy to input line';
+      el.title = 'Click to recall 2D expression';
+      const exprHTML = renderTreeToHTML(item.tree, false, false);
+      const resHTML = formatOutputHTML(item.result);
       el.innerHTML = `
-        <div class="hist-expr">${item.displayHTML || escapeHtml(item.expr)}</div>
-        <div class="hist-res">${escapeHtml(formatOutputNumber(item.result))}</div>
+        <div class="hist-expr">${exprHTML}</div>
+        <div class="hist-res">${resHTML}</div>
       `;
-      el.addEventListener('click', () => {
-        state.tokens = [item.expr];
-        state.activeTokenIndex = 0;
-        state.cursorPos = item.expr.length;
-        renderScreen();
-      });
+      el.addEventListener('click', () => loadHistoryEntry(item));
       historyTape.appendChild(el);
     });
     historyTape.scrollTop = historyTape.scrollHeight;
@@ -1443,19 +1563,16 @@
       return;
     }
 
+    // Line 1: 2D Natural Display Expression
+    line1.innerHTML = renderTreeToHTML(state.rootList, !state.resultDisplayed, false);
+
+    // Line 2: Calculation Result
     if (state.factoredForm) {
-      line1.textContent = getFlattenedExpr() || (state.lastResult !== null ? String(state.lastResult) : '');
       line2.textContent = state.factoredForm;
-      syncPopoutScreen();
-      return;
-    }
-
-    line1.innerHTML = renderTokensToHTML(true);
-
-    if (state.lastResult !== null) {
-      line2.textContent = formatOutputNumber(state.lastResult);
+    } else if (state.lastResult !== null) {
+      line2.innerHTML = formatOutputHTML(state.lastResult);
     } else {
-      line2.textContent = '';
+      line2.innerHTML = '';
     }
 
     syncPopoutScreen();
@@ -1471,10 +1588,7 @@
         target.querySelectorAll('.hist-item').forEach((el, index) => {
           el.addEventListener('click', () => {
             if (state.calcHistory[index]) {
-              state.tokens = [state.calcHistory[index].expr];
-              state.activeTokenIndex = 0;
-              state.cursorPos = state.calcHistory[index].expr.length;
-              renderScreen();
+              loadHistoryEntry(state.calcHistory[index]);
             }
           });
         });
@@ -1517,41 +1631,67 @@
     menuOverlay.innerHTML = html;
   }
 
-  function formatOutputNumber(val) {
-    if (typeof val === 'string') return val;
+  // Formats output number as HTML (supports vertical vinculum fractions in MthIO-MathO and S<=>D)
+  function formatOutputHTML(val) {
+    if (typeof val === 'string') return escapeHtml(val);
     if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
     if (isNaN(val) || !isFinite(val)) return 'Math ERROR';
 
     if (state.engOffset !== 0) {
       let shifted = val / Math.pow(10, state.engOffset);
-      return shifted + '×10^' + state.engOffset;
+      return escapeHtml(shifted + '×10^' + state.engOffset);
     }
 
-    if (state.sdToggleState === 2 || state.sdToggleState === 3) {
+    // Determine whether to display as fraction
+    const wantFrac = (state.sdToggleState === 2 || state.sdToggleState === 3) ||
+                     (state.sdToggleState === 0 && state.displayFormat === 'MthIO-MathO' && !Number.isInteger(val));
+
+    if (wantFrac) {
       let frac = toFraction(val);
-      if (frac) {
-        if (state.sdToggleState === 3 && Math.abs(frac.n) >= frac.d) {
+      if (frac && frac.d !== 1) {
+        const useMixed = (state.sdToggleState === 3) || (state.sdToggleState === 0 && state.fractionFormat === 'ab/c');
+        const isMathO = state.displayFormat.startsWith('MthIO');
+
+        if (useMixed && Math.abs(frac.n) > frac.d) {
           let whole = Math.trunc(frac.n / frac.d);
           let rem = Math.abs(frac.n % frac.d);
+          if (isMathO) {
+            return `<span class="math-mixed">
+              <span class="math-whole">${whole}</span>
+              <span class="math-frac">
+                <span class="math-num">${rem}</span>
+                <span class="math-bar"></span>
+                <span class="math-den">${frac.d}</span>
+              </span>
+            </span>`;
+          }
           return `${whole}⌟${rem}⌟${frac.d}`;
+        }
+
+        if (isMathO) {
+          return `<span class="math-frac">
+            <span class="math-num">${frac.n}</span>
+            <span class="math-bar"></span>
+            <span class="math-den">${frac.d}</span>
+          </span>`;
         }
         return `${frac.n}⌟${frac.d}`;
       }
     }
 
     if (state.numFormat === 'Fix') {
-      return val.toFixed(state.fixVal);
+      return escapeHtml(val.toFixed(state.fixVal));
     } else if (state.numFormat === 'Sci') {
-      return val.toExponential(state.sciVal);
+      return escapeHtml(val.toExponential(state.sciVal));
     } else {
       let abs = Math.abs(val);
       let limitLow = state.normVal === 1 ? 1e-2 : 1e-9;
       if (abs !== 0 && (abs < limitLow || abs >= 1e10)) {
-        return val.toExponential(4).replace('e', '×10^');
+        return escapeHtml(val.toExponential(4).replace('e', '×10^'));
       }
       let s = parseFloat(val.toPrecision(10)).toString();
       if (state.decPoint === ',') s = s.replace('.', ',');
-      return s;
+      return escapeHtml(s);
     }
   }
 
@@ -1594,69 +1734,133 @@
     return parts.join('×');
   }
 
-  // Token & Natural Fraction Insert Functions
-  function insertToken(token) {
-    state.factoredForm = null;
-    let current = state.tokens[state.activeTokenIndex];
-
-    if (typeof current === 'string') {
-      if (state.insertMode) {
-        state.tokens[state.activeTokenIndex] = current.slice(0, state.cursorPos) + token + current.slice(state.cursorPos);
-      } else {
-        state.tokens[state.activeTokenIndex] = current.slice(0, state.cursorPos) + token + current.slice(state.cursorPos + 1);
+  // Prepares input buffer if user starts typing after '=' was pressed
+  function prepareForNewInput(isOperator = false) {
+    if (state.resultDisplayed) {
+      state.resultDisplayed = false;
+      state.rootList = [];
+      state.cursorList = state.rootList;
+      state.cursorIndex = 0;
+      if (isOperator && state.lastResult !== null) {
+        state.rootList.push('Ans');
+        state.cursorIndex = 1;
       }
-      state.cursorPos += token.length;
-    } else if (current && current.type === 'frac') {
-      if (current.activePart === 'num') {
-        current.num += token;
-      } else {
-        current.den += token;
-      }
+      state.lastResult = null;
     }
+  }
+
+  // Inserts a string token at current cursor location in the 2D tree
+  function insertToken(token, isOperator = false) {
+    state.factoredForm = null;
+    prepareForNewInput(isOperator);
+
+    if (state.insertMode || state.cursorIndex >= state.cursorList.length || typeof state.cursorList[state.cursorIndex] === 'object') {
+      state.cursorList.splice(state.cursorIndex, 0, token);
+    } else {
+      state.cursorList.splice(state.cursorIndex, 1, token);
+    }
+    state.cursorIndex++;
     renderScreen();
   }
 
-  function insertNaturalFraction() {
+  // Authentic Casio Natural-V.P.A.M. Fraction Key Insertion
+  function handleFractionKey() {
     state.factoredForm = null;
-    let current = state.tokens[state.activeTokenIndex];
-    if (typeof current === 'string') {
-      const before = current.slice(0, state.cursorPos);
-      const after = current.slice(state.cursorPos);
-      const fracObj = { type: 'frac', num: '', den: '', activePart: 'num' };
-      state.tokens.splice(state.activeTokenIndex, 1, before, fracObj, after);
-      state.activeTokenIndex++;
+    prepareForNewInput(false);
+
+    if (!state.displayFormat.startsWith('MthIO')) {
+      // Linear mode fallback
+      insertToken('⌟');
+      return;
     }
+
+    if (state.shift) {
+      // SHIFT + ■/□ => Mixed fraction template [whole] [num / den]
+      state.shift = false;
+      const mixedNode = { type: 'mixed', whole: [], num: [], den: [] };
+      state.cursorList.splice(state.cursorIndex, 0, mixedNode);
+      state.cursorList = mixedNode.whole;
+      state.cursorIndex = 0;
+      renderScreen();
+      return;
+    }
+
+    // Standard ■/□ press:
+    // Check if there are contiguous digits/decimal immediately before cursor in current list
+    let numDigits = [];
+    let scanIdx = state.cursorIndex - 1;
+    while (scanIdx >= 0 && typeof state.cursorList[scanIdx] === 'string' && /^[\d.]$/.test(state.cursorList[scanIdx])) {
+      numDigits.unshift(state.cursorList[scanIdx]);
+      scanIdx--;
+    }
+
+    if (numDigits.length > 0) {
+      // Manual p.21 Method 1: e.g. typing '2' then '■/□' puts '2' into numerator and jumps to denominator □
+      const removeCount = numDigits.length;
+      const startRemove = state.cursorIndex - removeCount;
+      const fracNode = { type: 'frac', num: numDigits, den: [] };
+      state.cursorList.splice(startRemove, removeCount, fracNode);
+      state.cursorList = fracNode.den;
+      state.cursorIndex = 0;
+    } else {
+      // Manual p.21 Method 2 & Stacked Fractions:
+      // Creates empty numerator ■ and empty denominator □, placing cursor inside numerator ■.
+      // Pressing ■/□ repeatedly stacks another fraction inside the current active numerator/denominator!
+      const fracNode = { type: 'frac', num: [], den: [] };
+      state.cursorList.splice(state.cursorIndex, 0, fracNode);
+      state.cursorList = fracNode.num;
+      state.cursorIndex = 0;
+    }
+
     renderScreen();
   }
 
   function deleteToken() {
     state.factoredForm = null;
-    let current = state.tokens[state.activeTokenIndex];
+    if (state.resultDisplayed) {
+      state.resultDisplayed = false;
+      state.lastResult = null;
+      renderScreen();
+      return;
+    }
 
-    if (typeof current === 'string') {
-      if (state.cursorPos > 0) {
-        state.tokens[state.activeTokenIndex] = current.slice(0, state.cursorPos - 1) + current.slice(state.cursorPos);
-        state.cursorPos--;
-      } else if (state.activeTokenIndex > 0) {
-        // Step back into previous token
-        state.activeTokenIndex--;
-        let prev = state.tokens[state.activeTokenIndex];
-        if (typeof prev === 'string') {
-          state.cursorPos = prev.length;
+    if (state.cursorIndex > 0) {
+      const prevNode = state.cursorList[state.cursorIndex - 1];
+      if (typeof prevNode === 'string') {
+        state.cursorList.splice(state.cursorIndex - 1, 1);
+        state.cursorIndex--;
+      } else if (prevNode && typeof prevNode === 'object') {
+        // If fraction is completely empty, delete it; otherwise step inside its denominator
+        const isEmptyFrac = prevNode.type === 'frac' && prevNode.num.length === 0 && prevNode.den.length === 0;
+        const isEmptyMixed = prevNode.type === 'mixed' && prevNode.whole.length === 0 && prevNode.num.length === 0 && prevNode.den.length === 0;
+        if (isEmptyFrac || isEmptyMixed) {
+          state.cursorList.splice(state.cursorIndex - 1, 1);
+          state.cursorIndex--;
+        } else {
+          state.cursorList = prevNode.den;
+          state.cursorIndex = prevNode.den.length;
         }
       }
-    } else if (current && current.type === 'frac') {
-      if (current.activePart === 'den') {
-        if (current.den.length > 0) current.den = current.den.slice(0, -1);
-        else current.activePart = 'num';
-      } else {
-        if (current.num.length > 0) current.num = current.num.slice(0, -1);
-        else {
-          // Remove fraction template entirely if empty
-          state.tokens.splice(state.activeTokenIndex, 1);
-          if (state.activeTokenIndex > 0) state.activeTokenIndex--;
-          const prev = state.tokens[state.activeTokenIndex];
-          state.cursorPos = typeof prev === 'string' ? prev.length : 0;
+    } else {
+      // At index 0 of a sublist (inside a fraction or mixed fraction)
+      const info = findParentInfo(state.cursorList);
+      if (info) {
+        const { parentList, parentIndex, node, part } = info;
+        const isEmptyFrac = node.type === 'frac' && node.num.length === 0 && node.den.length === 0;
+        const isEmptyMixed = node.type === 'mixed' && node.whole.length === 0 && node.num.length === 0 && node.den.length === 0;
+        if (isEmptyFrac || isEmptyMixed) {
+          parentList.splice(parentIndex, 1);
+          state.cursorList = parentList;
+          state.cursorIndex = parentIndex;
+        } else if (part === 'den') {
+          state.cursorList = node.num;
+          state.cursorIndex = node.num.length;
+        } else if (part === 'num' && node.type === 'mixed') {
+          state.cursorList = node.whole;
+          state.cursorIndex = node.whole.length;
+        } else {
+          state.cursorList = parentList;
+          state.cursorIndex = parentIndex;
         }
       }
     }
@@ -1664,9 +1868,10 @@
   }
 
   function clearAll() {
-    state.tokens = [''];
-    state.activeTokenIndex = 0;
-    state.cursorPos = 0;
+    state.rootList = [];
+    state.cursorList = state.rootList;
+    state.cursorIndex = 0;
+    state.resultDisplayed = false;
     state.lastResult = null;
     state.factoredForm = null;
     state.engOffset = 0;
@@ -1896,12 +2101,12 @@
     state.activeMenu = {
       title: "VERIFY Relational",
       items: [
-        { id: 1, label: "=", action: () => { insertToken(" = "); closeMenu(); } },
-        { id: 2, label: "≠", action: () => { insertToken(" ≠ "); closeMenu(); } },
-        { id: 3, label: ">", action: () => { insertToken(" > "); closeMenu(); } },
-        { id: 4, label: "<", action: () => { insertToken(" < "); closeMenu(); } },
-        { id: 5, label: "≧", action: () => { insertToken(" ≧ "); closeMenu(); } },
-        { id: 6, label: "≦", action: () => { insertToken(" ≦ "); closeMenu(); } }
+        { id: 1, label: "=", action: () => { insertToken(" = ", true); closeMenu(); } },
+        { id: 2, label: "≠", action: () => { insertToken(" ≠ ", true); closeMenu(); } },
+        { id: 3, label: ">", action: () => { insertToken(" > ", true); closeMenu(); } },
+        { id: 4, label: "<", action: () => { insertToken(" < ", true); closeMenu(); } },
+        { id: 5, label: "≧", action: () => { insertToken(" ≧ ", true); closeMenu(); } },
+        { id: 6, label: "≦", action: () => { insertToken(" ≦ ", true); closeMenu(); } }
       ]
     };
     renderScreen();
@@ -1982,6 +2187,13 @@
   function preprocessMath(str) {
     let s = str;
 
+    // Auto-close any unclosed parentheses at the end of the expression (Manual p.14 *3)
+    const openCount = (s.match(/\(/g) || []).length;
+    const closeCount = (s.match(/\)/g) || []).length;
+    if (openCount > closeCount) {
+      s += ')'.repeat(openCount - closeCount);
+    }
+
     // Handle nPr and nCr infix
     let prev;
     do {
@@ -1999,6 +2211,7 @@
 
     s = s.replace(/×10\^/g, '*1e');
     s = s.replace(/×/g, '*').replace(/÷/g, '/');
+    s = s.replace(/\(-\)/g, '-');
 
     s = s.replace(/sin⁻¹\(/g, 'asin(').replace(/cos⁻¹\(/g, 'acos(').replace(/tan⁻¹\(/g, 'atan(');
     s = s.replace(/sinh⁻¹\(/g, 'asinh(').replace(/cosh⁻¹\(/g, 'acosh(').replace(/tanh⁻¹\(/g, 'atanh(');
@@ -2028,6 +2241,7 @@
     s = s.replace(/(\d+(\.\d+)?)ʳ/g, 'fromRad($1)');
     s = s.replace(/(\d+(\.\d+)?)ᵍ/g, 'fromGrad($1)');
     s = s.replace(/(\d+)!/g, 'fact($1)');
+    s = s.replace(/%/g, '*0.01');
 
     return s;
   }
@@ -2154,12 +2368,50 @@
     };
   }
 
-  // Key Actions
+  // =========================================================
+  // 2D NAVIGATION & KEY HANDLERS
+  // =========================================================
+  function moveCursorUp() {
+    // Walk up ancestor chain to see if cursor is inside a denominator (or can enter a numerator)
+    let list = state.cursorList;
+    while (list !== state.rootList) {
+      const info = findParentInfo(list);
+      if (!info) break;
+      if (info.part === 'den') {
+        state.cursorList = info.node.num;
+        state.cursorIndex = info.node.num.length;
+        state.resultDisplayed = false;
+        renderScreen();
+        return true;
+      }
+      list = info.parentList;
+    }
+    return false;
+  }
+
+  function moveCursorDown() {
+    // Walk up ancestor chain to see if cursor is inside a numerator or whole part
+    let list = state.cursorList;
+    while (list !== state.rootList) {
+      const info = findParentInfo(list);
+      if (!info) break;
+      if (info.part === 'num' || info.part === 'whole') {
+        state.cursorList = info.node.den;
+        state.cursorIndex = info.node.den.length;
+        state.resultDisplayed = false;
+        renderScreen();
+        return true;
+      }
+      list = info.parentList;
+    }
+    return false;
+  }
+
   const keyMap = {
     'k-on': () => {
       state.power = true;
       state.activeMenu = null;
-      renderScreen();
+      clearAll();
     },
     'k-ac': () => {
       if (state.shift) {
@@ -2181,92 +2433,159 @@
       renderScreen();
     },
     'k-mode': () => {
-      if (state.shift) openSetupMenu(1);
+      if (state.shift) { state.shift = false; openSetupMenu(1); }
       else openModeMenu();
     },
     'k-del': () => {
-      if (state.shift) state.insertMode = !state.insertMode;
-      else deleteToken();
+      if (state.shift) {
+        state.insertMode = !state.insertMode;
+        state.shift = false;
+      } else {
+        deleteToken();
+      }
       renderScreen();
     },
+
+    // D-Pad Up: Moves from Denominator -> Numerator, or scrolls 2D Calculation History
     'k-up': () => {
       if (state.activeMenu && state.activeMenu.onPrev) {
         state.activeMenu.onPrev();
         return;
       }
-      let cur = state.tokens[state.activeTokenIndex];
-      if (cur && cur.type === 'frac') {
-        cur.activePart = 'num';
-      } else if (state.mode === 'STAT' && state.statEditing) {
+      if (state.mode === 'STAT' && state.statEditing) {
         if (state.statCurRow > 0) state.statCurRow--;
-      } else if (state.calcHistory.length > 0) {
+        renderScreen();
+        return;
+      }
+      if (!state.resultDisplayed && moveCursorUp()) return;
+
+      // Scroll History (2D Replay)
+      if (state.calcHistory.length > 0) {
         if (state.histIndex < state.calcHistory.length - 1) {
           state.histIndex++;
-          const prevItem = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
-          state.tokens = [prevItem.expr];
-          state.activeTokenIndex = 0;
-          state.cursorPos = prevItem.expr.length;
+          const entry = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
+          loadHistoryEntry(entry);
         }
       }
-      renderScreen();
     },
+
+    // D-Pad Down: Moves from Numerator -> Denominator, or scrolls 2D Calculation History
     'k-down': () => {
       if (state.activeMenu && state.activeMenu.onNext) {
         state.activeMenu.onNext();
         return;
       }
-      let cur = state.tokens[state.activeTokenIndex];
-      if (cur && cur.type === 'frac') {
-        cur.activePart = 'den';
-      } else if (state.mode === 'STAT' && state.statEditing) {
+      if (state.mode === 'STAT' && state.statEditing) {
         state.statCurRow++;
-      } else if (state.histIndex > 0) {
+        renderScreen();
+        return;
+      }
+      if (!state.resultDisplayed && moveCursorDown()) return;
+
+      // Scroll History (2D Replay)
+      if (state.histIndex > 0) {
         state.histIndex--;
-        const nextItem = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
-        state.tokens = [nextItem.expr];
-        state.activeTokenIndex = 0;
-        state.cursorPos = nextItem.expr.length;
+        const entry = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
+        loadHistoryEntry(entry);
       }
-      renderScreen();
     },
+
+    // D-Pad Left: 2D Replay & Box-to-Box Navigation
     'k-left': () => {
-      let cur = state.tokens[state.activeTokenIndex];
-      if (cur && cur.type === 'frac') {
-        if (cur.activePart === 'den') cur.activePart = 'num';
-        else if (state.activeTokenIndex > 0) {
-          state.activeTokenIndex--;
-          const prev = state.tokens[state.activeTokenIndex];
-          state.cursorPos = typeof prev === 'string' ? prev.length : 0;
-        }
-      } else if (state.mode === 'STAT' && state.statEditing) {
+      if (state.mode === 'STAT' && state.statEditing) {
         if (state.statCurCol > 0) state.statCurCol--;
-      } else if (state.cursorPos > 0) {
-        state.cursorPos--;
-      } else if (state.activeTokenIndex > 0) {
-        state.activeTokenIndex--;
-        const prev = state.tokens[state.activeTokenIndex];
-        state.cursorPos = typeof prev === 'string' ? prev.length : 0;
+        renderScreen();
+        return;
       }
-      renderScreen();
-    },
-    'k-right': () => {
-      let cur = state.tokens[state.activeTokenIndex];
-      if (cur && cur.type === 'frac') {
-        if (cur.activePart === 'num') cur.activePart = 'den';
-        else if (state.activeTokenIndex < state.tokens.length - 1) {
-          state.activeTokenIndex++;
-          state.cursorPos = 0;
+      if (state.resultDisplayed) {
+        // Replay edit at end of current 2D expression (Manual p.24)
+        state.resultDisplayed = false;
+        state.cursorList = state.rootList;
+        state.cursorIndex = state.rootList.length;
+        renderScreen();
+        return;
+      }
+
+      if (state.cursorIndex > 0) {
+        const prevNode = state.cursorList[state.cursorIndex - 1];
+        if (prevNode && typeof prevNode === 'object') {
+          state.cursorList = prevNode.den;
+          state.cursorIndex = prevNode.den.length;
+        } else {
+          state.cursorIndex--;
         }
-      } else if (state.mode === 'STAT' && state.statEditing) {
-        state.statCurCol++;
-      } else if (typeof cur === 'string' && state.cursorPos < cur.length) {
-        state.cursorPos++;
-      } else if (state.activeTokenIndex < state.tokens.length - 1) {
-        state.activeTokenIndex++;
-        state.cursorPos = 0;
+      } else {
+        const info = findParentInfo(state.cursorList);
+        if (info) {
+          if (info.part === 'den') {
+            state.cursorList = info.node.num;
+            state.cursorIndex = info.node.num.length;
+          } else if (info.part === 'num' && info.node.type === 'mixed') {
+            state.cursorList = info.node.whole;
+            state.cursorIndex = info.node.whole.length;
+          } else {
+            state.cursorList = info.parentList;
+            state.cursorIndex = info.parentIndex;
+          }
+        } else {
+          // Wrap around to end of root expression (Manual p.16)
+          state.cursorIndex = state.rootList.length;
+        }
       }
       renderScreen();
     },
+
+    // D-Pad Right: 2D Replay & Box-to-Box Navigation
+    'k-right': () => {
+      if (state.mode === 'STAT' && state.statEditing) {
+        state.statCurCol++;
+        renderScreen();
+        return;
+      }
+      if (state.resultDisplayed) {
+        // Replay edit at start of current 2D expression (Manual p.24)
+        state.resultDisplayed = false;
+        state.cursorList = state.rootList;
+        state.cursorIndex = 0;
+        renderScreen();
+        return;
+      }
+
+      if (state.cursorIndex < state.cursorList.length) {
+        const nextNode = state.cursorList[state.cursorIndex];
+        if (nextNode && typeof nextNode === 'object') {
+          if (nextNode.type === 'mixed') {
+            state.cursorList = nextNode.whole;
+            state.cursorIndex = 0;
+          } else {
+            state.cursorList = nextNode.num;
+            state.cursorIndex = 0;
+          }
+        } else {
+          state.cursorIndex++;
+        }
+      } else {
+        const info = findParentInfo(state.cursorList);
+        if (info) {
+          if (info.part === 'whole') {
+            state.cursorList = info.node.num;
+            state.cursorIndex = 0;
+          } else if (info.part === 'num') {
+            state.cursorList = info.node.den;
+            state.cursorIndex = 0;
+          } else {
+            // Exit fraction to the right
+            state.cursorList = info.parentList;
+            state.cursorIndex = info.parentIndex + 1;
+          }
+        } else {
+          // Wrap around to beginning of root expression (Manual p.16)
+          state.cursorIndex = 0;
+        }
+      }
+      renderScreen();
+    },
+
     'k-eq': () => {
       if (state.shift) {
         openVerifyMenu();
@@ -2275,27 +2594,17 @@
       }
       if (state.activeMenu) return;
 
-      const flatExpr = getFlattenedExpr();
+      const flatExpr = treeToMathString(state.rootList);
       if (flatExpr.trim() === '') return;
-
-      if (state.multiStatements.length > 1 && state.multiIndex < state.multiStatements.length - 1) {
-        state.multiIndex++;
-        let res = executeSingleExpr(state.multiStatements[state.multiIndex]);
-        state.lastResult = res;
-        state.ans = res;
-        state.calcHistory.push({ expr: state.multiStatements[state.multiIndex], result: res });
-        renderHistoryTape();
-        renderScreen();
-        return;
-      }
 
       let res = evaluateExpression(flatExpr);
       state.lastResult = res;
+      state.resultDisplayed = true;
       if (typeof res === 'number' && !isNaN(res)) state.ans = res;
 
+      // Save deep clone of 2D tree so Replay preserves vertical vinculum fractions
       state.calcHistory.push({
-        expr: flatExpr,
-        displayHTML: renderTokensToHTML(false),
+        tree: cloneTree(state.rootList),
         result: res
       });
       if (state.calcHistory.length > 40) state.calcHistory.shift();
@@ -2326,21 +2635,21 @@
     },
     'k-add': () => {
       if (state.shift) { insertToken('Pol('); state.shift = false; }
-      else insertToken('+');
+      else insertToken('+', true);
     },
     'k-sub': () => {
       if (state.shift) { insertToken('Rec('); state.shift = false; }
-      else insertToken('-');
+      else insertToken('-', true);
     },
     'k-mul': () => {
-      if (state.shift) { insertToken('P'); state.shift = false; }
+      if (state.shift) { insertToken('P', true); state.shift = false; }
       else if (state.alpha) { insertToken('GCD('); state.alpha = false; }
-      else insertToken('×');
+      else insertToken('×', true);
     },
     'k-div': () => {
-      if (state.shift) { insertToken('C'); state.shift = false; }
+      if (state.shift) { insertToken('C', true); state.shift = false; }
       else if (state.alpha) { insertToken('LCM('); state.alpha = false; }
-      else insertToken('÷');
+      else insertToken('÷', true);
     },
     'k-lpar': () => insertToken('('),
     'k-rpar': () => {
@@ -2348,17 +2657,16 @@
       else if (state.alpha) { insertToken('X'); state.alpha = false; }
       else insertToken(')');
     },
-    // Authentic Natural Fraction Button
-    'k-frac': () => insertNaturalFraction(),
+    'k-frac': () => handleFractionKey(),
     'k-sqrt': () => {
       if (state.shift) { insertToken('³√('); state.shift = false; }
       else insertToken('√(');
     },
     'k-sqr': () => {
-      if (state.shift) { insertToken('^3'); state.shift = false; }
-      else insertToken('^2');
+      if (state.shift) { insertToken('^3', true); state.shift = false; }
+      else insertToken('^2', true);
     },
-    'k-pow': () => insertToken('^'),
+    'k-pow': () => insertToken('^', true),
     'k-log': () => {
       if (state.shift) { insertToken('10^('); state.shift = false; }
       else insertToken('log(');
@@ -2410,12 +2718,16 @@
       renderScreen();
     },
     'k-sd': () => {
-      if (state.shift) state.sdToggleState = 3;
-      else state.sdToggleState = (state.sdToggleState + 1) % 4;
+      if (state.shift) {
+        state.sdToggleState = (state.sdToggleState === 3) ? 2 : 3;
+        state.shift = false;
+      } else {
+        state.sdToggleState = (state.sdToggleState === 1) ? 2 : 1;
+      }
       renderScreen();
     },
     'k-mplus': () => {
-      let val = state.lastResult !== null ? state.lastResult : evaluateExpression(getFlattenedExpr());
+      let val = state.lastResult !== null ? state.lastResult : evaluateExpression(treeToMathString(state.rootList));
       if (state.shift) {
         state.independentM -= val;
         state.shift = false;
@@ -2429,13 +2741,13 @@
     },
     'k-ans': () => {
       if (state.shift) { openDrgMenu(); state.shift = false; }
-      else if (state.alpha) { insertToken('%'); state.alpha = false; }
+      else if (state.alpha) { insertToken('%', true); state.alpha = false; }
       else insertToken('Ans');
     },
     'k-exp': () => {
       if (state.shift) { insertToken('π'); state.shift = false; }
       else if (state.alpha) { insertToken('e'); state.alpha = false; }
-      else insertToken('×10^');
+      else insertToken('×10^', true);
     },
     'k-rcl': () => {
       if (state.shift) { state.sto = true; state.shift = false; }
@@ -2454,7 +2766,7 @@
     if (state.sto) {
       let varName = getVarNameFromKey(ch);
       if (varName) {
-        let val = state.lastResult !== null ? state.lastResult : (Number(getFlattenedExpr()) || 0);
+        let val = state.lastResult !== null ? state.lastResult : ( evaluateExpression(treeToMathString(state.rootList)) || 0 );
         state.vars[varName] = val;
         state.sto = false;
         renderScreen();
@@ -2498,13 +2810,13 @@
     else if (e.key === '-') keyMap['k-sub']();
     else if (e.key === '*' || e.key === 'x') keyMap['k-mul']();
     else if (e.key === '/') keyMap['k-div']();
-    else if (e.key === 'Enter' || e.key === '=') keyMap['k-eq']();
-    else if (e.key === 'Backspace') keyMap['k-del']();
+    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); keyMap['k-eq'](); }
+    else if (e.key === 'Backspace') { e.preventDefault(); keyMap['k-del'](); }
     else if (e.key === 'Escape') keyMap['k-ac']();
-    else if (e.key === 'ArrowLeft') keyMap['k-left']();
-    else if (e.key === 'ArrowRight') keyMap['k-right']();
-    else if (e.key === 'ArrowUp') keyMap['k-up']();
-    else if (e.key === 'ArrowDown') keyMap['k-down']();
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); keyMap['k-left'](); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); keyMap['k-right'](); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); keyMap['k-up'](); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); keyMap['k-down'](); }
     else if (e.key === '(') keyMap['k-lpar']();
     else if (e.key === ')') keyMap['k-rpar']();
     else if (e.key === '.') keyMap['k-dot']();
@@ -2512,7 +2824,7 @@
   });
 
   // ==========================================
-  // POP-OUT SCREEN WINDOW WITH FULL THEME INHERITANCE
+  // POP-OUT SCREEN WINDOW WITH THEME INHERITANCE
   // ==========================================
   document.getElementById('btnPopScreen').addEventListener('click', () => {
     if (popoutScreenWin && !popoutScreenWin.closed) {
@@ -2535,7 +2847,7 @@
         <style>
           ${cssContent}
           body {
-            background: #111417;
+            background: var(--chassis-grad);
             margin: 0;
             padding: 0;
             display: flex;
@@ -2545,6 +2857,7 @@
             width: 100vw;
             overflow: hidden;
             position: relative;
+            transition: background 0.25s ease;
           }
           #popLcdWrapper {
             width: 404px;
@@ -2633,13 +2946,14 @@
     `);
     popoutScreenWin.document.close();
 
-    popoutScreenWin.addEventListener('load', () => {
+    const initPopScreen = () => {
       const popDoc = popoutScreenWin.document;
       const zoomMenu = popDoc.getElementById('popZoomMenu');
       const zoomSlider = popDoc.getElementById('zoomSlider');
       const zoomVal = popDoc.getElementById('zoomValDisplay');
       const zoomWrapper = popDoc.getElementById('popLcdWrapper');
       const zoomClose = popDoc.getElementById('btnZoomClose');
+      if (!zoomWrapper) return;
 
       const BASE_SCREEN_W = 404;
       const BASE_SCREEN_H = 382;
@@ -2681,11 +2995,14 @@
       syncAllThemes();
       syncPopoutScreen();
       scalePopoutScreen();
-    });
+    };
+
+    initPopScreen();
+    popoutScreenWin.addEventListener('load', initPopScreen);
   });
 
   // ==========================================
-  // POP-OUT KEYBOARD WINDOW WITH THEME INHERITANCE
+  // POP-OUT KEYBOARD WINDOW WITH CHASSIS BACKGROUND PROPAGATION
   // ==========================================
   document.getElementById('btnPopKeypad').addEventListener('click', () => {
     if (popoutKeypadWin && !popoutKeypadWin.closed) {
@@ -2693,7 +3010,7 @@
       return;
     }
 
-    popoutKeypadWin = window.open('', 'PhillipsPopoutKeypad', 'width=460,height=580,resizable=yes');
+    popoutKeypadWin = window.open('', 'PhillipsPopoutKeypad', 'width=470,height=600,resizable=yes');
     if (!popoutKeypadWin) {
       alert("Pop-up was blocked. Please allow pop-ups for this emulator.");
       return;
@@ -2710,7 +3027,7 @@
         <style>
           ${cssContent}
           body {
-            background: #111417;
+            background: #0f1215;
             margin: 0;
             padding: 0;
             display: flex;
@@ -2720,18 +3037,28 @@
             overflow: hidden;
             width: 100vw;
           }
-          #popKeypadContainer {
-            width: 404px;
-            height: 480px;
+          /* Chassis-styled container so keyboard background color always propagates */
+          #popKeypadChassis {
+            width: 436px;
+            height: 530px;
+            background: var(--chassis-grad);
+            border: 3px solid var(--chassis-border);
+            border-radius: 34px;
+            padding: 18px 18px 26px 18px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.22), inset 0 -4px 6px rgba(0,0,0,0.5);
             transform-origin: center center;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
+            transition: background 0.25s ease, border-color 0.25s ease;
+          }
+          #popKeypadChassis .keypad {
+            width: 100%;
           }
         </style>
       </head>
       <body>
-        <div id="popKeypadContainer">
+        <div id="popKeypadChassis">
           ${keypadHTML}
         </div>
       </body>
@@ -2739,16 +3066,18 @@
     `);
     popoutKeypadWin.document.close();
 
-    popoutKeypadWin.addEventListener('load', () => {
+    const initPopKeypad = () => {
       const popDoc = popoutKeypadWin.document;
-      const container = popDoc.getElementById('popKeypadContainer');
-      const BASE_KP_W = 404;
-      const BASE_KP_H = 480;
+      const container = popDoc.getElementById('popKeypadChassis');
+      if (!container) return;
+
+      const BASE_KP_W = 436;
+      const BASE_KP_H = 530;
 
       function scaleKeypadWindow() {
         const w = popoutKeypadWin.innerWidth;
         const h = popoutKeypadWin.innerHeight;
-        const scale = Math.min(w / BASE_KP_W, h / BASE_KP_H) * 0.94;
+        const scale = Math.min(w / BASE_KP_W, h / BASE_KP_H) * 0.95;
         container.style.transform = `scale(${scale})`;
       }
 
@@ -2761,15 +3090,18 @@
         const isButton = e.target.closest('.calc-btn, .dpad-btn');
         if (isButton) {
           e.preventDefault();
-          showContextMenu(window.screenX + 40, window.screenY + 60, 'keys');
+          showContextMenu(100, 100, 'keys');
         } else {
           e.preventDefault();
-          showContextMenu(window.screenX + 40, window.screenY + 60, 'chassis');
+          showContextMenu(100, 100, 'chassis');
         }
       });
 
       syncAllThemes();
-    });
+    };
+
+    initPopKeypad();
+    popoutKeypadWin.addEventListener('load', initPopKeypad);
   });
 
   syncAllThemes();
