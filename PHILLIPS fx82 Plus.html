@@ -53,11 +53,11 @@
     #resizer {
       position: relative;
       width: 440px;
-      height: 96vh;
+      height: 98vh;
       resize: both;
       overflow: hidden;
       min-width: 290px;
-      min-height: 580px;
+      min-height: 590px;
       max-width: 96vw;
       max-height: 98vh;
       padding-bottom: 12px;
@@ -75,19 +75,19 @@
       z-index: 100;
     }
 
-    /* Calculator Chassis - Uniform, symmetrical margins around keypad */
+    /* Calculator Chassis - Extended length by an extra key-row height to prevent overflow */
     .calc-container {
       position: absolute;
       top: 0;
       left: 0;
       width: 440px;
-      height: 955px; /* Clean proportional extension below bottom row */
+      height: 1030px; /* Extended to fully contain lower keys with generous bottom margin */
       transform-origin: top left;
       background: var(--chassis-grad);
-      border-radius: 36px 36px 38px 38px;
-      box-shadow: 0 16px 42px rgba(0,0,0,0.75), inset 0 2px 3px rgba(255,255,255,0.22), inset 0 -3px 5px rgba(0,0,0,0.5);
+      border-radius: 36px 36px 42px 42px;
+      box-shadow: 0 18px 46px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.22), inset 0 -4px 6px rgba(0,0,0,0.5);
       border: 3px solid var(--chassis-border);
-      padding: 14px 18px 22px 18px; /* 22px bottom provides equal aesthetic clearance */
+      padding: 14px 18px 36px 18px; /* 36px bottom clearance matches side borders plus extra safety buffer */
       display: flex;
       flex-direction: column;
       transition: background 0.25s ease;
@@ -239,7 +239,7 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
       padding: 6px 2px;
       border-bottom: 1px solid currentColor;
       opacity: 0.9;
@@ -269,6 +269,10 @@
       font-weight: 700;
       white-space: pre-wrap;
       word-break: break-all;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2px;
     }
     .hist-item .hist-res {
       font-weight: 900;
@@ -288,12 +292,15 @@
 
     .lcd-line1 {
       font-size: 17px;
-      line-height: 20px;
+      line-height: 22px;
       min-height: 38px;
       word-break: break-all;
       white-space: pre-wrap;
       font-weight: 700;
       letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .lcd-line2 {
@@ -304,6 +311,36 @@
       min-height: 26px;
       white-space: nowrap;
       overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+    }
+
+    /* Natural Display Authentic Vinculum Fraction */
+    .vinculum-frac {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      margin: 0 3px;
+      font-size: 0.85em;
+      line-height: 1.1;
+    }
+    .v-num, .v-den {
+      min-width: 14px;
+      min-height: 15px;
+      padding: 0 3px;
+      display: inline-block;
+      border-radius: 2px;
+    }
+    .v-bar {
+      border-top: 2px solid currentColor;
+      width: 100%;
+      margin: 1px 0;
+    }
+    .v-box-active {
+      outline: 1px dashed currentColor;
+      background: rgba(128,128,128,0.2);
     }
 
     .cursor {
@@ -326,7 +363,7 @@
       50% { opacity: 0; }
     }
 
-    /* Keypad Grid Alignment Engine */
+    /* Keypad Layout & Alignment */
     .keypad {
       display: flex;
       flex-direction: column;
@@ -387,7 +424,6 @@
     .dpad-left { left: 4px; top: 20px; width: 28px; height: 32px; }
     .dpad-right { right: 4px; top: 20px; width: 28px; height: 32px; }
 
-    /* Uniform Key Cells for Perfect Grid Alignment */
     .key-cell {
       display: flex;
       flex-direction: column;
@@ -468,7 +504,6 @@
       margin-bottom: 4px;
     }
 
-    /* 5-Column Grid for Lower Keys */
     .main-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -910,7 +945,7 @@
   const resizer = document.getElementById('resizer');
   const chassis = document.getElementById('calcChassis');
   const BASE_WIDTH = 440;
-  const BASE_HEIGHT = 955;
+  const BASE_HEIGHT = 1030; // Matches extended chassis length
 
   function handleResize() {
     const w = resizer.clientWidth - 12;
@@ -1045,13 +1080,46 @@
     { name: "Silver Gray", hex: "#cbd5e1", id: "forest" }
   ];
 
-  let currentLcdBgId = "pale_green";
-  let currentLcdTextId = "black";
-  let currentLcdBgHex = "#98ad95";
-  let currentLcdTextHex = "#1f271e";
+  // Active Theme Variable Registry for Seamless Cross-Window Synchronization
+  const currentTheme = {
+    chassisGrad: "linear-gradient(175deg, #33383f 0%, #202428 55%, #181b1e 100%)",
+    chassisBorder: "#141618",
+    lcdBgHex: "#98ad95",
+    lcdTextHex: "#1f271e",
+    lcdBgId: "pale_green",
+    lcdTextId: "black",
+    keyNumGrad: "linear-gradient(180deg, #f8fafc 0%, #dbe0e6 100%)",
+    keyNumText: "#1d2024",
+    keyFunGrad: "linear-gradient(180deg, #444b54 0%, #2f343b 100%)",
+    keyFunText: "#ffffff",
+    keyDelGrad: "linear-gradient(180deg, #c53c33 0%, #92261e 100%)",
+    keyDelText: "#ffffff"
+  };
 
   let popoutScreenWin = null;
   let popoutKeypadWin = null;
+
+  // Propagates all colors and gradients to main document and active pop-out windows
+  function syncAllThemes() {
+    const applyToDoc = (doc) => {
+      if (!doc || !doc.documentElement) return;
+      const root = doc.documentElement;
+      root.style.setProperty('--chassis-grad', currentTheme.chassisGrad);
+      root.style.setProperty('--chassis-border', currentTheme.chassisBorder);
+      root.style.setProperty('--lcd-bg', currentTheme.lcdBgHex);
+      root.style.setProperty('--lcd-dark', currentTheme.lcdTextHex);
+      root.style.setProperty('--key-num-grad', currentTheme.keyNumGrad);
+      root.style.setProperty('--key-num-text', currentTheme.keyNumText);
+      root.style.setProperty('--key-fun-grad', currentTheme.keyFunGrad);
+      root.style.setProperty('--key-fun-text', currentTheme.keyFunText);
+      root.style.setProperty('--key-del-grad', currentTheme.keyDelGrad);
+      root.style.setProperty('--key-del-text', currentTheme.keyDelText);
+    };
+
+    applyToDoc(document);
+    if (popoutScreenWin && !popoutScreenWin.closed) applyToDoc(popoutScreenWin.document);
+    if (popoutKeypadWin && !popoutKeypadWin.closed) applyToDoc(popoutKeypadWin.document);
+  }
 
   // Context Menu DOM Elements
   const ctxMenu = document.getElementById('customCtxMenu');
@@ -1072,40 +1140,25 @@
   }
 
   function applyChassisPalette(item) {
-    document.documentElement.style.setProperty('--chassis-grad', item.grad);
-    document.documentElement.style.setProperty('--chassis-border', item.border);
-    if (popoutKeypadWin && !popoutKeypadWin.closed) {
-      popoutKeypadWin.document.documentElement.style.setProperty('--chassis-grad', item.grad);
-      popoutKeypadWin.document.documentElement.style.setProperty('--chassis-border', item.border);
-    }
+    currentTheme.chassisGrad = item.grad;
+    currentTheme.chassisBorder = item.border;
+    syncAllThemes();
   }
 
   function applyKeyPalette(item) {
-    document.documentElement.style.setProperty('--key-num-grad', item.numGrad);
-    document.documentElement.style.setProperty('--key-num-text', item.numText);
-    document.documentElement.style.setProperty('--key-fun-grad', item.funGrad);
-    document.documentElement.style.setProperty('--key-fun-text', item.funText);
-    document.documentElement.style.setProperty('--key-del-grad', item.delGrad);
-    document.documentElement.style.setProperty('--key-del-text', item.delText);
-    if (popoutKeypadWin && !popoutKeypadWin.closed) {
-      popoutKeypadWin.document.documentElement.style.setProperty('--key-num-grad', item.numGrad);
-      popoutKeypadWin.document.documentElement.style.setProperty('--key-num-text', item.numText);
-      popoutKeypadWin.document.documentElement.style.setProperty('--key-fun-grad', item.funGrad);
-      popoutKeypadWin.document.documentElement.style.setProperty('--key-fun-text', item.funText);
-      popoutKeypadWin.document.documentElement.style.setProperty('--key-del-grad', item.delGrad);
-      popoutKeypadWin.document.documentElement.style.setProperty('--key-del-text', item.delText);
-    }
+    currentTheme.keyNumGrad = item.numGrad;
+    currentTheme.keyNumText = item.numText;
+    currentTheme.keyFunGrad = item.funGrad;
+    currentTheme.keyFunText = item.funText;
+    currentTheme.keyDelGrad = item.delGrad;
+    currentTheme.keyDelText = item.delText;
+    syncAllThemes();
   }
 
   function applyLcdTheme(bgHex, textHex) {
-    currentLcdBgHex = bgHex;
-    currentLcdTextHex = textHex;
-    document.documentElement.style.setProperty('--lcd-bg', bgHex);
-    document.documentElement.style.setProperty('--lcd-dark', textHex);
-    if (popoutScreenWin && !popoutScreenWin.closed) {
-      popoutScreenWin.document.documentElement.style.setProperty('--lcd-bg', bgHex);
-      popoutScreenWin.document.documentElement.style.setProperty('--lcd-dark', textHex);
-    }
+    currentTheme.lcdBgHex = bgHex;
+    currentTheme.lcdTextHex = textHex;
+    syncAllThemes();
   }
 
   function renderLcdPaletteGrid(targetTab) {
@@ -1116,14 +1169,14 @@
       lcdBgColors.forEach(item => {
         const btn = document.createElement('button');
         btn.className = 'palette-btn';
-        // Invisibility guard: disable identical color to active text
-        const isExcluded = (item.id === currentLcdTextId) || (item.hex.toLowerCase() === currentLcdTextHex.toLowerCase());
+        // Exclude identical color to prevent invisible text
+        const isExcluded = (item.id === currentTheme.lcdTextId) || (item.hex.toLowerCase() === currentTheme.lcdTextHex.toLowerCase());
         btn.disabled = isExcluded;
         btn.title = isExcluded ? "Excluded to prevent invisible text" : item.name;
         btn.innerHTML = `<span class="color-swatch" style="background:${item.hex};"></span><span>${item.name}</span>`;
         btn.addEventListener('click', () => {
-          currentLcdBgId = item.id;
-          applyLcdTheme(item.hex, currentLcdTextHex);
+          currentTheme.lcdBgId = item.id;
+          applyLcdTheme(item.hex, currentTheme.lcdTextHex);
           renderLcdPaletteGrid('bg');
         });
         ctxGrid.appendChild(btn);
@@ -1134,14 +1187,14 @@
       lcdTextColors.forEach(item => {
         const btn = document.createElement('button');
         btn.className = 'palette-btn';
-        // Invisibility guard: disable identical color to active background
-        const isExcluded = (item.id === currentLcdBgId) || (item.hex.toLowerCase() === currentLcdBgHex.toLowerCase());
+        // Exclude identical color to prevent invisible text
+        const isExcluded = (item.id === currentTheme.lcdBgId) || (item.hex.toLowerCase() === currentTheme.lcdBgHex.toLowerCase());
         btn.disabled = isExcluded;
         btn.title = isExcluded ? "Excluded to prevent invisible text" : item.name;
         btn.innerHTML = `<span class="color-swatch" style="background:${item.hex};"></span><span>${item.name}</span>`;
         btn.addEventListener('click', () => {
-          currentLcdTextId = item.id;
-          applyLcdTheme(currentLcdBgHex, item.hex);
+          currentTheme.lcdTextId = item.id;
+          applyLcdTheme(currentTheme.lcdBgHex, item.hex);
           renderLcdPaletteGrid('text');
         });
         ctxGrid.appendChild(btn);
@@ -1213,7 +1266,7 @@
     }
   });
 
-  // State Management
+  // State Management with Natural Display Fraction Template Engine
   const state = {
     power: true,
     mode: 'COMP',
@@ -1243,8 +1296,12 @@
     independentM: 0,
     vars: { A:0, B:0, C:0, D:0, E:0, F:0, X:0, Y:0, M:0 },
 
-    expr: '',
+    // Tokenized calculation buffer
+    // Supports text strings and active natural fraction objects: { type:'frac', num:'', den:'', activePart:'num' }
+    tokens: [''],
+    activeTokenIndex: 0,
     cursorPos: 0,
+
     calcHistory: [],
     histIndex: -1,
     multiStatements: [],
@@ -1292,6 +1349,51 @@
     indDisp.classList.toggle('active', state.multiStatements.length > 1 && state.multiIndex < state.multiStatements.length - 1);
   }
 
+  // Convert internal tokens to mathematical evaluation string
+  function getFlattenedExpr() {
+    return state.tokens.map(t => {
+      if (typeof t === 'string') return t;
+      if (t && t.type === 'frac') {
+        const n = t.num.trim() === '' ? '0' : t.num;
+        const d = t.den.trim() === '' ? '1' : t.den;
+        return `(${n})/(${d})`;
+      }
+      return '';
+    }).join('');
+  }
+
+  // Convert tokens to screen HTML (with authentic vinculum)
+  function renderTokensToHTML(includeCursor = true) {
+    let html = '';
+    state.tokens.forEach((t, idx) => {
+      const isFocused = idx === state.activeTokenIndex;
+      if (typeof t === 'string') {
+        if (isFocused && includeCursor) {
+          const before = escapeHtml(t.slice(0, state.cursorPos));
+          const after = escapeHtml(t.slice(state.cursorPos));
+          const cursorClass = !state.insertMode ? 'cursor overwrite' : 'cursor';
+          html += before + `<span class="${cursorClass}"></span>` + after;
+        } else {
+          html += escapeHtml(t);
+        }
+      } else if (t && t.type === 'frac') {
+        const isNumActive = isFocused && t.activePart === 'num';
+        const isDenActive = isFocused && t.activePart === 'den';
+        const numCursor = (isNumActive && includeCursor) ? `<span class="cursor"></span>` : '';
+        const denCursor = (isDenActive && includeCursor) ? `<span class="cursor"></span>` : '';
+        const numContent = (t.num || '') + numCursor;
+        const denContent = (t.den || '') + denCursor;
+
+        html += `<span class="vinculum-frac">
+          <span class="v-num ${isNumActive ? 'v-box-active' : ''}">${numContent || '&nbsp;'}</span>
+          <span class="v-bar"></span>
+          <span class="v-den ${isDenActive ? 'v-box-active' : ''}">${denContent || '&nbsp;'}</span>
+        </span>`;
+      }
+    });
+    return html;
+  }
+
   function renderHistoryTape() {
     historyTape.innerHTML = '';
     state.calcHistory.forEach((item) => {
@@ -1299,12 +1401,13 @@
       el.className = 'hist-item';
       el.title = 'Click to copy to input line';
       el.innerHTML = `
-        <div class="hist-expr">${escapeHtml(item.expr)}</div>
+        <div class="hist-expr">${item.displayHTML || escapeHtml(item.expr)}</div>
         <div class="hist-res">${escapeHtml(formatOutputNumber(item.result))}</div>
       `;
       el.addEventListener('click', () => {
-        state.expr = item.expr;
-        state.cursorPos = state.expr.length;
+        state.tokens = [item.expr];
+        state.activeTokenIndex = 0;
+        state.cursorPos = item.expr.length;
         renderScreen();
       });
       historyTape.appendChild(el);
@@ -1340,21 +1443,14 @@
       return;
     }
 
-    let displayText = state.expr;
     if (state.factoredForm) {
-      line1.textContent = state.expr || (state.lastResult !== null ? String(state.lastResult) : '');
+      line1.textContent = getFlattenedExpr() || (state.lastResult !== null ? String(state.lastResult) : '');
       line2.textContent = state.factoredForm;
       syncPopoutScreen();
       return;
     }
 
-    if (displayText.length === 0) {
-      line1.innerHTML = '<span class="cursor ' + (!state.insertMode ? 'overwrite' : '') + '"></span>';
-    } else {
-      let before = escapeHtml(displayText.slice(0, state.cursorPos));
-      let after = escapeHtml(displayText.slice(state.cursorPos));
-      line1.innerHTML = before + '<span class="cursor ' + (!state.insertMode ? 'overwrite' : '') + '"></span>' + after;
-    }
+    line1.innerHTML = renderTokensToHTML(true);
 
     if (state.lastResult !== null) {
       line2.textContent = formatOutputNumber(state.lastResult);
@@ -1375,8 +1471,9 @@
         target.querySelectorAll('.hist-item').forEach((el, index) => {
           el.addEventListener('click', () => {
             if (state.calcHistory[index]) {
-              state.expr = state.calcHistory[index].expr;
-              state.cursorPos = state.expr.length;
+              state.tokens = [state.calcHistory[index].expr];
+              state.activeTokenIndex = 0;
+              state.cursorPos = state.calcHistory[index].expr.length;
               renderScreen();
             }
           });
@@ -1497,28 +1594,78 @@
     return parts.join('×');
   }
 
+  // Token & Natural Fraction Insert Functions
   function insertToken(token) {
     state.factoredForm = null;
-    if (state.insertMode) {
-      state.expr = state.expr.slice(0, state.cursorPos) + token + state.expr.slice(state.cursorPos);
-    } else {
-      state.expr = state.expr.slice(0, state.cursorPos) + token + state.expr.slice(state.cursorPos + 1);
+    let current = state.tokens[state.activeTokenIndex];
+
+    if (typeof current === 'string') {
+      if (state.insertMode) {
+        state.tokens[state.activeTokenIndex] = current.slice(0, state.cursorPos) + token + current.slice(state.cursorPos);
+      } else {
+        state.tokens[state.activeTokenIndex] = current.slice(0, state.cursorPos) + token + current.slice(state.cursorPos + 1);
+      }
+      state.cursorPos += token.length;
+    } else if (current && current.type === 'frac') {
+      if (current.activePart === 'num') {
+        current.num += token;
+      } else {
+        current.den += token;
+      }
     }
-    state.cursorPos += token.length;
+    renderScreen();
+  }
+
+  function insertNaturalFraction() {
+    state.factoredForm = null;
+    let current = state.tokens[state.activeTokenIndex];
+    if (typeof current === 'string') {
+      const before = current.slice(0, state.cursorPos);
+      const after = current.slice(state.cursorPos);
+      const fracObj = { type: 'frac', num: '', den: '', activePart: 'num' };
+      state.tokens.splice(state.activeTokenIndex, 1, before, fracObj, after);
+      state.activeTokenIndex++;
+    }
     renderScreen();
   }
 
   function deleteToken() {
     state.factoredForm = null;
-    if (state.cursorPos > 0) {
-      state.expr = state.expr.slice(0, state.cursorPos - 1) + state.expr.slice(state.cursorPos);
-      state.cursorPos--;
+    let current = state.tokens[state.activeTokenIndex];
+
+    if (typeof current === 'string') {
+      if (state.cursorPos > 0) {
+        state.tokens[state.activeTokenIndex] = current.slice(0, state.cursorPos - 1) + current.slice(state.cursorPos);
+        state.cursorPos--;
+      } else if (state.activeTokenIndex > 0) {
+        // Step back into previous token
+        state.activeTokenIndex--;
+        let prev = state.tokens[state.activeTokenIndex];
+        if (typeof prev === 'string') {
+          state.cursorPos = prev.length;
+        }
+      }
+    } else if (current && current.type === 'frac') {
+      if (current.activePart === 'den') {
+        if (current.den.length > 0) current.den = current.den.slice(0, -1);
+        else current.activePart = 'num';
+      } else {
+        if (current.num.length > 0) current.num = current.num.slice(0, -1);
+        else {
+          // Remove fraction template entirely if empty
+          state.tokens.splice(state.activeTokenIndex, 1);
+          if (state.activeTokenIndex > 0) state.activeTokenIndex--;
+          const prev = state.tokens[state.activeTokenIndex];
+          state.cursorPos = typeof prev === 'string' ? prev.length : 0;
+        }
+      }
     }
     renderScreen();
   }
 
   function clearAll() {
-    state.expr = '';
+    state.tokens = [''];
+    state.activeTokenIndex = 0;
     state.cursorPos = 0;
     state.lastResult = null;
     state.factoredForm = null;
@@ -1529,7 +1676,7 @@
     renderScreen();
   }
 
-  // Calculation Menus
+  // Menus
   function openModeMenu() {
     state.activeMenu = {
       title: "Calculation Mode",
@@ -1788,7 +1935,7 @@
     closeMenu();
   }
 
-  // Expression Evaluator & Math Logic
+  // Math Evaluation Engine
   function evaluateExpression(raw) {
     if (!raw || raw.trim() === '') return 0;
     if (raw.includes(':')) {
@@ -2043,37 +2190,81 @@
       renderScreen();
     },
     'k-up': () => {
-      if (state.activeMenu && state.activeMenu.onPrev) state.activeMenu.onPrev();
-      else if (state.mode === 'STAT' && state.statEditing) {
+      if (state.activeMenu && state.activeMenu.onPrev) {
+        state.activeMenu.onPrev();
+        return;
+      }
+      let cur = state.tokens[state.activeTokenIndex];
+      if (cur && cur.type === 'frac') {
+        cur.activePart = 'num';
+      } else if (state.mode === 'STAT' && state.statEditing) {
         if (state.statCurRow > 0) state.statCurRow--;
       } else if (state.calcHistory.length > 0) {
         if (state.histIndex < state.calcHistory.length - 1) {
           state.histIndex++;
-          state.expr = state.calcHistory[state.calcHistory.length - 1 - state.histIndex].expr;
-          state.cursorPos = state.expr.length;
+          const prevItem = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
+          state.tokens = [prevItem.expr];
+          state.activeTokenIndex = 0;
+          state.cursorPos = prevItem.expr.length;
         }
       }
       renderScreen();
     },
     'k-down': () => {
-      if (state.activeMenu && state.activeMenu.onNext) state.activeMenu.onNext();
-      else if (state.mode === 'STAT' && state.statEditing) state.statCurRow++;
-      else if (state.histIndex > 0) {
+      if (state.activeMenu && state.activeMenu.onNext) {
+        state.activeMenu.onNext();
+        return;
+      }
+      let cur = state.tokens[state.activeTokenIndex];
+      if (cur && cur.type === 'frac') {
+        cur.activePart = 'den';
+      } else if (state.mode === 'STAT' && state.statEditing) {
+        state.statCurRow++;
+      } else if (state.histIndex > 0) {
         state.histIndex--;
-        state.expr = state.calcHistory[state.calcHistory.length - 1 - state.histIndex].expr;
-        state.cursorPos = state.expr.length;
+        const nextItem = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
+        state.tokens = [nextItem.expr];
+        state.activeTokenIndex = 0;
+        state.cursorPos = nextItem.expr.length;
       }
       renderScreen();
     },
     'k-left': () => {
-      if (state.mode === 'STAT' && state.statEditing) {
+      let cur = state.tokens[state.activeTokenIndex];
+      if (cur && cur.type === 'frac') {
+        if (cur.activePart === 'den') cur.activePart = 'num';
+        else if (state.activeTokenIndex > 0) {
+          state.activeTokenIndex--;
+          const prev = state.tokens[state.activeTokenIndex];
+          state.cursorPos = typeof prev === 'string' ? prev.length : 0;
+        }
+      } else if (state.mode === 'STAT' && state.statEditing) {
         if (state.statCurCol > 0) state.statCurCol--;
-      } else if (state.cursorPos > 0) state.cursorPos--;
+      } else if (state.cursorPos > 0) {
+        state.cursorPos--;
+      } else if (state.activeTokenIndex > 0) {
+        state.activeTokenIndex--;
+        const prev = state.tokens[state.activeTokenIndex];
+        state.cursorPos = typeof prev === 'string' ? prev.length : 0;
+      }
       renderScreen();
     },
     'k-right': () => {
-      if (state.mode === 'STAT' && state.statEditing) state.statCurCol++;
-      else if (state.cursorPos < state.expr.length) state.cursorPos++;
+      let cur = state.tokens[state.activeTokenIndex];
+      if (cur && cur.type === 'frac') {
+        if (cur.activePart === 'num') cur.activePart = 'den';
+        else if (state.activeTokenIndex < state.tokens.length - 1) {
+          state.activeTokenIndex++;
+          state.cursorPos = 0;
+        }
+      } else if (state.mode === 'STAT' && state.statEditing) {
+        state.statCurCol++;
+      } else if (typeof cur === 'string' && state.cursorPos < cur.length) {
+        state.cursorPos++;
+      } else if (state.activeTokenIndex < state.tokens.length - 1) {
+        state.activeTokenIndex++;
+        state.cursorPos = 0;
+      }
       renderScreen();
     },
     'k-eq': () => {
@@ -2083,6 +2274,9 @@
         return;
       }
       if (state.activeMenu) return;
+
+      const flatExpr = getFlattenedExpr();
+      if (flatExpr.trim() === '') return;
 
       if (state.multiStatements.length > 1 && state.multiIndex < state.multiStatements.length - 1) {
         state.multiIndex++;
@@ -2095,13 +2289,15 @@
         return;
       }
 
-      if (state.expr.trim() === '') return;
-
-      let res = evaluateExpression(state.expr);
+      let res = evaluateExpression(flatExpr);
       state.lastResult = res;
       if (typeof res === 'number' && !isNaN(res)) state.ans = res;
 
-      state.calcHistory.push({ expr: state.expr, result: res });
+      state.calcHistory.push({
+        expr: flatExpr,
+        displayHTML: renderTokensToHTML(false),
+        result: res
+      });
       if (state.calcHistory.length > 40) state.calcHistory.shift();
       state.histIndex = -1;
       state.sdToggleState = 0;
@@ -2152,7 +2348,8 @@
       else if (state.alpha) { insertToken('X'); state.alpha = false; }
       else insertToken(')');
     },
-    'k-frac': () => insertToken('⌟'),
+    // Authentic Natural Fraction Button
+    'k-frac': () => insertNaturalFraction(),
     'k-sqrt': () => {
       if (state.shift) { insertToken('³√('); state.shift = false; }
       else insertToken('√(');
@@ -2218,7 +2415,7 @@
       renderScreen();
     },
     'k-mplus': () => {
-      let val = state.lastResult !== null ? state.lastResult : evaluateExpression(state.expr);
+      let val = state.lastResult !== null ? state.lastResult : evaluateExpression(getFlattenedExpr());
       if (state.shift) {
         state.independentM -= val;
         state.shift = false;
@@ -2257,7 +2454,7 @@
     if (state.sto) {
       let varName = getVarNameFromKey(ch);
       if (varName) {
-        let val = state.lastResult !== null ? state.lastResult : (Number(state.expr) || 0);
+        let val = state.lastResult !== null ? state.lastResult : (Number(getFlattenedExpr()) || 0);
         state.vars[varName] = val;
         state.sto = false;
         renderScreen();
@@ -2315,7 +2512,7 @@
   });
 
   // ==========================================
-  // POP-OUT SCREEN WINDOW WITH AUTO-SCALE + ZOOM
+  // POP-OUT SCREEN WINDOW WITH FULL THEME INHERITANCE
   // ==========================================
   document.getElementById('btnPopScreen').addEventListener('click', () => {
     if (popoutScreenWin && !popoutScreenWin.closed) {
@@ -2448,7 +2645,6 @@
       const BASE_SCREEN_H = 382;
       let manualZoomMultiplier = 1.0;
 
-      // Automatically scales screen to fit maximum dimension inside dragged window
       function scalePopoutScreen() {
         const w = popoutScreenWin.innerWidth;
         const h = popoutScreenWin.innerHeight;
@@ -2482,13 +2678,14 @@
         if (!zoomMenu.contains(e.target)) zoomMenu.style.display = 'none';
       });
 
+      syncAllThemes();
       syncPopoutScreen();
       scalePopoutScreen();
     });
   });
 
   // ==========================================
-  // POP-OUT KEYBOARD WINDOW (AUTO-SCALED)
+  // POP-OUT KEYBOARD WINDOW WITH THEME INHERITANCE
   // ==========================================
   document.getElementById('btnPopKeypad').addEventListener('click', () => {
     if (popoutKeypadWin && !popoutKeypadWin.closed) {
@@ -2570,9 +2767,12 @@
           showContextMenu(window.screenX + 40, window.screenY + 60, 'chassis');
         }
       });
+
+      syncAllThemes();
     });
   });
 
+  syncAllThemes();
   renderHistoryTape();
   renderScreen();
 })();
