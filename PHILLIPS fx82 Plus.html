@@ -75,19 +75,19 @@
       z-index: 100;
     }
 
-    /* Calculator Chassis - Snug form factor (no empty bottom) */
+    /* Calculator Chassis - Uniform, symmetrical margins around keypad */
     .calc-container {
       position: absolute;
       top: 0;
       left: 0;
       width: 440px;
-      height: 940px;
+      height: 955px; /* Clean proportional extension below bottom row */
       transform-origin: top left;
       background: var(--chassis-grad);
       border-radius: 36px 36px 38px 38px;
       box-shadow: 0 16px 42px rgba(0,0,0,0.75), inset 0 2px 3px rgba(255,255,255,0.22), inset 0 -3px 5px rgba(0,0,0,0.5);
       border: 3px solid var(--chassis-border);
-      padding: 14px 18px 16px 18px;
+      padding: 14px 18px 22px 18px; /* 22px bottom provides equal aesthetic clearance */
       display: flex;
       flex-direction: column;
       transition: background 0.25s ease;
@@ -185,7 +185,7 @@
       background: rgba(255,255,255,0.12);
     }
 
-    /* 3X Height Screen Bezel & LCD */
+    /* 3X Height Screen Bezel & Customizable LCD */
     .lcd-bezel {
       background: #181b1d;
       border-radius: 12px;
@@ -193,14 +193,15 @@
       box-shadow: inset 0 3px 8px rgba(0,0,0,0.85), 0 1px 1px rgba(255,255,255,0.15);
       border: 1px solid #333a40;
       margin-bottom: 12px;
+      cursor: context-menu;
     }
 
     .lcd-screen {
       background: var(--lcd-bg);
       border-radius: 6px;
       box-shadow: inset 1px 2px 7px rgba(0,0,0,0.45);
-      border: 1px solid #738570;
-      height: 366px; /* 3X original height */
+      border: 1px solid rgba(0,0,0,0.25);
+      height: 366px;
       display: flex;
       flex-direction: column;
       padding: 6px 8px;
@@ -208,6 +209,7 @@
       color: var(--lcd-dark);
       position: relative;
       overflow: hidden;
+      transition: background 0.2s ease, color 0.2s ease;
     }
 
     /* Indicators Bar */
@@ -217,7 +219,8 @@
       font-size: 10.5px;
       font-weight: 900;
       height: 15px;
-      border-bottom: 1px dashed rgba(31, 39, 30, 0.3);
+      border-bottom: 1px dashed currentColor;
+      opacity: 0.85;
       padding-bottom: 2px;
       letter-spacing: 0.5px;
       flex-shrink: 0;
@@ -238,20 +241,21 @@
       flex-direction: column;
       gap: 5px;
       padding: 6px 2px;
-      border-bottom: 1px solid rgba(31, 39, 30, 0.25);
+      border-bottom: 1px solid currentColor;
+      opacity: 0.9;
     }
     .lcd-history-tape::-webkit-scrollbar {
       width: 4px;
     }
     .lcd-history-tape::-webkit-scrollbar-thumb {
-      background: rgba(31, 39, 30, 0.35);
+      background: currentColor;
+      opacity: 0.35;
       border-radius: 2px;
     }
 
     .hist-item {
       display: flex;
       flex-direction: column;
-      opacity: 0.88;
       font-size: 13px;
       cursor: pointer;
       border-radius: 3px;
@@ -259,7 +263,7 @@
       transition: background 0.1s ease;
     }
     .hist-item:hover {
-      background: rgba(0,0,0,0.06);
+      background: rgba(128,128,128,0.15);
     }
     .hist-item .hist-expr {
       font-weight: 700;
@@ -306,7 +310,7 @@
       display: inline-block;
       width: 8px;
       height: 16px;
-      background: var(--lcd-dark);
+      background: currentColor;
       vertical-align: text-bottom;
       animation: blink 0.9s steps(2, start) infinite;
       margin-left: 1px;
@@ -464,7 +468,7 @@
       margin-bottom: 4px;
     }
 
-    /* Perfect 5-Column Grid for Lower Numeric & Arithmetic Keys */
+    /* 5-Column Grid for Lower Keys */
     .main-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -476,6 +480,7 @@
       position: absolute;
       inset: 2px;
       background: var(--lcd-bg);
+      color: var(--lcd-dark);
       display: flex;
       flex-direction: column;
       font-size: 13px;
@@ -508,7 +513,7 @@
       color: var(--lcd-bg);
     }
 
-    /* Context Color Change Menu */
+    /* Context Color Change Menus */
     .custom-ctx-menu {
       position: fixed;
       z-index: 2000;
@@ -517,10 +522,10 @@
       border-radius: 12px;
       box-shadow: 0 12px 32px rgba(0,0,0,0.85);
       padding: 10px;
-      width: 250px;
+      width: 260px;
       display: none;
       flex-direction: column;
-      gap: 6px;
+      gap: 7px;
       font-family: inherit;
     }
     .ctx-header {
@@ -532,6 +537,28 @@
       font-weight: 800;
       border-bottom: 1px solid #333a44;
       padding-bottom: 6px;
+    }
+    .ctx-tab-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .ctx-tab-btn {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      border-radius: 5px;
+      border: 1px solid #4b5563;
+      background: #2a3038;
+      color: #94a3b8;
+      cursor: pointer;
+      text-align: center;
+    }
+    .ctx-tab-btn.active {
+      background: #3b82f6;
+      color: #ffffff;
+      border-color: #60a5fa;
     }
     .ctx-close {
       cursor: pointer;
@@ -563,11 +590,16 @@
       font-size: 11px;
       font-weight: 600;
       text-align: left;
-      transition: background 0.15s ease, border-color 0.15s ease;
+      transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
     }
-    .palette-btn:hover {
+    .palette-btn:hover:not(:disabled) {
       background: #39424e;
       border-color: #60a5fa;
+    }
+    .palette-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      border-color: #2b3036;
     }
     .color-swatch {
       width: 16px;
@@ -595,7 +627,7 @@
       <button class="pop-btn" id="btnPopKeypad" title="Open resizable pop-out keyboard window">
         <span>⧉</span> Pop-out Keypad
       </button>
-      <button class="pop-btn" id="btnPopScreen" title="Open resizable pop-out screen window with zoom">
+      <button class="pop-btn" id="btnPopScreen" title="Open resizable pop-out screen window with auto-scale and zoom">
         Pop-out Screen <span>⧉</span>
       </button>
     </div>
@@ -611,7 +643,7 @@
     </div>
 
     <!-- 3X Extended Height LCD Bezel -->
-    <div class="lcd-bezel" id="lcdBezelContainer">
+    <div class="lcd-bezel" id="lcdBezelContainer" title="Right-click screen to change LCD background or text color">
       <div class="lcd-screen" id="lcdScreen">
         <!-- Indicators Bar -->
         <div class="lcd-indicators">
@@ -861,20 +893,24 @@
     <span id="ctxTitle">Color Options</span>
     <span class="ctx-close" id="ctxClose">✕</span>
   </div>
+  <div class="ctx-tab-bar" id="ctxTabBar" style="display:none;">
+    <button class="ctx-tab-btn active" id="tabLcdBg">Background</button>
+    <button class="ctx-tab-btn" id="tabLcdText">Text / Digits</button>
+  </div>
   <div class="ctx-palette-grid" id="ctxGrid"></div>
 </div>
 
 <div class="screen-tip">
-  💡 <strong>Pop-Outs:</strong> Top-Left for <strong>Keyboard</strong> • Top-Right for <strong>Screen (with 1.0x~4.0x Zoom Slider on Right-Click)</strong>
+  💡 <strong>Pro Tips:</strong> Right-click <strong>Screen</strong> for 12 Background & 12 Text Colors • Right-click <strong>Keys</strong> or <strong>Chassis</strong> for Themes • Top-Right for <strong>Auto-Fit Pop-Out Screen</strong>
 </div>
 
 <script>
 (function(){
-  // Auto-scaling handler for main window
+  // Main chassis resizing observer
   const resizer = document.getElementById('resizer');
   const chassis = document.getElementById('calcChassis');
   const BASE_WIDTH = 440;
-  const BASE_HEIGHT = 940;
+  const BASE_HEIGHT = 955;
 
   function handleResize() {
     const w = resizer.clientWidth - 12;
@@ -904,134 +940,126 @@
   // 12 Keypad Color Palettes
   const keyPalettes = [
     {
-      name: "Classic Two-Tone",
-      swatch: "#dbe0e6",
-      numGrad: "linear-gradient(180deg, #f8fafc 0%, #dbe0e6 100%)",
-      numText: "#1d2024",
-      funGrad: "linear-gradient(180deg, #444b54 0%, #2f343b 100%)",
-      funText: "#ffffff",
-      delGrad: "linear-gradient(180deg, #c53c33 0%, #92261e 100%)",
-      delText: "#ffffff"
+      name: "Classic Two-Tone", swatch: "#dbe0e6",
+      numGrad: "linear-gradient(180deg, #f8fafc 0%, #dbe0e6 100%)", numText: "#1d2024",
+      funGrad: "linear-gradient(180deg, #444b54 0%, #2f343b 100%)", funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #c53c33 0%, #92261e 100%)", delText: "#ffffff"
     },
     {
-      name: "Obsidian Stealth",
-      swatch: "#2b2d30",
-      numGrad: "linear-gradient(180deg, #3b3f45 0%, #232629 100%)",
-      numText: "#f1f5f9",
-      funGrad: "linear-gradient(180deg, #24272c 0%, #15171a 100%)",
-      funText: "#94a3b8",
-      delGrad: "linear-gradient(180deg, #8c2424 0%, #571212 100%)",
-      delText: "#ffffff"
+      name: "Obsidian Stealth", swatch: "#2b2d30",
+      numGrad: "linear-gradient(180deg, #3b3f45 0%, #232629 100%)", numText: "#f1f5f9",
+      funGrad: "linear-gradient(180deg, #24272c 0%, #15171a 100%)", funText: "#94a3b8",
+      delGrad: "linear-gradient(180deg, #8c2424 0%, #571212 100%)", delText: "#ffffff"
     },
     {
-      name: "Phillips Blue & Ice",
-      swatch: "#0062b0",
-      numGrad: "linear-gradient(180deg, #ffffff 0%, #e0f2fe 100%)",
-      numText: "#004b87",
-      funGrad: "linear-gradient(180deg, #0066b3 0%, #004b87 100%)",
-      funText: "#ffffff",
-      delGrad: "linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)",
-      delText: "#ffffff"
+      name: "Phillips Blue & Ice", swatch: "#0062b0",
+      numGrad: "linear-gradient(180deg, #ffffff 0%, #e0f2fe 100%)", numText: "#004b87",
+      funGrad: "linear-gradient(180deg, #0066b3 0%, #004b87 100%)", funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)", delText: "#ffffff"
     },
     {
-      name: "Arctic Teal",
-      swatch: "#0d9488",
-      numGrad: "linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 100%)",
-      numText: "#115e59",
-      funGrad: "linear-gradient(180deg, #14b8a6 0%, #0f766e 100%)",
-      funText: "#ffffff",
-      delGrad: "linear-gradient(180deg, #f43f5e 0%, #be123c 100%)",
-      delText: "#ffffff"
+      name: "Arctic Teal", swatch: "#0d9488",
+      numGrad: "linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 100%)", numText: "#115e59",
+      funGrad: "linear-gradient(180deg, #14b8a6 0%, #0f766e 100%)", funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #f43f5e 0%, #be123c 100%)", delText: "#ffffff"
     },
     {
-      name: "Emerald Matrix",
-      swatch: "#16a34a",
-      numGrad: "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%)",
-      numText: "#14532d",
-      funGrad: "linear-gradient(180deg, #22c55e 0%, #15803d 100%)",
-      funText: "#ffffff",
-      delGrad: "linear-gradient(180deg, #ea580c 0%, #9a3412 100%)",
-      delText: "#ffffff"
+      name: "Emerald Matrix", swatch: "#16a34a",
+      numGrad: "linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%)", numText: "#14532d",
+      funGrad: "linear-gradient(180deg, #22c55e 0%, #15803d 100%)", funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #ea580c 0%, #9a3412 100%)", delText: "#ffffff"
     },
     {
-      name: "Golden Amber",
-      swatch: "#f59e0b",
-      numGrad: "linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)",
-      numText: "#78350f",
-      funGrad: "linear-gradient(180deg, #f59e0b 0%, #b45309 100%)",
-      funText: "#ffffff",
-      delGrad: "linear-gradient(180deg, #dc2626 0%, #991b1b 100%)",
-      delText: "#ffffff"
+      name: "Golden Amber", swatch: "#f59e0b",
+      numGrad: "linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)", numText: "#78350f",
+      funGrad: "linear-gradient(180deg, #f59e0b 0%, #b45309 100%)", funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #dc2626 0%, #991b1b 100%)", delText: "#ffffff"
     },
     {
-      name: "Cyber Neon Pink",
-      swatch: "#ec4899",
-      numGrad: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%)",
-      numText: "#831843",
-      funGrad: "linear-gradient(180deg, #ec4899 0%, #be185d 100%)",
-      funText: "#ffffff",
-      delGrad: "linear-gradient(180deg, #6366f1 0%, #4338ca 100%)",
-      delText: "#ffffff"
+      name: "Cyber Neon Pink", swatch: "#ec4899",
+      numGrad: "linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%)", numText: "#831843",
+      funGrad: "linear-gradient(180deg, #ec4899 0%, #be185d 100%)", funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #6366f1 0%, #4338ca 100%)", delText: "#ffffff"
     },
     {
-      name: "Retro 80s Khaki",
-      swatch: "#c8bca7",
-      numGrad: "linear-gradient(180deg, #f2ece1 0%, #dfd5c4 100%)",
-      numText: "#3b3429",
-      funGrad: "linear-gradient(180deg, #7c705e 0%, #574d3f 100%)",
-      funText: "#f7f3ea",
-      delGrad: "linear-gradient(180deg, #b44335 0%, #83271d 100%)",
-      delText: "#ffffff"
+      name: "Retro 80s Khaki", swatch: "#c8bca7",
+      numGrad: "linear-gradient(180deg, #f2ece1 0%, #dfd5c4 100%)", numText: "#3b3429",
+      funGrad: "linear-gradient(180deg, #7c705e 0%, #574d3f 100%)", funText: "#f7f3ea",
+      delGrad: "linear-gradient(180deg, #b44335 0%, #83271d 100%)", delText: "#ffffff"
     },
     {
-      name: "Electric Violet",
-      swatch: "#8b5cf6",
-      numGrad: "linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%)",
-      numText: "#581c87",
-      funGrad: "linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%)",
-      funText: "#ffffff",
-      delGrad: "linear-gradient(180deg, #e11d48 0%, #9f1239 100%)",
-      delText: "#ffffff"
+      name: "Electric Violet", swatch: "#8b5cf6",
+      numGrad: "linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%)", numText: "#581c87",
+      funGrad: "linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%)", funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #e11d48 0%, #9f1239 100%)", delText: "#ffffff"
     },
     {
-      name: "Crimson Blaze",
-      swatch: "#dc2626",
-      numGrad: "linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%)",
-      numText: "#7f1d1d",
-      funGrad: "linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)",
-      funText: "#ffffff",
-      delGrad: "linear-gradient(180deg, #475569 0%, #1e293b 100%)",
-      delText: "#ffffff"
+      name: "Crimson Blaze", swatch: "#dc2626",
+      numGrad: "linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%)", numText: "#7f1d1d",
+      funGrad: "linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)", funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #475569 0%, #1e293b 100%)", delText: "#ffffff"
     },
     {
-      name: "High-Contrast Yellow",
-      swatch: "#eab308",
-      numGrad: "linear-gradient(180deg, #fef08a 0%, #fde047 100%)",
-      numText: "#000000",
-      funGrad: "linear-gradient(180deg, #27272a 0%, #18181b 100%)",
-      funText: "#facc15",
-      delGrad: "linear-gradient(180deg, #dc2626 0%, #991b1b 100%)",
-      delText: "#ffffff"
+      name: "High-Contrast Yellow", swatch: "#eab308",
+      numGrad: "linear-gradient(180deg, #fef08a 0%, #fde047 100%)", numText: "#000000",
+      funGrad: "linear-gradient(180deg, #27272a 0%, #18181b 100%)", funText: "#facc15",
+      delGrad: "linear-gradient(180deg, #dc2626 0%, #991b1b 100%)", delText: "#ffffff"
     },
     {
-      name: "Steel Blue Mono",
-      swatch: "#64748b",
-      numGrad: "linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%)",
-      numText: "#0f172a",
-      funGrad: "linear-gradient(180deg, #64748b 0%, #475569 100%)",
-      funText: "#ffffff",
-      delGrad: "linear-gradient(180deg, #0284c7 0%, #0369a1 100%)",
-      delText: "#ffffff"
+      name: "Steel Blue Mono", swatch: "#64748b",
+      numGrad: "linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%)", numText: "#0f172a",
+      funGrad: "linear-gradient(180deg, #64748b 0%, #475569 100%)", funText: "#ffffff",
+      delGrad: "linear-gradient(180deg, #0284c7 0%, #0369a1 100%)", delText: "#ffffff"
     }
   ];
+
+  // 12 Selectable LCD Background Colors (including plain white and plain black)
+  const lcdBgColors = [
+    { name: "Pale Green (LCD)", hex: "#98ad95", id: "pale_green" },
+    { name: "Plain White", hex: "#ffffff", id: "white" },
+    { name: "Plain Black (OLED)", hex: "#000000", id: "black" },
+    { name: "Amber Gold", hex: "#fde68a", id: "amber" },
+    { name: "Cobalt Deep Blue", hex: "#1e3a8a", id: "blue" },
+    { name: "Cool Mint", hex: "#a7f3d0", id: "mint" },
+    { name: "Slate Charcoal", hex: "#334155", id: "slate" },
+    { name: "Soft Rose", hex: "#fbcfe8", id: "rose" },
+    { name: "Solar Yellow", hex: "#fef08a", id: "yellow" },
+    { name: "Lilac Purple", hex: "#e9d5ff", id: "lilac" },
+    { name: "Warm Ochre", hex: "#d97706", id: "ochre" },
+    { name: "Forest Night", hex: "#064e3b", id: "forest" }
+  ];
+
+  // 12 Selectable LCD Text Colors (including plain white and plain black)
+  const lcdTextColors = [
+    { name: "Inky Black", hex: "#1f271e", id: "black" },
+    { name: "Crisp White", hex: "#ffffff", id: "white" },
+    { name: "Phosphor Amber", hex: "#fbbf24", id: "amber" },
+    { name: "Emerald Neon", hex: "#10b981", id: "mint" },
+    { name: "Cyan Glow", hex: "#38bdf8", id: "blue" },
+    { name: "Ruby Red", hex: "#ef4444", id: "rose" },
+    { name: "Lime Green", hex: "#84cc16", id: "pale_green" },
+    { name: "Bright Yellow", hex: "#eab308", id: "yellow" },
+    { name: "Electric Violet", hex: "#a855f7", id: "lilac" },
+    { name: "Hot Pink", hex: "#ec4899", id: "ochre" },
+    { name: "Ice Blue", hex: "#bae6fd", id: "slate" },
+    { name: "Silver Gray", hex: "#cbd5e1", id: "forest" }
+  ];
+
+  let currentLcdBgId = "pale_green";
+  let currentLcdTextId = "black";
+  let currentLcdBgHex = "#98ad95";
+  let currentLcdTextHex = "#1f271e";
 
   let popoutScreenWin = null;
   let popoutKeypadWin = null;
 
-  // Context Menu
+  // Context Menu DOM Elements
   const ctxMenu = document.getElementById('customCtxMenu');
   const ctxTitle = document.getElementById('ctxTitle');
   const ctxGrid = document.getElementById('ctxGrid');
+  const ctxTabBar = document.getElementById('ctxTabBar');
+  const tabLcdBg = document.getElementById('tabLcdBg');
+  const tabLcdText = document.getElementById('tabLcdText');
   const ctxClose = document.getElementById('ctxClose');
 
   ctxClose.addEventListener('click', hideContextMenu);
@@ -1069,11 +1097,71 @@
     }
   }
 
+  function applyLcdTheme(bgHex, textHex) {
+    currentLcdBgHex = bgHex;
+    currentLcdTextHex = textHex;
+    document.documentElement.style.setProperty('--lcd-bg', bgHex);
+    document.documentElement.style.setProperty('--lcd-dark', textHex);
+    if (popoutScreenWin && !popoutScreenWin.closed) {
+      popoutScreenWin.document.documentElement.style.setProperty('--lcd-bg', bgHex);
+      popoutScreenWin.document.documentElement.style.setProperty('--lcd-dark', textHex);
+    }
+  }
+
+  function renderLcdPaletteGrid(targetTab) {
+    ctxGrid.innerHTML = '';
+    if (targetTab === 'bg') {
+      tabLcdBg.classList.add('active');
+      tabLcdText.classList.remove('active');
+      lcdBgColors.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'palette-btn';
+        // Invisibility guard: disable identical color to active text
+        const isExcluded = (item.id === currentLcdTextId) || (item.hex.toLowerCase() === currentLcdTextHex.toLowerCase());
+        btn.disabled = isExcluded;
+        btn.title = isExcluded ? "Excluded to prevent invisible text" : item.name;
+        btn.innerHTML = `<span class="color-swatch" style="background:${item.hex};"></span><span>${item.name}</span>`;
+        btn.addEventListener('click', () => {
+          currentLcdBgId = item.id;
+          applyLcdTheme(item.hex, currentLcdTextHex);
+          renderLcdPaletteGrid('bg');
+        });
+        ctxGrid.appendChild(btn);
+      });
+    } else {
+      tabLcdText.classList.add('active');
+      tabLcdBg.classList.remove('active');
+      lcdTextColors.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'palette-btn';
+        // Invisibility guard: disable identical color to active background
+        const isExcluded = (item.id === currentLcdBgId) || (item.hex.toLowerCase() === currentLcdBgHex.toLowerCase());
+        btn.disabled = isExcluded;
+        btn.title = isExcluded ? "Excluded to prevent invisible text" : item.name;
+        btn.innerHTML = `<span class="color-swatch" style="background:${item.hex};"></span><span>${item.name}</span>`;
+        btn.addEventListener('click', () => {
+          currentLcdTextId = item.id;
+          applyLcdTheme(currentLcdBgHex, item.hex);
+          renderLcdPaletteGrid('text');
+        });
+        ctxGrid.appendChild(btn);
+      });
+    }
+  }
+
+  tabLcdBg.addEventListener('click', () => renderLcdPaletteGrid('bg'));
+  tabLcdText.addEventListener('click', () => renderLcdPaletteGrid('text'));
+
   function showContextMenu(x, y, type) {
     ctxMenu.style.display = 'flex';
     ctxGrid.innerHTML = '';
+    ctxTabBar.style.display = 'none';
 
-    if (type === 'chassis') {
+    if (type === 'lcd') {
+      ctxTitle.textContent = 'LCD Screen Theme (144 Combinations)';
+      ctxTabBar.style.display = 'flex';
+      renderLcdPaletteGrid('bg');
+    } else if (type === 'chassis') {
       ctxTitle.textContent = 'Chassis Color (12)';
       chassisColors.forEach(item => {
         const btn = document.createElement('button');
@@ -1099,7 +1187,7 @@
       });
     }
 
-    const menuWidth = 250;
+    const menuWidth = 260;
     const menuHeight = 360;
     let posX = Math.min(x, window.innerWidth - menuWidth - 10);
     let posY = Math.min(y, window.innerHeight - menuHeight - 10);
@@ -1107,11 +1195,16 @@
     ctxMenu.style.top = `${Math.max(10, posY)}px`;
   }
 
+  // Intercept Right Clicks
   window.addEventListener('contextmenu', (e) => {
+    const isScreen = e.target.closest('#lcdBezelContainer');
     const isButton = e.target.closest('.calc-btn, .dpad-btn');
     const isChassis = e.target.closest('#calcChassis');
 
-    if (isButton) {
+    if (isScreen) {
+      e.preventDefault();
+      showContextMenu(e.clientX, e.clientY, 'lcd');
+    } else if (isButton) {
       e.preventDefault();
       showContextMenu(e.clientX, e.clientY, 'keys');
     } else if (isChassis && !e.target.closest('.pop-btn')) {
@@ -1298,7 +1391,7 @@
 
   function renderMenu() {
     const menu = state.activeMenu;
-    let html = `<div style="font-size:12px; margin-bottom:5px; border-bottom:1px solid #555; padding-bottom:3px;">${menu.title}</div>`;
+    let html = `<div style="font-size:12px; margin-bottom:5px; border-bottom:1px solid currentColor; padding-bottom:3px;">${menu.title}</div>`;
     menu.items.forEach(item => {
       html += `<div class="menu-row"><span>${item.id}:${item.label}</span></div>`;
     });
@@ -1436,7 +1529,7 @@
     renderScreen();
   }
 
-  // Menus
+  // Calculation Menus
   function openModeMenu() {
     state.activeMenu = {
       title: "Calculation Mode",
@@ -1695,9 +1788,7 @@
     closeMenu();
   }
 
-  // ==========================================
-  // MATHEMATICAL EVALUATION ENGINE
-  // ==========================================
+  // Expression Evaluator & Math Logic
   function evaluateExpression(raw) {
     if (!raw || raw.trim() === '') return 0;
     if (raw.includes(':')) {
@@ -1744,8 +1835,7 @@
   function preprocessMath(str) {
     let s = str;
 
-    // Handle nPr and nCr INFIX (e.g. 6P3, 6 nPr 3, 10C4, 10 nCr 4)
-    // Repeat to handle chained operations if any
+    // Handle nPr and nCr infix
     let prev;
     do {
       prev = s;
@@ -1753,20 +1843,16 @@
       s = s.replace(/(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)\s*(?:C|nCr)\s*(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)/g, 'nCr($1,$2)');
     } while (s !== prev);
 
-    // Coordinate conversions
     s = s.replace(/Pol\(([^,]+),([^)]+)\)/g, 'Pol($1,$2)');
     s = s.replace(/Rec\(([^,]+),([^)]+)\)/g, 'Rec($1,$2)');
 
-    // Scientific Constants & Basic Operators
     s = s.replace(/Ans/g, ' Ans ');
     s = s.replace(/π/g, ' Math.PI ');
     s = s.replace(/\be\b/g, ' Math.E ');
 
-    // Multiply and Divide symbols
     s = s.replace(/×10\^/g, '*1e');
     s = s.replace(/×/g, '*').replace(/÷/g, '/');
 
-    // Advanced & Hyperbolic Functions
     s = s.replace(/sin⁻¹\(/g, 'asin(').replace(/cos⁻¹\(/g, 'acos(').replace(/tan⁻¹\(/g, 'atan(');
     s = s.replace(/sinh⁻¹\(/g, 'asinh(').replace(/cosh⁻¹\(/g, 'acosh(').replace(/tanh⁻¹\(/g, 'atanh(');
     s = s.replace(/sin\(/g, 'sin(').replace(/cos\(/g, 'cos(').replace(/tan\(/g, 'tan(');
@@ -1779,22 +1865,19 @@
     s = s.replace(/Ran#/g, 'Ran()');
     s = s.replace(/GCD\(([^,]+),([^)]+)\)/g, 'gcd($1,$2)').replace(/LCM\(([^,]+),([^)]+)\)/g, 'lcm($1,$2)');
 
-    // Fractions
     s = s.replace(/(\d+)\s*⌟\s*(\d+)\s*⌟\s*(\d+)/g, 'mixedFrac($1,$2,$3)');
     s = s.replace(/(\d+)\s*⌟\s*(\d+)/g, '($1/$2)');
     s = s.replace(/\^/g, '**');
 
-    // Implicit multiplication (Casio convention)
+    // Casio implicit multiplication
     s = s.replace(/(\d+)\s*\(/g, '$1*(');
     s = s.replace(/\)\s*\(/g, ')*(');
     s = s.replace(/\)\s*(\d+)/g, ')*$1');
 
-    // DMS
     s = s.replace(/(\d+)\s*°\s*(\d+)\s*'\s*(\d+(\.\d+)?)\s*"/g, 'dmsToDec($1,$2,$3)');
     s = s.replace(/(\d+)\s*°\s*(\d+)\s*'/g, 'dmsToDec($1,$2,0)');
     s = s.replace(/(\d+)\s*°/g, 'dmsToDec($1,0,0)');
 
-    // Angle units
     s = s.replace(/(\d+(\.\d+)?)ʳ/g, 'fromRad($1)');
     s = s.replace(/(\d+(\.\d+)?)ᵍ/g, 'fromGrad($1)');
     s = s.replace(/(\d+)!/g, 'fact($1)');
@@ -2053,20 +2136,17 @@
       if (state.shift) { insertToken('Rec('); state.shift = false; }
       else insertToken('-');
     },
-    // Casio fx-82AU PLUS II: Shift × inputs permutation P
     'k-mul': () => {
       if (state.shift) { insertToken('P'); state.shift = false; }
       else if (state.alpha) { insertToken('GCD('); state.alpha = false; }
       else insertToken('×');
     },
-    // Casio fx-82AU PLUS II: Shift ÷ inputs combination C
     'k-div': () => {
       if (state.shift) { insertToken('C'); state.shift = false; }
       else if (state.alpha) { insertToken('LCM('); state.alpha = false; }
       else insertToken('÷');
     },
     'k-lpar': () => insertToken('('),
-    // Casio fx-82AU PLUS II: Shift ) inputs Comma ','
     'k-rpar': () => {
       if (state.shift) { insertToken(','); state.shift = false; }
       else if (state.alpha) { insertToken('X'); state.alpha = false; }
@@ -2214,7 +2294,7 @@
   }
   bindKeyEvents(document);
 
-  // Keyboard Support
+  // Physical Keyboard Support
   window.addEventListener('keydown', (e) => {
     if (e.key >= '0' && e.key <= '9') handleNumericKey(e.key);
     else if (e.key === '+') keyMap['k-add']();
@@ -2234,14 +2314,16 @@
     else if (e.key === ',') insertToken(',');
   });
 
-  // POP-OUT SCREEN WINDOW
+  // ==========================================
+  // POP-OUT SCREEN WINDOW WITH AUTO-SCALE + ZOOM
+  // ==========================================
   document.getElementById('btnPopScreen').addEventListener('click', () => {
     if (popoutScreenWin && !popoutScreenWin.closed) {
       popoutScreenWin.focus();
       return;
     }
 
-    popoutScreenWin = window.open('', 'PhillipsPopoutScreen', 'width=520,height=520,resizable=yes');
+    popoutScreenWin = window.open('', 'PhillipsPopoutScreen', 'width=540,height=560,resizable=yes');
     if (!popoutScreenWin) {
       alert("Pop-up was blocked. Please allow pop-ups for this emulator.");
       return;
@@ -2252,24 +2334,31 @@
       <!DOCTYPE html>
       <html>
       <head>
-        <title>PHILLIPS Screen Display - Resizable with Zoom</title>
+        <title>PHILLIPS Screen Display - Auto-Fit Resizable</title>
         <style>
           ${cssContent}
           body {
             background: #111417;
             margin: 0;
-            padding: 14px;
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            overflow: auto;
+            width: 100vw;
+            overflow: hidden;
             position: relative;
           }
           #popLcdWrapper {
+            width: 404px;
+            height: 382px;
             transform-origin: center center;
-            transition: transform 0.15s ease;
-            width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          #popLcdInner {
+            width: 100%;
           }
           .zoom-ctx-menu {
             position: fixed;
@@ -2331,7 +2420,7 @@
 
         <div class="zoom-ctx-menu" id="popZoomMenu">
           <div class="zoom-ctx-header">
-            <span>Display Zoom (1x - 4x)</span>
+            <span>Extra Zoom Multiplier</span>
             <span class="zoom-close" id="btnZoomClose">✕</span>
           </div>
           <div class="zoom-slider-row">
@@ -2355,17 +2444,25 @@
       const zoomWrapper = popDoc.getElementById('popLcdWrapper');
       const zoomClose = popDoc.getElementById('btnZoomClose');
 
-      let currentZoom = 1.0;
+      const BASE_SCREEN_W = 404;
+      const BASE_SCREEN_H = 382;
+      let manualZoomMultiplier = 1.0;
 
-      function updateZoom(z) {
-        currentZoom = z;
-        zoomSlider.value = z;
-        zoomVal.textContent = parseFloat(z).toFixed(1) + '×';
-        zoomWrapper.style.transform = `scale(${z})`;
+      // Automatically scales screen to fit maximum dimension inside dragged window
+      function scalePopoutScreen() {
+        const w = popoutScreenWin.innerWidth;
+        const h = popoutScreenWin.innerHeight;
+        const baseFit = Math.min(w / BASE_SCREEN_W, h / BASE_SCREEN_H) * 0.95;
+        const finalScale = baseFit * manualZoomMultiplier;
+        zoomWrapper.style.transform = `scale(${finalScale})`;
       }
 
+      popoutScreenWin.addEventListener('resize', scalePopoutScreen);
+
       zoomSlider.addEventListener('input', (e) => {
-        updateZoom(e.target.value);
+        manualZoomMultiplier = parseFloat(e.target.value);
+        zoomVal.textContent = manualZoomMultiplier.toFixed(1) + '×';
+        scalePopoutScreen();
       });
 
       zoomClose.addEventListener('click', () => {
@@ -2386,10 +2483,13 @@
       });
 
       syncPopoutScreen();
+      scalePopoutScreen();
     });
   });
 
-  // POP-OUT KEYBOARD WINDOW
+  // ==========================================
+  // POP-OUT KEYBOARD WINDOW (AUTO-SCALED)
+  // ==========================================
   document.getElementById('btnPopKeypad').addEventListener('click', () => {
     if (popoutKeypadWin && !popoutKeypadWin.closed) {
       popoutKeypadWin.focus();
