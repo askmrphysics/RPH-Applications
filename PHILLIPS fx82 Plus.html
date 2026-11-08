@@ -75,13 +75,13 @@
       z-index: 100;
     }
 
-    /* Calculator Chassis - Tightly Fitted (Unused bottom removed) */
+    /* Calculator Chassis - Snug form factor (no empty bottom) */
     .calc-container {
       position: absolute;
       top: 0;
       left: 0;
       width: 440px;
-      height: 950px; /* Snug height eliminating empty plastic bottom */
+      height: 940px;
       transform-origin: top left;
       background: var(--chassis-grad);
       border-radius: 36px 36px 38px 38px;
@@ -200,7 +200,7 @@
       border-radius: 6px;
       box-shadow: inset 1px 2px 7px rgba(0,0,0,0.45);
       border: 1px solid #738570;
-      height: 366px; /* 3X height */
+      height: 366px; /* 3X original height */
       display: flex;
       flex-direction: column;
       padding: 6px 8px;
@@ -748,7 +748,7 @@
           <button class="calc-btn btn-fun" id="k-lpar">(</button>
         </div>
         <div class="key-cell">
-          <div class="key-labels"><span></span><span class="label-alpha">X</span></div>
+          <div class="key-labels"><span class="label-shift">,</span><span class="label-alpha">X</span></div>
           <button class="calc-btn btn-fun" id="k-rpar">)</button>
         </div>
         <div class="key-cell">
@@ -874,7 +874,7 @@
   const resizer = document.getElementById('resizer');
   const chassis = document.getElementById('calcChassis');
   const BASE_WIDTH = 440;
-  const BASE_HEIGHT = 950; // Optimized tight height
+  const BASE_HEIGHT = 940;
 
   function handleResize() {
     const w = resizer.clientWidth - 12;
@@ -1025,11 +1025,10 @@
     }
   ];
 
-  // Pop-Out Windows State
   let popoutScreenWin = null;
   let popoutKeypadWin = null;
 
-  // Context Menu Handling
+  // Context Menu
   const ctxMenu = document.getElementById('customCtxMenu');
   const ctxTitle = document.getElementById('ctxTitle');
   const ctxGrid = document.getElementById('ctxGrid');
@@ -1108,7 +1107,6 @@
     ctxMenu.style.top = `${Math.max(10, posY)}px`;
   }
 
-  // Intercept Right Click on Main Chassis
   window.addEventListener('contextmenu', (e) => {
     const isButton = e.target.closest('.calc-btn, .dpad-btn');
     const isChassis = e.target.closest('#calcChassis');
@@ -1166,7 +1164,7 @@
     activeMenu: null
   };
 
-  // Screen DOM Elements
+  // Screen Elements
   const indS = document.getElementById('ind-s');
   const indA = document.getElementById('ind-a');
   const indM = document.getElementById('ind-m');
@@ -1281,7 +1279,6 @@
       const target = popDoc.getElementById('popLcdInner');
       if (target) {
         target.innerHTML = document.getElementById('lcdBezelContainer').outerHTML;
-        // Re-attach history item clicks inside pop-out screen
         target.querySelectorAll('.hist-item').forEach((el, index) => {
           el.addEventListener('click', () => {
             if (state.calcHistory[index]) {
@@ -1698,7 +1695,9 @@
     closeMenu();
   }
 
-  // Calculator Math Evaluation
+  // ==========================================
+  // MATHEMATICAL EVALUATION ENGINE
+  // ==========================================
   function evaluateExpression(raw) {
     if (!raw || raw.trim() === '') return 0;
     if (raw.includes(':')) {
@@ -1744,14 +1743,30 @@
 
   function preprocessMath(str) {
     let s = str;
-    s = s.replace(/×/g, '*').replace(/÷/g, '/');
+
+    // Handle nPr and nCr INFIX (e.g. 6P3, 6 nPr 3, 10C4, 10 nCr 4)
+    // Repeat to handle chained operations if any
+    let prev;
+    do {
+      prev = s;
+      s = s.replace(/(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)\s*(?:P|nPr)\s*(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)/g, 'nPr($1,$2)');
+      s = s.replace(/(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)\s*(?:C|nCr)\s*(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)/g, 'nCr($1,$2)');
+    } while (s !== prev);
+
+    // Coordinate conversions
+    s = s.replace(/Pol\(([^,]+),([^)]+)\)/g, 'Pol($1,$2)');
+    s = s.replace(/Rec\(([^,]+),([^)]+)\)/g, 'Rec($1,$2)');
+
+    // Scientific Constants & Basic Operators
     s = s.replace(/Ans/g, ' Ans ');
     s = s.replace(/π/g, ' Math.PI ');
     s = s.replace(/\be\b/g, ' Math.E ');
 
-    s = s.replace(/Pol\(([^,]+),([^)]+)\)/g, 'Pol($1,$2)');
-    s = s.replace(/Rec\(([^,]+),([^)]+)\)/g, 'Rec($1,$2)');
+    // Multiply and Divide symbols
+    s = s.replace(/×10\^/g, '*1e');
+    s = s.replace(/×/g, '*').replace(/÷/g, '/');
 
+    // Advanced & Hyperbolic Functions
     s = s.replace(/sin⁻¹\(/g, 'asin(').replace(/cos⁻¹\(/g, 'acos(').replace(/tan⁻¹\(/g, 'atan(');
     s = s.replace(/sinh⁻¹\(/g, 'asinh(').replace(/cosh⁻¹\(/g, 'acosh(').replace(/tanh⁻¹\(/g, 'atanh(');
     s = s.replace(/sin\(/g, 'sin(').replace(/cos\(/g, 'cos(').replace(/tan\(/g, 'tan(');
@@ -1764,22 +1779,26 @@
     s = s.replace(/Ran#/g, 'Ran()');
     s = s.replace(/GCD\(([^,]+),([^)]+)\)/g, 'gcd($1,$2)').replace(/LCM\(([^,]+),([^)]+)\)/g, 'lcm($1,$2)');
 
+    // Fractions
     s = s.replace(/(\d+)\s*⌟\s*(\d+)\s*⌟\s*(\d+)/g, 'mixedFrac($1,$2,$3)');
     s = s.replace(/(\d+)\s*⌟\s*(\d+)/g, '($1/$2)');
     s = s.replace(/\^/g, '**');
 
-    // Casio implicit multiplication rule
+    // Implicit multiplication (Casio convention)
     s = s.replace(/(\d+)\s*\(/g, '$1*(');
     s = s.replace(/\)\s*\(/g, ')*(');
     s = s.replace(/\)\s*(\d+)/g, ')*$1');
 
+    // DMS
     s = s.replace(/(\d+)\s*°\s*(\d+)\s*'\s*(\d+(\.\d+)?)\s*"/g, 'dmsToDec($1,$2,$3)');
     s = s.replace(/(\d+)\s*°\s*(\d+)\s*'/g, 'dmsToDec($1,$2,0)');
     s = s.replace(/(\d+)\s*°/g, 'dmsToDec($1,0,0)');
 
+    // Angle units
     s = s.replace(/(\d+(\.\d+)?)ʳ/g, 'fromRad($1)');
     s = s.replace(/(\d+(\.\d+)?)ᵍ/g, 'fromGrad($1)');
     s = s.replace(/(\d+)!/g, 'fact($1)');
+
     return s;
   }
 
@@ -1803,21 +1822,29 @@
       asinh: Math.asinh, acosh: Math.acosh, atanh: Math.atanh,
       log10: x => Math.log10(x),
       fact: n => {
+        n = Math.round(n);
+        if (n < 0 || n > 69) return NaN;
         let r = 1;
         for (let i = 2; i <= n; i++) r *= i;
         return r;
       },
       nPr: (n, r) => {
-        if (r < 0 || r > n) return 0;
+        n = Math.round(Number(n));
+        r = Math.round(Number(r));
+        if (isNaN(n) || isNaN(r) || r < 0 || r > n) return NaN;
         let p = 1;
         for (let i = 0; i < r; i++) p *= (n - i);
         return p;
       },
       nCr: (n, r) => {
-        if (r < 0 || r > n) return 0;
+        n = Math.round(Number(n));
+        r = Math.round(Number(r));
+        if (isNaN(n) || isNaN(r) || r < 0 || r > n) return NaN;
+        if (r === 0 || r === n) return 1;
+        if (r > n / 2) r = n - r;
         let c = 1;
-        for (let i = 1; i <= r; i++) c = c * (n - i + 1) / i;
-        return c;
+        for (let i = 1; i <= r; i++) c = (c * (n - i + 1)) / i;
+        return Math.round(c);
       },
       Pol: (x, y) => {
         let r = Math.hypot(x, y);
@@ -2026,19 +2053,23 @@
       if (state.shift) { insertToken('Rec('); state.shift = false; }
       else insertToken('-');
     },
+    // Casio fx-82AU PLUS II: Shift × inputs permutation P
     'k-mul': () => {
-      if (state.shift) { insertToken(' nPr '); state.shift = false; }
+      if (state.shift) { insertToken('P'); state.shift = false; }
       else if (state.alpha) { insertToken('GCD('); state.alpha = false; }
       else insertToken('×');
     },
+    // Casio fx-82AU PLUS II: Shift ÷ inputs combination C
     'k-div': () => {
-      if (state.shift) { insertToken(' nCr '); state.shift = false; }
+      if (state.shift) { insertToken('C'); state.shift = false; }
       else if (state.alpha) { insertToken('LCM('); state.alpha = false; }
       else insertToken('÷');
     },
     'k-lpar': () => insertToken('('),
+    // Casio fx-82AU PLUS II: Shift ) inputs Comma ','
     'k-rpar': () => {
-      if (state.alpha) { insertToken('X'); state.alpha = false; }
+      if (state.shift) { insertToken(','); state.shift = false; }
+      else if (state.alpha) { insertToken('X'); state.alpha = false; }
       else insertToken(')');
     },
     'k-frac': () => insertToken('⌟'),
@@ -2170,7 +2201,6 @@
     return varMap[ch] || null;
   }
 
-  // Attach button event listeners on main keypad
   function bindKeyEvents(scope) {
     for (let id in keyMap) {
       const el = scope.querySelector ? scope.querySelector('#' + id) : document.getElementById(id);
@@ -2201,11 +2231,10 @@
     else if (e.key === '(') keyMap['k-lpar']();
     else if (e.key === ')') keyMap['k-rpar']();
     else if (e.key === '.') keyMap['k-dot']();
+    else if (e.key === ',') insertToken(',');
   });
 
-  // ==========================================
-  // POP-OUT SCREEN WINDOW WITH 1.0x-4.0x ZOOM
-  // ==========================================
+  // POP-OUT SCREEN WINDOW
   document.getElementById('btnPopScreen').addEventListener('click', () => {
     if (popoutScreenWin && !popoutScreenWin.closed) {
       popoutScreenWin.focus();
@@ -2300,7 +2329,6 @@
           <div id="popLcdInner"></div>
         </div>
 
-        <!-- Right-Click Zoom Slider Menu -->
         <div class="zoom-ctx-menu" id="popZoomMenu">
           <div class="zoom-ctx-header">
             <span>Display Zoom (1x - 4x)</span>
@@ -2344,7 +2372,6 @@
         zoomMenu.style.display = 'none';
       });
 
-      // Right-click anywhere in screen window opens zoom slider
       popDoc.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         zoomMenu.style.display = 'flex';
@@ -2362,9 +2389,7 @@
     });
   });
 
-  // ==========================================
-  // POP-OUT KEYBOARD WINDOW (PROPORTIONALLY SCALED)
-  // ==========================================
+  // POP-OUT KEYBOARD WINDOW
   document.getElementById('btnPopKeypad').addEventListener('click', () => {
     if (popoutKeypadWin && !popoutKeypadWin.closed) {
       popoutKeypadWin.focus();
@@ -2423,7 +2448,6 @@
       const BASE_KP_W = 404;
       const BASE_KP_H = 480;
 
-      // Scaling to limiting dimensions of aspect ratio
       function scaleKeypadWindow() {
         const w = popoutKeypadWin.innerWidth;
         const h = popoutKeypadWin.innerHeight;
@@ -2434,10 +2458,8 @@
       popoutKeypadWin.addEventListener('resize', scaleKeypadWindow);
       scaleKeypadWindow();
 
-      // Bind all button clicks back to main emulator engine
       bindKeyEvents(popDoc);
 
-      // Context menu for color styling inside pop-out keyboard
       popDoc.addEventListener('contextmenu', (e) => {
         const isButton = e.target.closest('.calc-btn, .dpad-btn');
         if (isButton) {
