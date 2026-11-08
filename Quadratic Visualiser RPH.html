@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VCE Math Methods — Quadratic Function Explorer</title>
+  <style>
+    :root {
+      --bg-main: #0b1120;
+      --bg-panel: rgba(17, 24, 39, 0.85);
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-amber: #f59e0b;
+      --accent-emerald: #34d399;
+      --accent-rose: #f43f5e;
+      --accent-purple: #c084fc;
+      --slider-track: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+    }
+
+    /* Left Sidebar / Control Panel */
+    #sidebar {
+      width: 440px;
+      min-width: 380px;
+      height: 100vh;
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .header-bar {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.5) 0%, transparent 100%);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .scroll-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .scroll-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scroll-content::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    /* Mode Selector Buttons */
+    .mode-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .mode-btn {
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .mode-btn.active {
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    /* Equation Display Box */
+    .eq-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .eq-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .equation-math {
+      font-size: 1.35rem;
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+      font-style: italic;
+      color: #fff;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.5px;
+    }
+
+    /* Slider Group */
+    .slider-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .slider-title {
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+
+    .slider-val {
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: monospace;
+      color: var(--accent-cyan);
+      background: rgba(15, 23, 42, 0.7);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--slider-track);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+      transition: transform 0.1s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Scale ticks under font zoom slider */
+    .ticks-scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-family: monospace;
+      padding: 0 2px;
+      margin-top: -2px;
+    }
+
+    /* Information / Math Methods Specs */
+    .info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+    }
+
+    .info-card h4 {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 4px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      row-gap: 6px;
+      column-gap: 12px;
+      align-items: center;
+    }
+
+    .info-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .transform-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      color: #cbd5e1;
+    }
+
+    .transform-list li span {
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    /* Toggles & Options */
+    .toggle-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-label input {
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
+
+    /* Presets */
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .preset-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: #cbd5e1;
+      padding: 4px 10px;
+      font-size: 0.74rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-pill:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    /* Main Graph Canvas Area */
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      height: 100vh;
+      background: radial-gradient(circle at 50% 50%, #172554 0%, #0b1120 85%);
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* Floating Canvas Controls */
+    .canvas-hud {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      display: flex;
+      gap: 10px;
+      z-index: 5;
+    }
+
+    .hud-btn {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hud-btn:hover {
+      background: rgba(30, 41, 59, 0.95);
+      border-color: var(--accent-cyan);
+    }
+
+    .instructions-hint {
+      position: absolute;
+      bottom: 16px;
+      right: 18px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      pointer-events: none;
+      backdrop-filter: blur(6px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controls Sidebar -->
+  <aside id="sidebar">
+    <div class="header-bar">
+      <div class="badge">VCE Mathematical Methods — Units 1 &amp; 2</div>
+      <h1>Quadratic Function Explorer</h1>
+    </div>
+
+    <div class="scroll-content">
+      <!-- Mode Toggle -->
+      <div class="mode-nav">
+        <button id="btnModeTP" class="mode-btn active" onclick="setMode('turningPoint')">
+          Turning Point Form
+        </button>
+        <button id="btnModeEXP" class="mode-btn" onclick="setMode('expanded')">
+          Expanded Form
+        </button>
+      </div>
+
+      <!-- Live Equation Box -->
+      <div class="eq-card">
+        <div class="eq-label" id="formSubtitle">y = a(x - h)² + k</div>
+        <div class="equation-math" id="equationRender">y = (x - 2)² - 4</div>
+      </div>
+
+      <!-- Sliders for Turning Point Form -->
+      <div id="tpControls" style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-title">Dilation &amp; Reflection (a)</span>
+            <span class="slider-val" id="valA">1.00</span>
+          </div>
+          <input type="range" id="sliderA" min="-4" max="4" step="0.05" value="1" oninput="updateFromTP()">
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-title">Horizontal Translation (h)</span>
+            <span class="slider-val" id="valH">2.00</span>
+          </div>
+          <input type="range" id="sliderH" min="-10" max="10" step="0.1" value="2" oninput="updateFromTP()">
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-title">Vertical Translation (k)</span>
+            <span class="slider-val" id="valK">-4.00</span>
+          </div>
+          <input type="range" id="sliderK" min="-15" max="15" step="0.1" value="-4" oninput="updateFromTP()">
+        </div>
+      </div>
+
+      <!-- Sliders for Expanded Form -->
+      <div id="expControls" style="display: none; flex-direction: column; gap: 10px;">
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-title">Quadratic Coefficient (a)</span>
+            <span class="slider-val" id="valExpA">1.00</span>
+          </div>
+          <input type="range" id="sliderExpA" min="-4" max="4" step="0.05" value="1" oninput="updateFromEXP()">
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-title">Linear Coefficient (b)</span>
+            <span class="slider-val" id="valExpB">-4.00</span>
+          </div>
+          <input type="range" id="sliderExpB" min="-12" max="12" step="0.2" value="-4" oninput="updateFromEXP()">
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-title">Constant Term / y-intercept (c)</span>
+            <span class="slider-val" id="valExpC">0.00</span>
+          </div>
+          <input type="range" id="sliderExpC" min="-15" max="15" step="0.2" value="0" oninput="updateFromEXP()">
+        </div>
+      </div>
+
+      <!-- VCE Transformation Analysis -->
+      <div class="info-card">
+        <h4>VCE Transformations (Mapping from y = x²)</h4>
+        <ul class="transform-list" id="transformSummary">
+          <!-- Dynamically populated -->
+        </ul>
+      </div>
+
+      <!-- Key Coordinates & Features -->
+      <div class="info-card">
+        <h4>Key Mathematical Features</h4>
+        <div class="info-grid">
+          <div><span class="info-dot" style="background: var(--accent-rose)"></span> Turning Point:</div>
+          <strong id="dispTP">(2.00, -4.00)</strong>
+
+          <div><span class="info-dot" style="background: var(--accent-amber)"></span> Axis of Sym:</div>
+          <strong id="dispAxis">x = 2.00</strong>
+
+          <div><span class="info-dot" style="background: var(--accent-purple)"></span> y-intercept:</div>
+          <strong id="dispYInt">(0.00, 0.00)</strong>
+
+          <div><span class="info-dot" style="background: var(--accent-emerald)"></span> Discriminant (Δ):</div>
+          <strong id="dispDelta">16.00 (2 real roots)</strong>
+
+          <div><span class="info-dot" style="background: var(--accent-emerald)"></span> x-intercept(s):</div>
+          <strong id="dispXInt">(0.00, 0), (4.00, 0)</strong>
+        </div>
+      </div>
+
+      <!-- Coordinate Font Zoom Slider (Snaps to 0.5 intervals from 1x to 4x) -->
+      <div class="slider-card" style="border: 1px solid rgba(56, 189, 248, 0.35); background: rgba(15, 23, 42, 0.8);">
+        <div class="slider-header">
+          <span class="slider-title" style="color: #38bdf8; display: flex; align-items: center; gap: 6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+            Coordinate Font Zoom
+          </span>
+          <span class="slider-val" id="valFontScale">1.0×</span>
+        </div>
+        <input type="range" id="sliderFontScale" min="1.0" max="4.0" step="0.5" value="1.0" oninput="updateFontScale()">
+        <div class="ticks-scale">
+          <span>1.0×</span>
+          <span>1.5×</span>
+          <span>2.0×</span>
+          <span>2.5×</span>
+          <span>3.0×</span>
+          <span>3.5×</span>
+          <span>4.0×</span>
+        </div>
+      </div>
+
+      <!-- Display Toggles -->
+      <div class="toggle-row">
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkAxis" checked onchange="draw()"> Axis of Symmetry
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkPoints" checked onchange="draw()"> Key Feature Dots
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkGrid" checked onchange="draw()"> Grid Lines
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkTrace" checked onchange="draw()"> Cursor Crosshair
+        </label>
+      </div>
+
+      <!-- Quick Presets -->
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-bottom: 8px;">
+        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Curated Presets:</div>
+        <div class="presets-row">
+          <button class="preset-pill" onclick="applyPreset(1, 0, 0)">Base y = x²</button>
+          <button class="preset-pill" onclick="applyPreset(-0.5, 3, 5)">Reflected &amp; Shifted</button>
+          <button class="preset-pill" onclick="applyPreset(1, -3, 0)">Tangential Root (Δ = 0)</button>
+          <button class="preset-pill" onclick="applyPreset(1.5, 2, 3)">No Real Roots (Δ &lt; 0)</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Interactive Canvas Viewport -->
+  <main id="canvas-container">
+    <div class="canvas-hud">
+      <button class="hud-btn" onclick="resetView()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Reset Framing
+      </button>
+      <button class="hud-btn" onclick="toggleFullScreen()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        Full Screen
+      </button>
+    </div>
+
+    <canvas id="graphCanvas"></canvas>
+
+    <div class="instructions-hint">
+      🖱️ Scroll wheel: Zoom at cursor | Right-click + drag: Pan sideways
+    </div>
+  </main>
+
+  <script>
+    // State variables
+    let mode = 'turningPoint'; // 'turningPoint' or 'expanded'
+    let a = 1, h = 2, k = -4; // Primary model in TP form
+    let b = -4, c = 0;        // Expanded equivalents
+    let fontScale = 1.0;      // Magnification factor (1.0 to 4.0 in steps of 0.5)
+
+    // Canvas & Viewport Coordinates
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // View settings: default frame contains x in [-10, 10]
+    let viewXMin = -10;
+    let viewXMax = 10;
+    let viewYMin = -10;
+    let viewYMax = 10;
+
+    let isRightDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let startViewXMin = 0, startViewXMax = 0, startViewYMin = 0, startViewYMax = 0;
+    let mouseMathX = null;
+    let mouseMathY = null;
+
+    function init() {
+      resizeCanvas();
+      syncTPtoEXP();
+      autoScaleY();
+      updateUI();
+      draw();
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        draw();
+      });
+    }
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+
+    // Auto-scale Y so that x in [-10, 10] nicely frames the default parabola
+    function autoScaleY() {
+      viewXMin = -10;
+      viewXMax = 10;
+
+      const xs = [-10, -5, 0, 5, 10, h];
+      const ys = xs.map(x => evaluateY(x));
+      ys.push(k);
+
+      let minY = Math.min(...ys);
+      let maxY = Math.max(...ys);
+
+      if (minY < -30) minY = -30;
+      if (maxY > 30) maxY = 30;
+
+      const padding = Math.max(3, (maxY - minY) * 0.15);
+      viewYMin = Math.floor(minY - padding);
+      viewYMax = Math.ceil(maxY + padding);
+
+      if (viewYMin > -2) viewYMin = -2;
+      if (viewYMax < 2) viewYMax = 2;
+    }
+
+    function resetView() {
+      autoScaleY();
+      draw();
+    }
+
+    function evaluateY(x) {
+      return a * Math.pow(x - h, 2) + k;
+    }
+
+    function screenToMath(px, py) {
+      const rect = canvas.getBoundingClientRect();
+      const xRatio = (px - rect.left) / rect.width;
+      const yRatio = (py - rect.top) / rect.height;
+
+      const mx = viewXMin + xRatio * (viewXMax - viewXMin);
+      const my = viewYMax - yRatio * (viewYMax - viewYMin);
+      return { x: mx, y: my };
+    }
+
+    function mathToScreen(mx, my) {
+      const rect = canvas.getBoundingClientRect();
+      const px = ((mx - viewXMin) / (viewXMax - viewXMin)) * rect.width;
+      const py = ((viewYMax - my) / (viewYMax - viewYMin)) * rect.height;
+      return { x: px, y: py };
+    }
+
+    // Mode Switching
+    function setMode(newMode) {
+      mode = newMode;
+      document.getElementById('btnModeTP').classList.toggle('active', mode === 'turningPoint');
+      document.getElementById('btnModeEXP').classList.toggle('active', mode === 'expanded');
+      
+      document.getElementById('tpControls').style.display = mode === 'turningPoint' ? 'flex' : 'none';
+      document.getElementById('expControls').style.display = mode === 'expanded' ? 'flex' : 'none';
+
+      document.getElementById('formSubtitle').innerText = (mode === 'turningPoint') 
+        ? 'y = a(x - h)² + k (Turning Point Form)'
+        : 'y = ax² + bx + c (Expanded Form)';
+
+      updateUI();
+      draw();
+    }
+
+    function syncTPtoEXP() {
+      b = -2 * a * h;
+      c = a * (h * h) + k;
+
+      document.getElementById('sliderExpA').value = a;
+      document.getElementById('sliderExpB').value = b;
+      document.getElementById('sliderExpC').value = c;
+    }
+
+    function syncEXPtoTP() {
+      if (Math.abs(a) < 0.0001) a = 0.001;
+      h = -b / (2 * a);
+      k = c - (b * b) / (4 * a);
+
+      document.getElementById('sliderA').value = a;
+      document.getElementById('sliderH').value = h;
+      document.getElementById('sliderK').value = k;
+    }
+
+    function updateFromTP() {
+      a = parseFloat(document.getElementById('sliderA').value);
+      h = parseFloat(document.getElementById('sliderH').value);
+      k = parseFloat(document.getElementById('sliderK').value);
+      if (a === 0) a = 0.01;
+      syncTPtoEXP();
+      updateUI();
+      draw();
+    }
+
+    function updateFromEXP() {
+      a = parseFloat(document.getElementById('sliderExpA').value);
+      b = parseFloat(document.getElementById('sliderExpB').value);
+      c = parseFloat(document.getElementById('sliderExpC').value);
+      if (a === 0) a = 0.01;
+      syncEXPtoTP();
+      updateUI();
+      draw();
+    }
+
+    // Font Zoom Scale handler
+    function updateFontScale() {
+      fontScale = parseFloat(document.getElementById('sliderFontScale').value);
+      document.getElementById('valFontScale').innerText = fontScale.toFixed(1) + '×';
+      draw();
+    }
+
+    function applyPreset(pa, ph, pk) {
+      a = pa;
+      h = ph;
+      k = pk;
+      document.getElementById('sliderA').value = a;
+      document.getElementById('sliderH').value = h;
+      document.getElementById('sliderK').value = k;
+      syncTPtoEXP();
+      updateUI();
+      draw();
+    }
+
+    function formatTPString(a, h, k) {
+      let str = "y = ";
+      if (a === -1) str += "-";
+      else if (a !== 1) str += formatNum(a);
+
+      if (h === 0) {
+        str += "x²";
+      } else if (h > 0) {
+        str += `(x - ${formatNum(h)})²`;
+      } else {
+        str += `(x + ${formatNum(Math.abs(h))})²`;
+      }
+
+      if (k > 0) str += ` + ${formatNum(k)}`;
+      else if (k < 0) str += ` - ${formatNum(Math.abs(k))}`;
+      return str;
+    }
+
+    function formatEXPString(a, b, c) {
+      let str = "y = ";
+      if (a === -1) str += "-";
+      else if (a !== 1) str += formatNum(a);
+      str += "x²";
+
+      if (Math.abs(b) > 0.001) {
+        const sign = b > 0 ? " + " : " - ";
+        const absB = Math.abs(b);
+        str += sign + (absB === 1 ? "" : formatNum(absB)) + "x";
+      }
+
+      if (Math.abs(c) > 0.001) {
+        const sign = c > 0 ? " + " : " - ";
+        str += sign + formatNum(Math.abs(c));
+      }
+      return str;
+    }
+
+    function formatNum(n) {
+      return Number(n.toFixed(2)).toString();
+    }
+
+    function updateUI() {
+      document.getElementById('valA').innerText = a.toFixed(2);
+      document.getElementById('valH').innerText = h.toFixed(2);
+      document.getElementById('valK').innerText = k.toFixed(2);
+
+      document.getElementById('valExpA').innerText = a.toFixed(2);
+      document.getElementById('valExpB').innerText = b.toFixed(2);
+      document.getElementById('valExpC').innerText = c.toFixed(2);
+
+      const eqElem = document.getElementById('equationRender');
+      eqElem.innerText = (mode === 'turningPoint') ? formatTPString(a, h, k) : formatEXPString(a, b, c);
+
+      document.getElementById('dispTP').innerText = `(${h.toFixed(2)}, ${k.toFixed(2)})`;
+      document.getElementById('dispAxis').innerText = `x = ${h.toFixed(2)}`;
+      document.getElementById('dispYInt').innerText = `(0, ${c.toFixed(2)})`;
+
+      const delta = (b * b) - (4 * a * c);
+      let deltaDesc = "";
+      let rootsText = "None in ℝ";
+
+      if (delta > 0.0001) {
+        deltaDesc = `${delta.toFixed(2)} (2 real roots)`;
+        const r1 = (-b + Math.sqrt(delta)) / (2 * a);
+        const r2 = (-b - Math.sqrt(delta)) / (2 * a);
+        rootsText = `(${Math.min(r1, r2).toFixed(2)}, 0), (${Math.max(r1, r2).toFixed(2)}, 0)`;
+      } else if (Math.abs(delta) <= 0.0001) {
+        deltaDesc = `0.00 (1 repeated root)`;
+        const r = -b / (2 * a);
+        rootsText = `(${r.toFixed(2)}, 0)`;
+      } else {
+        deltaDesc = `${delta.toFixed(2)} (No real roots)`;
+      }
+
+      document.getElementById('dispDelta').innerText = deltaDesc;
+      document.getElementById('dispXInt').innerText = rootsText;
+
+      const tList = document.getElementById('transformSummary');
+      tList.innerHTML = '';
+
+      const liDilation = document.createElement('li');
+      liDilation.innerHTML = `• Dilation by factor of <span>${Math.abs(a).toFixed(2)}</span> from the x-axis (parallel to y-axis).`;
+      tList.appendChild(liDilation);
+
+      if (a < 0) {
+        const liReflect = document.createElement('li');
+        liReflect.innerHTML = `• <span>Reflection</span> in the x-axis (inverted concave down).`;
+        tList.appendChild(liReflect);
+      }
+
+      if (Math.abs(h) > 0.001) {
+        const dir = h > 0 ? "positive (right)" : "negative (left)";
+        const liH = document.createElement('li');
+        liH.innerHTML = `• Horizontal translation of <span>${Math.abs(h).toFixed(2)}</span> units in the ${dir} direction.`;
+        tList.appendChild(liH);
+      }
+
+      if (Math.abs(k) > 0.001) {
+        const dir = k > 0 ? "positive (up)" : "negative (down)";
+        const liK = document.createElement('li');
+        liK.innerHTML = `• Vertical translation of <span>${Math.abs(k).toFixed(2)}</span> units in the ${dir} direction.`;
+        tList.appendChild(liK);
+      }
+    }
+
+    // --- Rendering Engine ---
+    function draw() {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const showAxisSym = document.getElementById('chkAxis').checked;
+      const showPoints = document.getElementById('chkPoints').checked;
+      const showGrid = document.getElementById('chkGrid').checked;
+      const showTrace = document.getElementById('chkTrace').checked;
+
+      // 1. Grid lines and numbers
+      if (showGrid) {
+        drawGrid(width, height);
+      }
+
+      // 2. Primary Axes (x = 0, y = 0)
+      drawMainAxes(width, height);
+
+      // 3. Axis of Symmetry (VCE essential)
+      if (showAxisSym) {
+        const pSym = mathToScreen(h, 0);
+        ctx.save();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([7, 6]);
+        ctx.beginPath();
+        ctx.moveTo(pSym.x, 0);
+        ctx.lineTo(pSym.x, height);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 4. Parabola Curve
+      ctx.save();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3.5;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+
+      const stepPx = 2;
+      let started = false;
+
+      for (let px = 0; px <= width; px += stepPx) {
+        const mx = viewXMin + (px / width) * (viewXMax - viewXMin);
+        const my = evaluateY(mx);
+        const pt = mathToScreen(mx, my);
+
+        if (pt.y >= -120 && pt.y <= height + 120) {
+          if (!started) {
+            ctx.moveTo(pt.x, pt.y);
+            started = true;
+          } else {
+            ctx.lineTo(pt.x, pt.y);
+          }
+        } else {
+          started = false;
+        }
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // 5. Highlight Key Points (Turning Point, Y-intercept, X-intercepts) scaled by fontScale
+      if (showPoints) {
+        drawKeyPoint(h, k, '#f43f5e', `TP (${h.toFixed(1)}, ${k.toFixed(1)})`);
+        drawKeyPoint(0, c, '#c084fc', `y-int (0, ${c.toFixed(1)})`);
+
+        const delta = (b * b) - (4 * a * c);
+        if (delta > 0.0001) {
+          const r1 = (-b + Math.sqrt(delta)) / (2 * a);
+          const r2 = (-b - Math.sqrt(delta)) / (2 * a);
+          drawKeyPoint(r1, 0, '#34d399', `(${r1.toFixed(1)}, 0)`);
+          drawKeyPoint(r2, 0, '#34d399', `(${r2.toFixed(1)}, 0)`);
+        } else if (Math.abs(delta) <= 0.0001) {
+          drawKeyPoint(-b / (2 * a), 0, '#34d399', `(${(-b / (2 * a)).toFixed(1)}, 0)`);
+        }
+      }
+
+      // 6. Interactive Cursor Hover Crosshair & Coordinate Inspector
+      if (showTrace && mouseMathX !== null) {
+        const curY = evaluateY(mouseMathX);
+        const p = mathToScreen(mouseMathX, curY);
+
+        if (p.x >= 0 && p.x <= width && p.y >= 0 && p.y <= height) {
+          ctx.save();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(p.x, 0); ctx.lineTo(p.x, height);
+          ctx.moveTo(0, p.y); ctx.lineTo(width, p.y);
+          ctx.stroke();
+
+          // Tracer circle scaled
+          const traceRadius = 5 * Math.min(fontScale, 2.2);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, traceRadius, 0, 2 * Math.PI);
+          ctx.fillStyle = '#38bdf8';
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Tooltip badge with scaled font
+          const label = `(${mouseMathX.toFixed(2)}, ${curY.toFixed(2)})`;
+          const inspectorFontSize = Math.round(12 * fontScale);
+          ctx.font = `600 ${inspectorFontSize}px monospace`;
+          const txtWidth = ctx.measureText(label).width;
+          const boxH = inspectorFontSize + (10 * fontScale);
+          const pad = 8 * fontScale;
+
+          const boxX = Math.min(width - txtWidth - pad * 2, p.x + 14);
+          const boxY = Math.max(boxH + 6, p.y - 12);
+
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+          ctx.fillRect(boxX - pad, boxY - boxH + (4 * fontScale), txtWidth + pad * 2, boxH);
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(boxX - pad, boxY - boxH + (4 * fontScale), txtWidth + pad * 2, boxH);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(label, boxX, boxY);
+          ctx.restore();
+        }
+      }
+    }
+
+    function drawGrid(width, height) {
+      const xRange = viewXMax - viewXMin;
+      const yRange = viewYMax - viewYMin;
+
+      const xStep = calculateGridStep(xRange);
+      const yStep = calculateGridStep(yRange);
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      // Base tick font size slightly scales for visibility
+      const tickSize = Math.max(10, Math.min(16, Math.round(10 * Math.sqrt(fontScale))));
+      ctx.font = `${tickSize}px monospace`;
+      ctx.lineWidth = 1;
+
+      // Vertical Grid Lines
+      const firstX = Math.floor(viewXMin / xStep) * xStep;
+      for (let mx = firstX; mx <= viewXMax; mx += xStep) {
+        if (Math.abs(mx) < 0.0001) continue;
+        const p = mathToScreen(mx, 0);
+        ctx.beginPath();
+        ctx.moveTo(p.x, 0);
+        ctx.lineTo(p.x, height);
+        ctx.stroke();
+
+        const pZero = mathToScreen(0, 0);
+        const labelY = Math.min(Math.max(pZero.y + tickSize + 4, tickSize + 6), height - 8);
+        ctx.fillText(formatNum(mx), p.x - (tickSize * 0.7), labelY);
+      }
+
+      // Horizontal Grid Lines
+      const firstY = Math.floor(viewYMin / yStep) * yStep;
+      for (let my = firstY; my <= viewYMax; my += yStep) {
+        if (Math.abs(my) < 0.0001) continue;
+        const p = mathToScreen(0, my);
+        ctx.beginPath();
+        ctx.moveTo(0, p.y);
+        ctx.lineTo(width, p.y);
+        ctx.stroke();
+
+        const pZero = mathToScreen(0, 0);
+        const labelX = Math.min(Math.max(pZero.x + 6, 8), width - 42);
+        ctx.fillText(formatNum(my), labelX, p.y + (tickSize * 0.35));
+      }
+
+      ctx.restore();
+    }
+
+    function drawMainAxes(width, height) {
+      const origin = mathToScreen(0, 0);
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.lineWidth = 2;
+
+      // X-Axis
+      ctx.beginPath();
+      ctx.moveTo(0, origin.y);
+      ctx.lineTo(width, origin.y);
+      ctx.stroke();
+
+      // Y-Axis
+      ctx.beginPath();
+      ctx.moveTo(origin.x, 0);
+      ctx.lineTo(origin.x, height);
+      ctx.stroke();
+
+      // Axis Titles
+      const axisTitleSize = Math.max(12, Math.round(12 * Math.sqrt(fontScale)));
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.font = `bold ${axisTitleSize}px sans-serif`;
+      ctx.fillText('x', width - 22, origin.y - 8);
+      ctx.fillText('y', origin.x + 8, axisTitleSize + 8);
+      ctx.restore();
+    }
+
+    // Key Point Rendering with dynamic fontScale up to 4x
+    function drawKeyPoint(mx, my, color, label) {
+      const pt = mathToScreen(mx, my);
+      const rect = canvas.getBoundingClientRect();
+
+      if (pt.x < -40 || pt.x > rect.width + 40 || pt.y < -40 || pt.y > rect.height + 40) return;
+
+      const markerRadius = 5 * Math.min(fontScale, 2.2);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, markerRadius, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.6 * Math.min(fontScale, 2);
+      ctx.stroke();
+
+      // Scaled font calculation
+      const fontSize = Math.round(11 * fontScale);
+      ctx.font = `bold ${fontSize}px monospace`;
+      const textWidth = ctx.measureText(label).width;
+
+      const lx = pt.x + (8 * fontScale);
+      const ly = pt.y - (8 * fontScale);
+      const padX = 6 * fontScale;
+      const padY = 4 * fontScale;
+      const pillW = textWidth + padX * 2;
+      const pillH = fontSize + padY * 2;
+
+      // Label background pill
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.fillRect(lx - padX, ly - fontSize, pillW, pillH);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.min(1.5, 0.8 * fontScale);
+      ctx.strokeRect(lx - padX, ly - fontSize, pillW, pillH);
+
+      // Label text
+      ctx.fillStyle = color;
+      ctx.fillText(label, lx, ly);
+      ctx.restore();
+    }
+
+    function calculateGridStep(range) {
+      const roughSteps = range / 8;
+      const magnitude = Math.pow(10, Math.floor(Math.log10(roughSteps)));
+      const residual = roughSteps / magnitude;
+
+      if (residual < 2) return magnitude;
+      if (residual < 5) return 2 * magnitude;
+      return 5 * magnitude;
+    }
+
+    // --- Interactive Mouse Handlers ---
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const cursorX = e.clientX - rect.left;
+      const cursorY = e.clientY - rect.top;
+
+      const mathPos = screenToMath(cursorX, cursorY);
+      const zoomFactor = e.deltaY < 0 ? 0.9 : 1.1;
+
+      viewXMin = mathPos.x + (viewXMin - mathPos.x) * zoomFactor;
+      viewXMax = mathPos.x + (viewXMax - mathPos.x) * zoomFactor;
+      viewYMin = mathPos.y + (viewYMin - mathPos.y) * zoomFactor;
+      viewYMax = mathPos.y + (viewYMax - mathPos.y) * zoomFactor;
+
+      draw();
+    }, { passive: false });
+
+    // Right-click drag to pan sideways and vertically
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button === 2 || e.button === 1) {
+        isRightDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        startViewXMin = viewXMin;
+        startViewXMax = viewXMax;
+        startViewYMin = viewYMin;
+        startViewYMax = viewYMax;
+        canvas.style.cursor = 'grabbing';
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const m = screenToMath(e.clientX - rect.left, e.clientY - rect.top);
+      mouseMathX = m.x;
+      mouseMathY = m.y;
+
+      if (isRightDragging) {
+        const dxPx = e.clientX - dragStartX;
+        const dyPx = e.clientY - dragStartY;
+
+        const xSpan = startViewXMax - startViewXMin;
+        const ySpan = startViewYMax - startViewYMin;
+
+        const dxMath = (dxPx / rect.width) * xSpan;
+        const dyMath = (dyPx / rect.height) * ySpan;
+
+        viewXMin = startViewXMin - dxMath;
+        viewXMax = startViewXMax - dxMath;
+        viewYMin = startViewYMin + dyMath;
+        viewYMax = startViewYMax + dyMath;
+      }
+      draw();
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (isRightDragging && (e.button === 2 || e.button === 1)) {
+        isRightDragging = false;
+        canvas.style.cursor = 'crosshair';
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      mouseMathX = null;
+      mouseMathY = null;
+      draw();
+    });
+
+    // Full Screen Toggle
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert(`Error attempting full screen: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Initialize on page load
+    window.onload = init;
+  </script>
+</body>
+</html>
