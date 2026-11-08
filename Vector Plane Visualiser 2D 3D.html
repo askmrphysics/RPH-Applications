@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCE Specialist Mathematics - 2D/3D Vectors & Geometry</title>
+    <!-- Three.js and OrbitControls via reliable CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f17;
+            --panel-bg: rgba(18, 24, 38, 0.94);
+            --border-color: #2b3548;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-purple: #c084fc;
+            --accent-yellow: #facc15;
+            --accent-orange: #fb923c;
+            --accent-red: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #webgl-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        /* Top Header */
+        #header-banner {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px 18px;
+            border-radius: 10px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #header-banner h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+        }
+
+        #header-banner p {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 3px;
+        }
+
+        /* Mode Selector Toggle */
+        .mode-switch-wrapper {
+            display: flex;
+            background: #1e293b;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .mode-switch-btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+
+        .mode-switch-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Control Instructions */
+        #controls-hint {
+            position: absolute;
+            bottom: 16px;
+            left: 20px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            pointer-events: none;
+            line-height: 1.45;
+        }
+
+        #controls-hint span {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        /* Sidebar Dashboard */
+        #sidebar {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            bottom: 16px;
+            width: 380px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+            padding: 18px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .panel-section {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 13px;
+        }
+        .panel-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-dim);
+            margin-bottom: 9px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .points-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .pt-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 0.82rem;
+            transition: all 0.2s ease;
+        }
+        .pt-card.active {
+            border-color: var(--accent-yellow);
+            background: rgba(250, 204, 21, 0.12);
+        }
+
+        .pt-name {
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .pt-A { color: var(--accent-blue); }
+        .pt-B { color: var(--accent-green); }
+        .pt-C { color: var(--accent-purple); }
+        .pt-D { color: var(--accent-orange); }
+
+        .math-block {
+            background: rgba(0, 0, 0, 0.42);
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-family: "SF Mono", Monaco, "Courier New", monospace;
+            font-size: 0.81rem;
+            line-height: 1.55;
+            margin-top: 5px;
+        }
+
+        .math-val {
+            font-weight: 600;
+            color: #38bdf8;
+        }
+
+        .highlight-distance {
+            color: var(--accent-yellow);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .key-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.79rem;
+        }
+
+        .key-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .key-marker {
+            width: 13px;
+            height: 13px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .key-circle {
+            border-radius: 50%;
+        }
+
+        .key-dashed {
+            width: 15px;
+            height: 2px;
+            border-top: 2px dashed #facc15;
+            background: transparent;
+        }
+
+        .control-group {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .slider-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.79rem;
+        }
+
+        input[type="range"] {
+            width: 145px;
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 7px 10px;
+            background: #1e293b;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .action-btn:hover {
+            background: #334155;
+        }
+
+        #snap-pill {
+            display: inline-block;
+            background: #15803d;
+            color: #ffffff;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="header-banner">
+        <h1 id="title-text">2D / 3D Vector Geometry</h1>
+        <p id="subtitle-text">VCE Specialist Mathematics &bull; Lines, Planes & Distance</p>
+    </div>
+
+    <div id="controls-hint">
+        &bull; <span>Hover & Drag Points:</span> Drag points (snaps to whole integer grid)<br>
+        &bull; <span>Left Mouse Drag:</span> <span id="hint-rot">Rotate camera (3D)</span><br>
+        &bull; <span>Right Mouse Drag:</span> Pan coordinate space<br>
+        &bull; <span>Scroll Wheel:</span> Zoom in / out
+    </div>
+
+    <div id="sidebar">
+        <!-- Mode Switch: 2D vs 3D -->
+        <div>
+            <div class="mode-switch-wrapper">
+                <button class="mode-switch-btn" id="btn-mode-2d">2D Mode (Line & Point)</button>
+                <button class="mode-switch-btn active" id="btn-mode-3d">3D Mode (Plane & Point)</button>
+            </div>
+        </div>
+
+        <!-- Coordinates -->
+        <div class="panel-section">
+            <div class="section-title">
+                <span>Coordinates</span>
+                <span id="snap-pill">INTEGER SNAP</span>
+            </div>
+            <div class="points-grid">
+                <div class="pt-card" id="card-A"><span class="pt-name pt-A">A:</span> <span id="val-A">(0, 0, 0)</span></div>
+                <div class="pt-card" id="card-B"><span class="pt-name pt-B">B:</span> <span id="val-B">(4, 2, 0)</span></div>
+                <div class="pt-card" id="card-C"><span class="pt-name pt-C">C:</span> <span id="val-C">(0, 4, 2)</span></div>
+                <div class="pt-card" id="card-D"><span class="pt-name pt-D">D:</span> <span id="val-D">(2, 4, 4)</span></div>
+            </div>
+            <div class="btn-row">
+                <button class="action-btn" id="btn-reset">Reset Points</button>
+                <button class="action-btn" id="btn-preset">Preset Exam Question</button>
+            </div>
+        </div>
+
+        <!-- Mathematical Vector Calculations -->
+        <div class="panel-section">
+            <div class="section-title" id="lbl-vec-title">Vectors on Plane</div>
+            <div class="math-block" id="box-math-vectors">
+                <!-- Dynamically updated based on 2D/3D mode -->
+            </div>
+        </div>
+
+        <!-- Cartesian Equation & Distance -->
+        <div class="panel-section">
+            <div class="section-title" id="lbl-dist-title">Distance Calculation</div>
+            <div class="math-block" id="box-math-dist">
+                <!-- Dynamically updated based on 2D/3D mode -->
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-dim); margin-top:6px; line-height:1.35;" id="desc-triangle-note">
+                The shaded yellow triangle represents &Delta;AD D<sub>proj</sub>. The hypotenuse is <b>AD</b>, adjacent side is in the plane/line, and perpendicular distance <b>d</b> is the height.
+            </div>
+        </div>
+
+        <!-- Visual Legend -->
+        <div class="panel-section">
+            <div class="section-title">Legend & Visual Key</div>
+            <div class="key-list" id="legend-list">
+                <!-- Dynamically adjusted based on mode -->
+            </div>
+        </div>
+
+        <!-- Visual Adjustment Controls -->
+        <div class="panel-section">
+            <div class="section-title">Adjustments</div>
+            <div class="control-group">
+                <div class="slider-row" id="row-plane-opacity">
+                    <span>Surface Opacity:</span>
+                    <input type="range" id="slider-opacity" min="0.1" max="0.8" step="0.05" value="0.32">
+                </div>
+                <div class="slider-row" id="row-plane-size">
+                    <span>Boundary Size:</span>
+                    <input type="range" id="slider-planesize" min="1.0" max="4.0" step="0.2" value="2.0">
+                </div>
+                <div class="slider-row">
+                    <span>Normal Vector Scale:</span>
+                    <input type="range" id="slider-normalscale" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="webgl-container"></div>
+
+    <script>
+        /* -------------------------------------------------------------
+           SCENE INITIALIZATION
+        ------------------------------------------------------------- */
+        let currentMode = '3D'; // '2D' or '3D'
+
+        const container = document.getElementById('webgl-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0b0f17);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(13, 14, 16);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.target.set(1.5, 1.5, 1.5);
+
+        // Ambient and Directional Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight1.position.set(20, 30, 20);
+        scene.add(dirLight1);
+
+        const dirLight2 = new THREE.DirectionalLight(0x94a3b8, 0.4);
+        dirLight2.position.set(-20, -10, -20);
+        scene.add(dirLight2);
+
+        /* -------------------------------------------------------------
+           VECTOR ARROW CREATOR (Tip at target location)
+        ------------------------------------------------------------- */
+        function createArrow(dir, origin, length, color, headLength = 0.45, headWidth = 0.22, shaftRadius = 0.035) {
+            const group = new THREE.Group();
+            const normDir = dir.clone().normalize();
+
+            const effectiveHeadLength = Math.min(headLength, length * 0.35);
+            const effectiveHeadWidth = headWidth * (effectiveHeadLength / headLength);
+            const shaftLen = Math.max(0.001, length - effectiveHeadLength);
+
+            const mat = new THREE.MeshStandardMaterial({
+                color: color,
+                roughness: 0.25,
+                metalness: 0.2
+            });
+
+            // Shaft along local Y
+            const shaftGeom = new THREE.CylinderGeometry(shaftRadius, shaftRadius, shaftLen, 20);
+            shaftGeom.translate(0, shaftLen / 2, 0);
+            const shaft = new THREE.Mesh(shaftGeom, mat);
+            group.add(shaft);
+
+            // Cone head along local Y positioned at shaftLen
+            const headGeom = new THREE.ConeGeometry(effectiveHeadWidth, effectiveHeadLength, 24);
+            headGeom.translate(0, effectiveHeadLength / 2, 0);
+            const head = new THREE.Mesh(headGeom, mat);
+            head.position.set(0, shaftLen, 0);
+            group.add(head);
+
+            // Rotate group from local +Y to normDir
+            const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normDir);
+            group.quaternion.copy(quat);
+            group.position.copy(origin);
+
+            return { group, mat };
+        }
+
+        // Text sprite generator
+        function makeTextSprite(message, parameters = {}) {
+            const fontface = parameters.fontface || "Helvetica, Arial, sans-serif";
+            const fontsize = parameters.fontsize || 28;
+            const textColor = parameters.color || "#ffffff";
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+
+            context.font = "Bold " + fontsize + "px " + fontface;
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillStyle = textColor;
+            context.fillText(message, 128, 64);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(1.4, 0.7, 1.0);
+            return sprite;
+        }
+
+        /* -------------------------------------------------------------
+           COORDINATE AXES & GRIDS
+        ------------------------------------------------------------- */
+        const axesGroup = new THREE.Group();
+        const AXIS_LEN = 8.5;
+
+        // X (i), Y (j), Z (k)
+        const axisX = createArrow(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), AXIS_LEN, 0xf87171, 0.45, 0.20, 0.025);
+        const axisY = createArrow(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), AXIS_LEN, 0x34d399, 0.45, 0.20, 0.025);
+        const axisZ = createArrow(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), AXIS_LEN, 0x38bdf8, 0.45, 0.20, 0.025);
+
+        axesGroup.add(axisX.group);
+        axesGroup.add(axisY.group);
+        axesGroup.add(axisZ.group);
+
+        const lblX = makeTextSprite("X (i)", { color: "#f87171", fontsize: 30 });
+        lblX.position.set(AXIS_LEN + 0.6, 0, 0);
+        axesGroup.add(lblX);
+
+        const lblY = makeTextSprite("Y (j)", { color: "#34d399", fontsize: 30 });
+        lblY.position.set(0, AXIS_LEN + 0.6, 0);
+        axesGroup.add(lblY);
+
+        const lblZ = makeTextSprite("Z (k)", { color: "#38bdf8", fontsize: 30 });
+        lblZ.position.set(0, 0, AXIS_LEN + 0.6);
+        axesGroup.add(lblZ);
+        scene.add(axesGroup);
+
+        // 3D Ground Grid (XZ Plane)
+        const groundGrid3D = new THREE.GridHelper(24, 24, 0x334155, 0x1e293b);
+        groundGrid3D.position.set(0, -0.01, 0);
+        scene.add(groundGrid3D);
+
+        // 2D Grid (XY Plane)
+        const gridXY = new THREE.GridHelper(24, 24, 0x475569, 0x1e293b);
+        gridXY.rotation.x = Math.PI / 2;
+        gridXY.position.set(0, 0, -0.01);
+        gridXY.visible = false;
+        scene.add(gridXY);
+
+        /* -------------------------------------------------------------
+           POINTS AND INTERACTION STATE
+        ------------------------------------------------------------- */
+        const ptData3D = {
+            A: new THREE.Vector3(1, 1, 1),
+            B: new THREE.Vector3(5, 2, 0),
+            C: new THREE.Vector3(1, 5, 3),
+            D: new THREE.Vector3(3, 5, 6)
+        };
+
+        const ptData2D = {
+            A: new THREE.Vector3(1, 1, 0),
+            B: new THREE.Vector3(5, 3, 0),
+            C: new THREE.Vector3(0, 0, 0), // Not used in 2D
+            D: new THREE.Vector3(2, 6, 0)
+        };
+
+        let currentPts = ptData3D;
+
+        const pointSpheres = {};
+        const pointMeshes = [];
+        const pointColors = {
+            A: 0x38bdf8,
+            B: 0x34d399,
+            C: 0xc084fc,
+            D: 0xfb923c
+        };
+
+        const sphereGeom = new THREE.SphereGeometry(0.18, 32, 32);
+        const hitSphereGeom = new THREE.SphereGeometry(0.45, 16, 16);
+
+        ['A', 'B', 'C', 'D'].forEach(key => {
+            const mat = new THREE.MeshStandardMaterial({
+                color: pointColors[key],
+                roughness: 0.2,
+                metalness: 0.3,
+                emissive: pointColors[key],
+                emissiveIntensity: 0.35
+            });
+            const mesh = new THREE.Mesh(sphereGeom, mat);
+            mesh.position.copy(currentPts[key]);
+            mesh.userData = { id: key };
+
+            const hitMesh = new THREE.Mesh(hitSphereGeom, new THREE.MeshBasicMaterial({ visible: false }));
+            mesh.add(hitMesh);
+
+            const lbl = makeTextSprite(key, { color: "#ffffff", fontsize: 34 });
+            lbl.position.set(0, 0.48, 0);
+            mesh.add(lbl);
+
+            scene.add(mesh);
+            pointSpheres[key] = mesh;
+            pointMeshes.push(mesh);
+        });
+
+        /* -------------------------------------------------------------
+           GEOMETRIC VISUAL ENTITIES
+        ------------------------------------------------------------- */
+        // 3D Plane Mesh & Border
+        const planeMaterial = new THREE.MeshStandardMaterial({
+            color: 0x0284c7,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.32,
+            roughness: 0.3,
+            metalness: 0.1,
+            depthWrite: false
+        });
+        const planeMesh = new THREE.Mesh(new THREE.BufferGeometry(), planeMaterial);
+        scene.add(planeMesh);
+
+        const planeBorderMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, linewidth: 2 });
+        const planeBorderLine = new THREE.LineSegments(new THREE.BufferGeometry(), planeBorderMat);
+        scene.add(planeBorderLine);
+
+        // 2D Extended Line Cylinder (for thickness)
+        const line2DMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.3 });
+        const line2DMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1, 16), line2DMat);
+        line2DMesh.visible = false;
+        scene.add(line2DMesh);
+
+        // Vector Arrow Holders
+        let arrowAB = null;
+        let arrowAC = null;
+        let arrowNormal = null;
+        let arrowUnitNormal = null;
+        let arrowAD = null;
+
+        // Labels
+        const lblAB = makeTextSprite("AB", { color: "#38bdf8", fontsize: 24 });
+        const lblAC = makeTextSprite("AC", { color: "#c084fc", fontsize: 24 });
+        const lblNormal = makeTextSprite("n", { color: "#e879f9", fontsize: 24 });
+        const lblUnitNormal = makeTextSprite("n^ (unit)", { color: "#facc15", fontsize: 22 });
+        const lblAD = makeTextSprite("AD", { color: "#fb923c", fontsize: 24 });
+        const lblDist = makeTextSprite("d (distance)", { color: "#fef08a", fontsize: 24 });
+
+        scene.add(lblAB);
+        scene.add(lblAC);
+        scene.add(lblNormal);
+        scene.add(lblUnitNormal);
+        scene.add(lblAD);
+        scene.add(lblDist);
+
+        // Dashed Perpendicular Line
+        const dashedMat = new THREE.LineDashedMaterial({
+            color: 0xfacc15,
+            dashSize: 0.25,
+            gapSize: 0.18,
+            linewidth: 2.5
+        });
+        const perpLineGeom = new THREE.BufferGeometry();
+        const perpLine = new THREE.Line(perpLineGeom, dashedMat);
+        scene.add(perpLine);
+
+        // Projection point marker
+        const projPointMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 16, 16),
+            new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xfacc15, emissiveIntensity: 0.5 })
+        );
+        scene.add(projPointMesh);
+
+        // Triangle mesh
+        const projTriMat = new THREE.MeshBasicMaterial({
+            color: 0xfacc15,
+            transparent: true,
+            opacity: 0.24,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        const projTriMesh = new THREE.Mesh(new THREE.BufferGeometry(), projTriMat);
+        scene.add(projTriMesh);
+
+        // Right angle indicator lines
+        const rightAngleMat = new THREE.LineBasicMaterial({ color: 0xfef08a, linewidth: 2 });
+        const rightAngleLine = new THREE.LineSegments(new THREE.BufferGeometry(), rightAngleMat);
+        scene.add(rightAngleLine);
+
+        /* -------------------------------------------------------------
+           GEOMETRY CALCULATION & UPDATES
+        ------------------------------------------------------------- */
+        let planePaddingFactor = 2.0;
+        let normalDisplayScale = 1.0;
+
+        function updateSceneGeometry() {
+            const A = currentPts.A;
+            const B = currentPts.B;
+            const C = currentPts.C;
+            const D = currentPts.D;
+
+            // Sync spheres
+            ['A', 'B', 'C', 'D'].forEach(k => {
+                pointSpheres[k].position.copy(currentPts[k]);
+            });
+
+            // Clean vector arrow references
+            if (arrowAB) scene.remove(arrowAB.group);
+            if (arrowAC) scene.remove(arrowAC.group);
+            if (arrowNormal) scene.remove(arrowNormal.group);
+            if (arrowUnitNormal) scene.remove(arrowUnitNormal.group);
+            if (arrowAD) scene.remove(arrowAD.group);
+
+            if (currentMode === '3D') {
+                updateGeometry3D(A, B, C, D);
+            } else {
+                updateGeometry2D(A, B, D);
+            }
+        }
+
+        /* 3D MODE COMPUTATION */
+        function updateGeometry3D(A, B, C, D) {
+            pointSpheres['C'].visible = true;
+            line2DMesh.visible = false;
+
+            const u = new THREE.Vector3().subVectors(B, A);
+            const v = new THREE.Vector3().subVectors(C, A);
+            const n = new THREE.Vector3().crossVectors(u, v);
+            const magN = n.length();
+
+            const isCollinear = magN < 0.0001;
+            const nHat = isCollinear ? new THREE.Vector3(0, 1, 0) : n.clone().normalize();
+
+            const w = new THREE.Vector3().subVectors(D, A);
+            const signedDist = isCollinear ? 0 : w.dot(nHat);
+            const dist = Math.abs(signedDist);
+
+            const D_proj = D.clone().sub(nHat.clone().multiplyScalar(signedDist));
+            projPointMesh.position.copy(D_proj);
+
+            // Dashed line
+            perpLineGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                D.x, D.y, D.z,
+                D_proj.x, D_proj.y, D_proj.z
+            ]), 3));
+            perpLine.computeLineDistances();
+
+            // Triangle
+            projTriMesh.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                A.x, A.y, A.z,
+                D.x, D.y, D.z,
+                D_proj.x, D_proj.y, D_proj.z
+            ]), 3));
+            projTriMesh.geometry.computeVertexNormals();
+
+            // Right-angle marker
+            updateRightAngleCorner(A, D, D_proj, dist, isCollinear);
+
+            // Arrows
+            if (u.length() > 0.05) {
+                arrowAB = createArrow(u, A, u.length(), 0x38bdf8, 0.45, 0.20, 0.038);
+                scene.add(arrowAB.group);
+                lblAB.position.copy(A.clone().add(u.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.3, 0));
+                lblAB.visible = true;
+            } else { lblAB.visible = false; }
+
+            if (v.length() > 0.05) {
+                arrowAC = createArrow(v, A, v.length(), 0xc084fc, 0.45, 0.20, 0.038);
+                scene.add(arrowAC.group);
+                lblAC.position.copy(A.clone().add(v.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.3, 0));
+                lblAC.visible = true;
+            } else { lblAC.visible = false; }
+
+            if (!isCollinear) {
+                const normLength = Math.max(1.2, Math.min(magN * 0.4 * normalDisplayScale, 7.5));
+                arrowNormal = createArrow(nHat, A, normLength, 0xe879f9, 0.55, 0.26, 0.045);
+                scene.add(arrowNormal.group);
+                lblNormal.position.copy(A.clone().add(nHat.clone().multiplyScalar(normLength + 0.4)));
+                lblNormal.visible = true;
+
+                arrowUnitNormal = createArrow(nHat, A, 1.0, 0xfacc15, 0.35, 0.22, 0.07);
+                scene.add(arrowUnitNormal.group);
+                lblUnitNormal.position.copy(A.clone().add(nHat.clone().multiplyScalar(1.0)).add(new THREE.Vector3(0.25, 0, 0.25)));
+                lblUnitNormal.visible = true;
+            } else {
+                lblNormal.visible = false;
+                lblUnitNormal.visible = false;
+            }
+
+            if (w.length() > 0.05) {
+                arrowAD = createArrow(w, A, w.length(), 0xfb923c, 0.5, 0.22, 0.038);
+                scene.add(arrowAD.group);
+                lblAD.position.copy(A.clone().add(w.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.3, 0));
+                lblAD.visible = true;
+            } else { lblAD.visible = false; }
+
+            if (dist > 0.15) {
+                lblDist.position.copy(D.clone().add(D_proj).multiplyScalar(0.5)).add(new THREE.Vector3(0.35, 0, 0));
+                lblDist.visible = true;
+            } else { lblDist.visible = false; }
+
+            constructBoundedPlane(A, B, C, D_proj, nHat, isCollinear);
+            updateMathUI3D(u, v, n, magN, nHat, w, dist, signedDist, isCollinear);
+        }
+
+        /* 2D MODE COMPUTATION (Line & Point in XY Plane) */
+        function updateGeometry2D(A, B, D) {
+            pointSpheres['C'].visible = false;
+            lblAC.visible = false;
+            planeMesh.visible = false;
+            planeBorderLine.visible = false;
+
+            const u = new THREE.Vector3(B.x - A.x, B.y - A.y, 0);
+            const magU = u.length();
+            const isDegenerate = magU < 0.0001;
+
+            // 2D Normal vector: n = [-u_y, u_x, 0] (perpendicular to u)
+            const n = isDegenerate ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(-u.y, u.x, 0);
+            const magN = n.length();
+            const nHat = isDegenerate ? new THREE.Vector3(0, 1, 0) : n.clone().normalize();
+
+            // Extended line visualization across the grid
+            if (!isDegenerate) {
+                line2DMesh.visible = true;
+                const lineLen = 32;
+                line2DMesh.scale.set(1, lineLen, 1);
+                line2DMesh.position.copy(A);
+                const lineQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), u.clone().normalize());
+                line2DMesh.quaternion.copy(lineQuat);
+            } else {
+                line2DMesh.visible = false;
+            }
+
+            const w = new THREE.Vector3(D.x - A.x, D.y - A.y, 0);
+            const signedDist = isDegenerate ? 0 : w.dot(nHat);
+            const dist = Math.abs(signedDist);
+
+            const D_proj = D.clone().sub(nHat.clone().multiplyScalar(signedDist));
+            projPointMesh.position.copy(D_proj);
+
+            // Dashed line
+            perpLineGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                D.x, D.y, 0,
+                D_proj.x, D_proj.y, 0
+            ]), 3));
+            perpLine.computeLineDistances();
+
+            // Right-angled triangle in 2D
+            projTriMesh.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                A.x, A.y, 0,
+                D.x, D.y, 0,
+                D_proj.x, D_proj.y, 0
+            ]), 3));
+            projTriMesh.geometry.computeVertexNormals();
+
+            updateRightAngleCorner(A, D, D_proj, dist, isDegenerate);
+
+            // Vector AB
+            if (magU > 0.05) {
+                arrowAB = createArrow(u, A, magU, 0x38bdf8, 0.45, 0.20, 0.038);
+                scene.add(arrowAB.group);
+                lblAB.position.copy(A.clone().add(u.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.35, 0));
+                lblAB.visible = true;
+            } else { lblAB.visible = false; }
+
+            // Normal Vector n in 2D
+            if (!isDegenerate) {
+                const normLength = Math.max(1.2, Math.min(magN * 0.4 * normalDisplayScale, 6.0));
+                arrowNormal = createArrow(nHat, A, normLength, 0xe879f9, 0.5, 0.24, 0.045);
+                scene.add(arrowNormal.group);
+                lblNormal.position.copy(A.clone().add(nHat.clone().multiplyScalar(normLength + 0.35)));
+                lblNormal.visible = true;
+
+                // Superimposed Unit Normal
+                arrowUnitNormal = createArrow(nHat, A, 1.0, 0xfacc15, 0.35, 0.22, 0.07);
+                scene.add(arrowUnitNormal.group);
+                lblUnitNormal.position.copy(A.clone().add(nHat.clone().multiplyScalar(1.0)).add(new THREE.Vector3(0.25, 0.25, 0)));
+                lblUnitNormal.visible = true;
+            } else {
+                lblNormal.visible = false;
+                lblUnitNormal.visible = false;
+            }
+
+            // Vector AD
+            if (w.length() > 0.05) {
+                arrowAD = createArrow(w, A, w.length(), 0xfb923c, 0.5, 0.22, 0.038);
+                scene.add(arrowAD.group);
+                lblAD.position.copy(A.clone().add(w.clone().multiplyScalar(0.5))).add(new THREE.Vector3(0, 0.3, 0));
+                lblAD.visible = true;
+            } else { lblAD.visible = false; }
+
+            if (dist > 0.15) {
+                lblDist.position.copy(D.clone().add(D_proj).multiplyScalar(0.5)).add(new THREE.Vector3(0.35, 0, 0));
+                lblDist.visible = true;
+            } else { lblDist.visible = false; }
+
+            updateMathUI2D(u, n, magN, nHat, w, dist, signedDist, isDegenerate);
+        }
+
+        function updateRightAngleCorner(A, D, D_proj, dist, isDegenerate) {
+            const toD = new THREE.Vector3().subVectors(D, D_proj).normalize();
+            const toA = new THREE.Vector3().subVectors(A, D_proj).normalize();
+            const sqSize = Math.min(0.4, Math.min(dist * 0.35, A.distanceTo(D_proj) * 0.35));
+
+            if (dist > 0.15 && A.distanceTo(D_proj) > 0.15 && !isDegenerate) {
+                const c1 = D_proj.clone().addScaledVector(toA, sqSize);
+                const c2 = c1.clone().addScaledVector(toD, sqSize);
+                const c3 = D_proj.clone().addScaledVector(toD, sqSize);
+
+                const raPositions = new Float32Array([
+                    c1.x, c1.y, c1.z,  c2.x, c2.y, c2.z,
+                    c2.x, c2.y, c2.z,  c3.x, c3.y, c3.z
+                ]);
+                rightAngleLine.geometry.setAttribute('position', new THREE.BufferAttribute(raPositions, 3));
+                rightAngleLine.visible = true;
+            } else {
+                rightAngleLine.visible = false;
+            }
+        }
+
+        function constructBoundedPlane(A, B, C, D_proj, nHat, isCollinear) {
+            if (isCollinear) {
+                planeMesh.visible = false;
+                planeBorderLine.visible = false;
+                return;
+            }
+            planeMesh.visible = true;
+            planeBorderLine.visible = true;
+
+            let arbitrary = Math.abs(nHat.x) < 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+            const e1 = new THREE.Vector3().crossVectors(nHat, arbitrary).normalize();
+            const e2 = new THREE.Vector3().crossVectors(nHat, e1).normalize();
+
+            const pts = [A, B, C, D_proj];
+            let minU = Infinity, maxU = -Infinity;
+            let minV = Infinity, maxV = -Infinity;
+
+            pts.forEach(p => {
+                const diff = new THREE.Vector3().subVectors(p, A);
+                const uCoord = diff.dot(e1);
+                const vCoord = diff.dot(e2);
+                if (uCoord < minU) minU = uCoord;
+                if (uCoord > maxU) maxU = uCoord;
+                if (vCoord < minV) minV = vCoord;
+                if (vCoord > maxV) maxV = vCoord;
+            });
+
+            const pad = planePaddingFactor;
+            minU -= pad; maxU += pad;
+            minV -= pad; maxV += pad;
+
+            const p00 = A.clone().addScaledVector(e1, minU).addScaledVector(e2, minV);
+            const p10 = A.clone().addScaledVector(e1, maxU).addScaledVector(e2, minV);
+            const p11 = A.clone().addScaledVector(e1, maxU).addScaledVector(e2, maxV);
+            const p01 = A.clone().addScaledVector(e1, minU).addScaledVector(e2, maxV);
+
+            const planeVertices = new Float32Array([
+                p00.x, p00.y, p00.z,  p10.x, p10.y, p10.z,  p11.x, p11.y, p11.z,
+                p00.x, p00.y, p00.z,  p11.x, p11.y, p11.z,  p01.x, p01.y, p01.z
+            ]);
+
+            planeMesh.geometry.dispose();
+            planeMesh.geometry = new THREE.BufferGeometry();
+            planeMesh.geometry.setAttribute('position', new THREE.BufferAttribute(planeVertices, 3));
+            planeMesh.geometry.computeVertexNormals();
+
+            const borderVertices = new Float32Array([
+                p00.x, p00.y, p00.z,  p10.x, p10.y, p10.z,
+                p10.x, p10.y, p10.z,  p11.x, p11.y, p11.z,
+                p11.x, p11.y, p11.z,  p01.x, p01.y, p01.z,
+                p01.x, p01.y, p01.z,  p00.x, p00.y, p00.z
+            ]);
+
+            planeBorderLine.geometry.dispose();
+            planeBorderLine.geometry = new THREE.BufferGeometry();
+            planeBorderLine.geometry.setAttribute('position', new THREE.BufferAttribute(borderVertices, 3));
+        }
+
+        /* -------------------------------------------------------------
+           UI MATH FORMATTING (2D vs 3D)
+        ------------------------------------------------------------- */
+        function updateMathUI3D(u, v, n, magN, nHat, w, dist, signedDist, isCollinear) {
+            document.getElementById('val-A').innerText = `(${currentPts.A.x}, ${currentPts.A.y}, ${currentPts.A.z})`;
+            document.getElementById('val-B').innerText = `(${currentPts.B.x}, ${currentPts.B.y}, ${currentPts.B.z})`;
+            document.getElementById('val-C').innerText = `(${currentPts.C.x}, ${currentPts.C.y}, ${currentPts.C.z})`;
+            document.getElementById('val-D').innerText = `(${currentPts.D.x}, ${currentPts.D.y}, ${currentPts.D.z})`;
+
+            const planeC = n.x * currentPts.A.x + n.y * currentPts.A.y + n.z * currentPts.A.z;
+
+            document.getElementById('box-math-vectors').innerHTML = `
+                u = AB = <span class="math-val">[${u.x}, ${u.y}, ${u.z}]</span><br>
+                v = AC = <span class="math-val">[${v.x}, ${v.y}, ${v.z}]</span><br>
+                Normal n = u &times; v:<br>
+                &nbsp;&nbsp;<span class="math-val">[${n.x}, ${n.y}, ${n.z}]</span> (|n| = ${magN.toFixed(2)})<br>
+                Unit n&#770; = n / |n|:<br>
+                &nbsp;&nbsp;<span class="math-val">[${nHat.x.toFixed(3)}, ${nHat.y.toFixed(3)}, ${nHat.z.toFixed(3)}]</span>
+            `;
+
+            document.getElementById('box-math-dist').innerHTML = `
+                Plane: <span class="math-val">${n.x}x + ${n.y}y + ${n.z}z = ${planeC}</span><br>
+                w = AD = <span class="math-val">[${w.x}, ${w.y}, ${w.z}]</span><br>
+                Distance: d = |AD &bull; n&#770;|<br>
+                d = |<span class="math-val">${signedDist.toFixed(3)}</span>| = <span class="highlight-distance">${dist.toFixed(3)}</span>
+            `;
+        }
+
+        function updateMathUI2D(u, n, magN, nHat, w, dist, signedDist, isDegenerate) {
+            document.getElementById('val-A').innerText = `(${currentPts.A.x}, ${currentPts.A.y})`;
+            document.getElementById('val-B').innerText = `(${currentPts.B.x}, ${currentPts.B.y})`;
+            document.getElementById('val-C').innerText = `[Inactive in 2D]`;
+            document.getElementById('val-D').innerText = `(${currentPts.D.x}, ${currentPts.D.y})`;
+
+            const lineC = n.x * currentPts.A.x + n.y * currentPts.A.y;
+
+            document.getElementById('box-math-vectors').innerHTML = `
+                Direction u = AB = <span class="math-val">[${u.x}, ${u.y}]</span><br>
+                Normal vector n &perp; u ([-u<sub>y</sub>, u<sub>x</sub>]):<br>
+                &nbsp;&nbsp;<span class="math-val">[${n.x}, ${n.y}]</span> (|n| = ${magN.toFixed(2)})<br>
+                Unit normal n&#770; = n / |n|:<br>
+                &nbsp;&nbsp;<span class="math-val">[${nHat.x.toFixed(3)}, ${nHat.y.toFixed(3)}]</span>
+            `;
+
+            document.getElementById('box-math-dist').innerHTML = `
+                Line Eqn (r &bull; n = c): <span class="math-val">${n.x}x + ${n.y}y = ${lineC}</span><br>
+                w = AD = <span class="math-val">[${w.x}, ${w.y}]</span><br>
+                Distance to Line: d = |AD &bull; n&#770;|<br>
+                d = |<span class="math-val">${signedDist.toFixed(3)}</span>| = <span class="highlight-distance">${dist.toFixed(3)}</span>
+            `;
+        }
+
+        function updateLegendUI() {
+            const list = document.getElementById('legend-list');
+            if (currentMode === '3D') {
+                list.innerHTML = `
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-blue);"></div><span>Point A (Base Vertex in Plane)</span></div>
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-green);"></div><span>Point B, C (Plane Defining Points)</span></div>
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-orange);"></div><span>Point D (Point off Plane)</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:#0284c7;"></div><span>Vector AB, AC in plane</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-purple);"></div><span>Normal Vector n = AB &times; AC</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-yellow);"></div><span>Unit Normal Vector n&#770; (Length = 1)</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-orange);"></div><span>Vector AD from Point A to D</span></div>
+                    <div class="key-item"><div class="key-marker key-dashed"></div><span>Perpendicular Distance d to Plane</span></div>
+                `;
+                document.getElementById('card-C').style.opacity = '1';
+                document.getElementById('row-plane-opacity').style.display = 'flex';
+                document.getElementById('row-plane-size').style.display = 'flex';
+                document.getElementById('lbl-vec-title').innerText = "Vectors on Plane";
+                document.getElementById('lbl-dist-title').innerText = "Perpendicular Distance to Plane";
+            } else {
+                list.innerHTML = `
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-blue);"></div><span>Point A (Base Vertex on Line)</span></div>
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-green);"></div><span>Point B (Line Defining Point)</span></div>
+                    <div class="key-item"><div class="key-marker key-circle" style="background:var(--accent-orange);"></div><span>Point D (Point off Line)</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:#0284c7;"></div><span>Direction Vector AB along line</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-purple);"></div><span>Normal Vector n &perp; AB</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-yellow);"></div><span>Unit Normal Vector n&#770; (Length = 1)</span></div>
+                    <div class="key-item"><div class="key-marker" style="background:var(--accent-orange);"></div><span>Vector AD from Point A to D</span></div>
+                    <div class="key-item"><div class="key-marker key-dashed"></div><span>Perpendicular Distance d to Line</span></div>
+                `;
+                document.getElementById('card-C').style.opacity = '0.3';
+                document.getElementById('row-plane-opacity').style.display = 'none';
+                document.getElementById('row-plane-size').style.display = 'none';
+                document.getElementById('lbl-vec-title').innerText = "Vectors on 2D Line";
+                document.getElementById('lbl-dist-title').innerText = "Distance to 2D Line";
+            }
+        }
+
+        /* -------------------------------------------------------------
+           CAMERA TRANSITION BETWEEN 2D AND 3D
+        ------------------------------------------------------------- */
+        let cameraAnimating = false;
+        let camStartPos = new THREE.Vector3();
+        let camTargetPos = new THREE.Vector3();
+        let ctrlStartTarget = new THREE.Vector3();
+        let ctrlEndTarget = new THREE.Vector3();
+        let animProgress = 1;
+
+        function setMode(mode) {
+            if (currentMode === mode || cameraAnimating) return;
+            currentMode = mode;
+
+            document.getElementById('btn-mode-2d').classList.toggle('active', mode === '2D');
+            document.getElementById('btn-mode-3d').classList.toggle('active', mode === '3D');
+
+            camStartPos.copy(camera.position);
+            ctrlStartTarget.copy(controls.target);
+            animProgress = 0;
+            cameraAnimating = true;
+
+            if (mode === '2D') {
+                currentPts = ptData2D;
+                // Look straight down onto XY plane
+                camTargetPos.set(3, 3, 20);
+                ctrlEndTarget.set(3, 3, 0);
+
+                gridXY.visible = true;
+                groundGrid3D.visible = false;
+                axisZ.group.visible = false;
+                lblZ.visible = false;
+
+                controls.enableRotate = false; // Lock rotation in 2D
+                document.getElementById('hint-rot').innerText = "Rotate disabled (2D)";
+                document.getElementById('title-text').innerText = "2D Vector Geometry (Line & Point)";
+                document.getElementById('subtitle-text').innerText = "VCE Specialist Mathematics &bull; Line, Normal Vector & Distance";
+            } else {
+                currentPts = ptData3D;
+                // Orbiting 3D perspective
+                camTargetPos.set(13, 14, 16);
+                ctrlEndTarget.set(1.5, 1.5, 1.5);
+
+                gridXY.visible = false;
+                groundGrid3D.visible = true;
+                axisZ.group.visible = true;
+                lblZ.visible = true;
+
+                controls.enableRotate = true;
+                document.getElementById('hint-rot').innerText = "Rotate camera (3D)";
+                document.getElementById('title-text').innerText = "3D Vector Geometry (Plane & Point)";
+                document.getElementById('subtitle-text').innerText = "VCE Specialist Mathematics &bull; Planes, Cross Products & Distance";
+            }
+
+            updateLegendUI();
+            updateSceneGeometry();
+        }
+
+        document.getElementById('btn-mode-2d').addEventListener('click', () => setMode('2D'));
+        document.getElementById('btn-mode-3d').addEventListener('click', () => setMode('3D'));
+
+        /* -------------------------------------------------------------
+           INTERACTION & INTEGER SNAPPING
+        ------------------------------------------------------------- */
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let hoveredMesh = null;
+        let draggedMesh = null;
+        const dragPlane = new THREE.Plane();
+        const planeIntersection = new THREE.Vector3();
+
+        function getPointerPos(event) {
+            return {
+                x: (event.clientX / window.innerWidth) * 2 - 1,
+                y: -(event.clientY / window.innerHeight) * 2 + 1
+            };
+        }
+
+        window.addEventListener('pointermove', (e) => {
+            const p = getPointerPos(e);
+            mouse.x = p.x;
+            mouse.y = p.y;
+
+            if (draggedMesh) {
+                raycaster.setFromCamera(mouse, camera);
+                if (raycaster.ray.intersectPlane(dragPlane, planeIntersection)) {
+                    const snappedX = Math.round(planeIntersection.x);
+                    const snappedY = Math.round(planeIntersection.y);
+                    const snappedZ = currentMode === '2D' ? 0 : Math.round(planeIntersection.z);
+
+                    const clX = Math.max(-8, Math.min(8, snappedX));
+                    const clY = Math.max(-8, Math.min(8, snappedY));
+                    const clZ = currentMode === '2D' ? 0 : Math.max(-8, Math.min(8, snappedZ));
+
+                    const id = draggedMesh.userData.id;
+                    if (currentPts[id].x !== clX || currentPts[id].y !== clY || currentPts[id].z !== clZ) {
+                        currentPts[id].set(clX, clY, clZ);
+                        updateSceneGeometry();
+                    }
+                }
+                return;
+            }
+
+            raycaster.setFromCamera(mouse, camera);
+            const selectable = currentMode === '2D' 
+                ? pointMeshes.filter(m => m.userData.id !== 'C') 
+                : pointMeshes;
+
+            const intersects = raycaster.intersectObjects(selectable, true);
+
+            if (intersects.length > 0) {
+                let hit = intersects[0].object;
+                while (hit.parent && !hit.userData.id) {
+                    hit = hit.parent;
+                }
+                if (hit.userData.id) {
+                    if (hoveredMesh !== hit) {
+                        if (hoveredMesh) hoveredMesh.material.emissiveIntensity = 0.35;
+                        hoveredMesh = hit;
+                        hoveredMesh.material.emissiveIntensity = 0.9;
+                        document.body.style.cursor = 'grab';
+                        highlightCard(hoveredMesh.userData.id, true);
+                    }
+                    return;
+                }
+            }
+
+            if (hoveredMesh) {
+                hoveredMesh.material.emissiveIntensity = 0.35;
+                highlightCard(hoveredMesh.userData.id, false);
+                hoveredMesh = null;
+                document.body.style.cursor = 'default';
+            }
+        });
+
+        window.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+
+            raycaster.setFromCamera(mouse, camera);
+            const selectable = currentMode === '2D' 
+                ? pointMeshes.filter(m => m.userData.id !== 'C') 
+                : pointMeshes;
+
+            const intersects = raycaster.intersectObjects(selectable, true);
+
+            if (intersects.length > 0) {
+                let hit = intersects[0].object;
+                while (hit.parent && !hit.userData.id) {
+                    hit = hit.parent;
+                }
+                if (hit.userData.id) {
+                    draggedMesh = hit;
+                    controls.enabled = false;
+                    document.body.style.cursor = 'grabbing';
+
+                    if (currentMode === '2D') {
+                        // Strictly drag on XY plane (z = 0)
+                        dragPlane.set(new THREE.Vector3(0, 0, 1), 0);
+                    } else {
+                        // Camera facing plane passing through current position
+                        const camDir = new THREE.Vector3();
+                        camera.getWorldDirection(camDir);
+                        dragPlane.setFromNormalAndCoplanarPoint(camDir.negate(), draggedMesh.position);
+                    }
+
+                    highlightCard(draggedMesh.userData.id, true);
+                }
+            }
+        });
+
+        window.addEventListener('pointerup', () => {
+            if (draggedMesh) {
+                highlightCard(draggedMesh.userData.id, false);
+                draggedMesh = null;
+                controls.enabled = true;
+                document.body.style.cursor = hoveredMesh ? 'grab' : 'default';
+            }
+        });
+
+        function highlightCard(id, active) {
+            const card = document.getElementById('card-' + id);
+            if (card) {
+                if (active) card.classList.add('active');
+                else card.classList.remove('active');
+            }
+        }
+
+        /* -------------------------------------------------------------
+           CONTROLS & PRESETS
+        ------------------------------------------------------------- */
+        document.getElementById('slider-opacity').addEventListener('input', (e) => {
+            planeMaterial.opacity = parseFloat(e.target.value);
+        });
+
+        document.getElementById('slider-planesize').addEventListener('input', (e) => {
+            planePaddingFactor = parseFloat(e.target.value);
+            updateSceneGeometry();
+        });
+
+        document.getElementById('slider-normalscale').addEventListener('input', (e) => {
+            normalDisplayScale = parseFloat(e.target.value);
+            updateSceneGeometry();
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if (currentMode === '3D') {
+                ptData3D.A.set(1, 1, 1);
+                ptData3D.B.set(5, 2, 0);
+                ptData3D.C.set(1, 5, 3);
+                ptData3D.D.set(3, 5, 6);
+                controls.target.set(1.5, 1.5, 1.5);
+            } else {
+                ptData2D.A.set(1, 1, 0);
+                ptData2D.B.set(5, 3, 0);
+                ptData2D.D.set(2, 6, 0);
+                controls.target.set(3, 3, 0);
+            }
+            updateSceneGeometry();
+        });
+
+        document.getElementById('btn-preset').addEventListener('click', () => {
+            if (currentMode === '3D') {
+                ptData3D.A.set(0, 0, 0);
+                ptData3D.B.set(4, 0, 1);
+                ptData3D.C.set(1, 4, 1);
+                ptData3D.D.set(2, 2, 5);
+                controls.target.set(2, 2, 2);
+            } else {
+                // Classic VCE 2D Exam Problem: Line passing through (0,2) and (4,5), find distance from (1,6)
+                ptData2D.A.set(0, 2, 0);
+                ptData2D.B.set(4, 5, 0);
+                ptData2D.D.set(1, 6, 0);
+                controls.target.set(2, 4, 0);
+            }
+            updateSceneGeometry();
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        /* -------------------------------------------------------------
+           ANIMATION LOOP WITH CAMERA TRANSITIONS
+        ------------------------------------------------------------- */
+        updateLegendUI();
+        updateSceneGeometry();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Smooth interpolation for mode switching
+            if (cameraAnimating) {
+                animProgress += 0.04;
+                const t = Math.min(1, animProgress);
+                const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+                camera.position.lerpVectors(camStartPos, camTargetPos, ease);
+                controls.target.lerpVectors(ctrlStartTarget, ctrlEndTarget, ease);
+
+                if (t >= 1) {
+                    cameraAnimating = false;
+                }
+            }
+
+            controls.update();
+
+            // Subtle pulsing of draggable points
+            const time = performance.now() * 0.003;
+            pointMeshes.forEach(mesh => {
+                if (mesh !== hoveredMesh && mesh !== draggedMesh) {
+                    mesh.material.emissiveIntensity = 0.35 + 0.12 * Math.sin(time + mesh.position.x);
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
