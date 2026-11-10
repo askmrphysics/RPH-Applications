@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCE Senior Pedagogical Strategy & Student Selector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 15% 15%, #16192b 0%, #0c0e17 55%, #05060a 100%);
+      --surface-glass: rgba(26, 31, 51, 0.72);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --surface-border-hover: rgba(255, 255, 255, 0.22);
+      
+      --accent-cat1: #10b981; /* Emerald */
+      --accent-cat1-glow: rgba(16, 185, 129, 0.35);
+      --accent-cat2: #3b82f6; /* Sapphire Blue */
+      --accent-cat2-glow: rgba(59, 130, 246, 0.35);
+      --accent-cat3: #ec4899; /* Vibrant Pink / Magenta */
+      --accent-cat3-glow: rgba(236, 72, 153, 0.38);
+      
+      --gold-accent: #f59e0b;
+      --gold-glow: rgba(245, 158, 11, 0.4);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2rem;
+      background: var(--surface-glass);
+      backdrop-filter: blur(16px);
+      border-radius: 18px;
+      border: 1px solid var(--surface-border);
+    }
+
+    .brand-title {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .brand-title h1 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-title p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--surface-border);
+      color: #e2e8f0;
+      padding: 0.6rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--surface-border-hover);
+      transform: translateY(-1px);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 410px;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    @media (max-width: 1100px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--surface-glass);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--surface-border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      position: relative;
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.85rem;
+    }
+
+    .card-heading h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Strategy Rows Styling */
+    .strategy-section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 0.45rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .button-group-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+    }
+
+    .btn-strategy {
+      border: 1px solid transparent;
+      padding: 1.05rem 0.9rem;
+      border-radius: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 96px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-strategy:hover {
+      transform: translateY(-3px);
+    }
+
+    .btn-strategy .cat-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+
+    .btn-strategy .label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .btn-strategy .sub {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 0.3rem;
+    }
+
+    /* Tier Styles */
+    .tier-1 {
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.03));
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #a7f3d0;
+    }
+    .tier-1:hover {
+      border-color: var(--accent-cat1);
+      box-shadow: 0 8px 24px var(--accent-cat1-glow);
+    }
+    .tier-1 .cat-tag { color: #34d399; }
+
+    .tier-2 {
+      background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.03));
+      border-color: rgba(59, 130, 246, 0.3);
+      color: #bfdbfe;
+    }
+    .tier-2:hover {
+      border-color: var(--accent-cat2);
+      box-shadow: 0 8px 24px var(--accent-cat2-glow);
+    }
+    .tier-2 .cat-tag { color: #60a5fa; }
+
+    .tier-3 {
+      background: linear-gradient(145deg, rgba(236, 72, 153, 0.15), rgba(236, 72, 153, 0.03));
+      border-color: rgba(236, 72, 153, 0.3);
+      color: #fbcfe8;
+    }
+    .tier-3:hover {
+      border-color: var(--accent-cat3);
+      box-shadow: 0 8px 24px var(--accent-cat3-glow);
+    }
+    .tier-3 .cat-tag { color: #f472b6; }
+
+    /* Strategy Display Box */
+    .strategy-display-card {
+      background: rgba(15, 20, 36, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 1.5rem;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .strategy-display-card.active {
+      border-color: rgba(255, 255, 255, 0.28);
+      box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.02);
+    }
+
+    .placeholder-state {
+      text-align: center;
+      color: #64748b;
+    }
+    .placeholder-state svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 0.5rem;
+      opacity: 0.5;
+    }
+
+    .strategy-content {
+      display: none;
+      flex-direction: column;
+      gap: 0.75rem;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .strategy-badge-line {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .pill-type {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+    }
+
+    .pill-tier {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .strategy-title-lg {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .strategy-desc {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+
+    .vce-prompt-box {
+      margin-top: 0.5rem;
+      padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.04);
+      border-left: 3px solid var(--gold-accent);
+      border-radius: 0 10px 10px 0;
+      font-size: 0.88rem;
+      color: #fef3c7;
+    }
+    .vce-prompt-box strong {
+      color: var(--gold-accent);
+      display: block;
+      margin-bottom: 0.2rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Right Column: Student Selector */
+    .student-display-hero {
+      background: radial-gradient(circle at center, rgba(30, 41, 75, 0.75) 0%, rgba(13, 17, 30, 0.95) 100%);
+      border: 2px solid rgba(245, 158, 11, 0.3);
+      border-radius: 18px;
+      padding: 2.2rem 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      min-height: 230px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .student-display-hero.winner-glow {
+      border-color: var(--gold-accent);
+      box-shadow: 0 0 45px var(--gold-glow);
+      animation: pulseGlow 1.2s infinite alternate;
+    }
+
+    .student-name-headline {
+      font-family: 'Space Grotesk', 'Cinzel', sans-serif;
+      font-size: 2.75rem;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 4px 18px rgba(0,0,0,0.6);
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: -0.02em;
+      transition: transform 0.1s;
+    }
+
+    .student-name-headline.empty-state {
+      font-size: 1.1rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 500;
+      color: #64748b;
+    }
+
+    .btn-roll-student {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      border: none;
+      color: #111827;
+      font-size: 1.05rem;
+      font-weight: 800;
+      padding: 1.05rem 1.5rem;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px var(--gold-glow);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .btn-roll-student:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .btn-roll-student:active {
+      transform: translateY(0);
+    }
+
+    .roster-manager {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .roster-summary {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    textarea#manualRosterInput {
+      width: 100%;
+      height: 110px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      color: #e2e8f0;
+      padding: 0.75rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      resize: vertical;
+      line-height: 1.4;
+    }
+    textarea#manualRosterInput:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+    }
+    .file-input-wrapper input[type="file"] {
+      display: none;
+    }
+
+    .student-tag-cloud {
+      max-height: 120px;
+      overflow-y: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      padding: 0.5rem;
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .student-chip {
+      font-size: 0.72rem;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* Modal / Popups */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseGlow {
+      from { box-shadow: 0 0 25px rgba(245, 158, 11, 0.4); }
+      to { box-shadow: 0 0 50px rgba(245, 158, 11, 0.85); }
+    }
+
+    /* Confetti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <header>
+    <div class="brand-title">
+      <h1>VCE Pedagogical Navigator</h1>
+      <p>Senior Secondary (Year 11 &amp; 12) Active Cognition &amp; Formative Probe</p>
+    </div>
+    <div class="top-actions">
+      <button class="btn-secondary" id="downloadAppBtn" title="Download standalone copy to your local machine">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Save Offline HTML
+      </button>
+      <button class="btn-secondary" id="toggleAudioBtn">
+        <span id="audioStatusIcon">🔊</span> Sound: ON
+      </button>
+    </div>
+  </header>
+
+  <div class="dashboard-grid">
+    <!-- LEFT: Strategies Dashboard -->
+    <main class="card">
+      <div class="card-heading">
+        <h2>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Pedagogical Routines
+        </h2>
+        <span style="font-size: 0.78rem; color: #94a3b8;">Click any category to randomize a classroom prompt</span>
+      </div>
+
+      <!-- ROW 1: Opportunities to Respond (OTR) -->
+      <div>
+        <div class="strategy-section-title">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>
+          Opportunities to Respond (OTR)
+        </div>
+        <div class="button-group-row">
+          <button class="btn-strategy tier-1" onclick="selectStrategy('OTR', 1)">
+            <div>
+              <div class="cat-tag">Category 1</div>
+              <div class="label">Instantaneous</div>
+            </div>
+            <div class="sub">No prep • Zero friction</div>
+          </button>
+          
+          <button class="btn-strategy tier-2" onclick="selectStrategy('OTR', 2)">
+            <div>
+              <div class="cat-tag">Category 2</div>
+              <div class="label">Rapid Formative</div>
+            </div>
+            <div class="sub">Minimal prep • Quick check</div>
+          </button>
+          
+          <button class="btn-strategy tier-3" onclick="selectStrategy('OTR', 3)">
+            <div>
+              <div class="cat-tag">Category 3</div>
+              <div class="label">Deep Synthesis</div>
+            </div>
+            <div class="sub">High demand • Intensive insight</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ROW 2: Visual Thinking Routines (VTR) -->
+      <div>
+        <div class="strategy-section-title">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
+          Visual Thinking Routines (VTR - Harvard Project Zero)
+        </div>
+        <div class="button-group-row">
+          <button class="btn-strategy tier-1" onclick="selectStrategy('VTR', 1)">
+            <div>
+              <div class="cat-tag">Category 1</div>
+              <div class="label">Instantaneous</div>
+            </div>
+            <div class="sub">Spontaneous micro-routine</div>
+          </button>
+          
+          <button class="btn-strategy tier-2" onclick="selectStrategy('VTR', 2)">
+            <div>
+              <div class="cat-tag">Category 2</div>
+              <div class="label">Structured Thinking</div>
+            </div>
+            <div class="sub">Low setup • Clear protocols</div>
+          </button>
+          
+          <button class="btn-strategy tier-3" onclick="selectStrategy('VTR', 3)">
+            <div>
+              <div class="cat-tag">Category 3</div>
+              <div class="label">Critical Inquiry</div>
+            </div>
+            <div class="sub">Multi-perspective • Complex</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Display Card for Chosen Strategy -->
+      <div class="strategy-display-card" id="strategyDisplayBox">
+        <div class="placeholder-state" id="displayPlaceholder">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          <p>Choose an <strong>OTR</strong> or <strong>Visual Thinking Routine</strong> above to activate a high-impact strategy for your Year 11/12 students.</p>
+        </div>
+
+        <div class="strategy-content" id="strategyContent">
+          <div class="strategy-badge-line">
+            <span class="pill-type" id="badgeType">OTR</span>
+            <span class="pill-tier" id="badgeTier">Category 1</span>
+          </div>
+          <div class="strategy-title-lg" id="stratTitle">Strategy Name</div>
+          <p class="strategy-desc" id="stratDesc">Strategy operational details go here...</p>
+          <div class="vce-prompt-box">
+            <strong>VCE Application &amp; Questioning Cue</strong>
+            <span id="stratVCE">Sample prompt geared toward Year 11/12 outcomes...</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT: Student Spotlight & Roster -->
+    <aside class="card">
+      <div class="card-heading">
+        <h2>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Senior Student Spotlight
+        </h2>
+        <span id="studentCountBadge" style="font-size: 0.78rem; color: #f59e0b; font-weight: 700;">0 Students</span>
+      </div>
+
+      <!-- Spotlight Banner -->
+      <div class="student-display-hero" id="spotlightHero">
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold-accent); margin-bottom: 0.5rem; font-weight: 800;">
+          Selected Respondent
+        </div>
+        <div class="student-name-headline empty-state" id="chosenStudentDisplay">
+          Load class list to begin
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button class="btn-roll-student" id="pickStudentBtn" onclick="pickRandomStudent()">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Randomly Call Student
+      </button>
+
+      <!-- Class Roster Manager -->
+      <div class="roster-manager">
+        <div class="roster-summary">
+          <span>Paste names or upload CSV/TXT file:</span>
+          <div class="file-input-wrapper">
+            <button class="btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" onclick="document.getElementById('csvFileInput').click()">
+              📁 Upload List
+            </button>
+            <input type="file" id="csvFileInput" accept=".txt,.csv" />
+          </div>
+        </div>
+
+        <textarea id="manualRosterInput" placeholder="Enter one student name per line:&#10;Charlotte Zhang&#10;Liam O'Connor&#10;Amara Patel&#10;Noah Van Der Berg&#10;Maya Chen"></textarea>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.75rem; color:#64748b;">Loaded Cohort Roster:</span>
+          <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="loadSampleClass()">Load Sample VCE Class</button>
+        </div>
+
+        <div class="student-tag-cloud" id="studentTagCloud">
+          <span style="font-size:0.75rem; color:#64748b; font-style:italic; padding:0.25rem;">No students loaded yet.</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    /* =========================================================================
+       PEDAGOGICAL STRATEGIES DATA (OTR & VTR) - TAILORED FOR YEAR 11/12 VCE
+       ========================================================================= */
+    const strategies = {
+      OTR: {
+        1: [ // Category 1: Instantaneous / No Prep
+          {
+            name: "Fist-to-Five Confidence Calibration",
+            desc: "Students simultaneously raise fingers (0 to 5) indicating their readiness to independently write a full-mark VCAA exam response for the current sub-topic.",
+            vcePrompt: "'Show fingers now: 0 = completely lost, 3 = can state the theory with prompting, 5 = ready to tackle a 6-mark evaluative SAC question right now.'"
+          },
+          {
+            name: "Thumbs Stance (Binary Evaluation)",
+            desc: "Hold a 3-way thumb posture (Up = Strong contention agreement, Sideways = Nuanced/conditional, Down = Strong ref
