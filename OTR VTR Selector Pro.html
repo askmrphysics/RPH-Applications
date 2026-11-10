@@ -3,27 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VCE Senior Pedagogical Strategy & Student Selector</title>
+  <title>VCE Physics (Units 3 & 4) Pedagogical Navigator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --bg-gradient: radial-gradient(circle at 15% 15%, #16192b 0%, #0c0e17 55%, #05060a 100%);
-      --surface-glass: rgba(26, 31, 51, 0.75);
+      --bg-gradient: radial-gradient(circle at 15% 15%, #0f172a 0%, #090d16 55%, #030712 100%);
+      --surface-glass: rgba(17, 24, 39, 0.78);
       --surface-border: rgba(255, 255, 255, 0.12);
-      --surface-border-hover: rgba(255, 255, 255, 0.25);
+      --surface-border-hover: rgba(255, 255, 255, 0.28);
       
       --accent-cat1: #10b981; /* Emerald */
       --accent-cat1-glow: rgba(16, 185, 129, 0.35);
-      --accent-cat2: #3b82f6; /* Sapphire */
-      --accent-cat2-glow: rgba(59, 130, 246, 0.35);
-      --accent-cat3: #ec4899; /* Pink */
+      --accent-cat2: #38bdf8; /* Cyan / Electric */
+      --accent-cat2-glow: rgba(56, 189, 248, 0.35);
+      --accent-cat3: #ec4899; /* Quantum Magenta */
       --accent-cat3-glow: rgba(236, 72, 153, 0.38);
       
       --gold-accent: #f59e0b;
-      --gold-glow: rgba(245, 158, 11, 0.4);
+      --gold-glow: rgba(245, 158, 11, 0.45);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -40,17 +40,17 @@
       color: var(--text-main);
       font-family: 'Plus Jakarta Sans', sans-serif;
       min-height: 100vh;
-      padding: 1.5rem;
+      padding: 1.4rem;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1.2rem;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.2rem 1.8rem;
+      padding: 1.1rem 1.8rem;
       background: var(--surface-glass);
       backdrop-filter: blur(16px);
       border-radius: 16px;
@@ -58,26 +58,42 @@
     }
 
     .brand-title h1 {
-      font-size: 1.45rem;
+      font-size: 1.4rem;
       font-weight: 800;
       letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #ffffff 40%, #cbd5e1 100%);
+      background: linear-gradient(135deg, #38bdf8 0%, #ffffff 50%, #c084fc 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .brand-title p {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
       font-weight: 600;
-      margin-top: 0.2rem;
+      margin-top: 0.15rem;
+    }
+
+    .physics-tags {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+    }
+
+    .physics-tag {
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.15rem 0.5rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: #93c5fd;
     }
 
     .top-actions {
       display: flex;
-      gap: 0.75rem;
+      gap: 0.65rem;
       align-items: center;
     }
 
@@ -85,7 +101,7 @@
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--surface-border);
       color: #e2e8f0;
-      padding: 0.55rem 0.95rem;
+      padding: 0.55rem 0.9rem;
       font-size: 0.82rem;
       font-weight: 600;
       border-radius: 10px;
@@ -97,7 +113,7 @@
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.14);
       border-color: var(--surface-border-hover);
       transform: translateY(-1px);
     }
@@ -105,11 +121,11 @@
     .dashboard-grid {
       display: grid;
       grid-template-columns: 1fr 410px;
-      gap: 1.25rem;
+      gap: 1.2rem;
       flex: 1;
     }
 
-    @media (max-width: 1050px) {
+    @media (max-width: 1080px) {
       .dashboard-grid {
         grid-template-columns: 1fr;
       }
@@ -120,10 +136,10 @@
       backdrop-filter: blur(18px);
       border: 1px solid var(--surface-border);
       border-radius: 18px;
-      padding: 1.4rem;
+      padding: 1.35rem;
       display: flex;
       flex-direction: column;
-      gap: 1.2rem;
+      gap: 1.15rem;
     }
 
     .card-heading {
@@ -131,11 +147,11 @@
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 0.8rem;
+      padding-bottom: 0.75rem;
     }
 
     .card-heading h2 {
-      font-size: 1.1rem;
+      font-size: 1.08rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -143,7 +159,7 @@
     }
 
     .strategy-section-title {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -157,21 +173,21 @@
     .button-group-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.85rem;
+      gap: 0.8rem;
       margin-bottom: 0.85rem;
     }
 
     .btn-strategy {
       border: 1px solid transparent;
-      padding: 1rem 0.9rem;
-      border-radius: 14px;
+      padding: 0.95rem 0.85rem;
+      border-radius: 13px;
       cursor: pointer;
       text-align: left;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 98px;
+      min-height: 96px;
     }
 
     .btn-strategy:hover {
@@ -183,21 +199,21 @@
     }
 
     .btn-strategy .cat-tag {
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.3rem;
     }
 
     .btn-strategy .label {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 700;
       line-height: 1.25;
     }
 
     .btn-strategy .sub {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: rgba(255, 255, 255, 0.7);
       margin-top: 0.3rem;
     }
@@ -215,15 +231,15 @@
     .tier-1 .cat-tag { color: #34d399; }
 
     .tier-2 {
-      background: linear-gradient(145deg, rgba(59, 130, 246, 0.16), rgba(59, 130, 246, 0.03));
-      border-color: rgba(59, 130, 246, 0.35);
-      color: #bfdbfe;
+      background: linear-gradient(145deg, rgba(56, 189, 248, 0.16), rgba(56, 189, 248, 0.03));
+      border-color: rgba(56, 189, 248, 0.35);
+      color: #bae6fd;
     }
     .tier-2:hover {
       border-color: var(--accent-cat2);
       box-shadow: 0 6px 20px var(--accent-cat2-glow);
     }
-    .tier-2 .cat-tag { color: #60a5fa; }
+    .tier-2 .cat-tag { color: #38bdf8; }
 
     .tier-3 {
       background: linear-gradient(145deg, rgba(236, 72, 153, 0.16), rgba(236, 72, 153, 0.03));
@@ -238,21 +254,21 @@
 
     /* Strategy Display Box */
     .strategy-display-card {
-      background: rgba(15, 20, 36, 0.9);
+      background: rgba(15, 23, 42, 0.92);
       border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 16px;
       padding: 1.4rem;
-      min-height: 210px;
+      min-height: 230px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
       transition: all 0.25s ease;
     }
 
     .strategy-display-card.active-flash {
-      border-color: rgba(255, 255, 255, 0.35);
-      box-shadow: 0 0 25px rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 28px rgba(56, 189, 248, 0.2);
     }
 
     .strategy-content {
@@ -268,33 +284,44 @@
     }
 
     .pill-type {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.25rem 0.6rem;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.65rem;
       border-radius: 20px;
       background: rgba(255, 255, 255, 0.1);
       color: #cbd5e1;
     }
 
     .pill-tier {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 800;
       letter-spacing: 0.05em;
-      padding: 0.25rem 0.6rem;
+      padding: 0.25rem 0.65rem;
       border-radius: 20px;
     }
 
+    .pill-topic {
+      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 20px;
+      background: rgba(56, 189, 248, 0.15);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
     .strategy-title-lg {
-      font-size: 1.55rem;
+      font-size: 1.45rem;
       font-weight: 800;
       color: #ffffff;
       line-height: 1.25;
     }
 
     .strategy-desc {
-      font-size: 0.94rem;
+      font-size: 0.92rem;
       line-height: 1.5;
       color: #cbd5e1;
     }
@@ -305,13 +332,14 @@
       background: rgba(255, 255, 255, 0.04);
       border-left: 3px solid var(--gold-accent);
       border-radius: 0 10px 10px 0;
-      font-size: 0.86rem;
+      font-size: 0.88rem;
       color: #fef3c7;
+      line-height: 1.45;
     }
     .vce-prompt-box strong {
       color: var(--gold-accent);
       display: block;
-      margin-bottom: 0.2rem;
+      margin-bottom: 0.25rem;
       font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -319,14 +347,14 @@
 
     /* Right Column: Student Selector */
     .student-display-hero {
-      background: radial-gradient(circle at center, rgba(30, 41, 75, 0.75) 0%, rgba(13, 17, 30, 0.95) 100%);
-      border: 2px solid rgba(245, 158, 11, 0.3);
+      background: radial-gradient(circle at center, rgba(30, 41, 75, 0.8) 0%, rgba(13, 17, 30, 0.95) 100%);
+      border: 2px solid rgba(245, 158, 11, 0.35);
       border-radius: 18px;
       padding: 2rem 1.2rem;
       text-align: center;
       position: relative;
       overflow: hidden;
-      min-height: 210px;
+      min-height: 205px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -342,11 +370,11 @@
 
     .student-name-headline {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 2.6rem;
+      font-size: 2.5rem;
       font-weight: 700;
       color: #ffffff;
-      text-shadow: 0 4px 18px rgba(0,0,0,0.6);
-      min-height: 68px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      min-height: 64px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -405,13 +433,13 @@
       color: #e2e8f0;
       padding: 0.75rem;
       font-family: inherit;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       resize: vertical;
       line-height: 1.4;
     }
     textarea#manualRosterInput:focus {
       outline: none;
-      border-color: #3b82f6;
+      border-color: #38bdf8;
     }
 
     .student-tag-cloud {
@@ -456,8 +484,14 @@
 
   <header>
     <div class="brand-title">
-      <h1>VCE Pedagogical Navigator</h1>
-      <p>Senior Secondary (Year 11 &amp; 12) Active Cognition &amp; Formative Probe</p>
+      <h1>VCE Physics (Units 3 &amp; 4) Pedagogical Navigator</h1>
+      <p>Senior Secondary Formative Revision &amp; Active Cognition</p>
+      <div class="physics-tags">
+        <span class="physics-tag">⚡ Electricity</span>
+        <span class="physics-tag">🧲 Magnetism</span>
+        <span class="physics-tag">🌊 Wave Motion</span>
+        <span class="physics-tag">🔬 Light &amp; Matter</span>
+      </div>
     </div>
     <div class="top-actions">
       <button class="btn-secondary" id="downloadAppBtn" title="Save offline copy">
@@ -476,16 +510,16 @@
       <div class="card-heading">
         <h2>
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          Pedagogical Routines
+          Physics Inquiry &amp; Response Routines
         </h2>
-        <span style="font-size: 0.78rem; color: #94a3b8;">Click any category to randomize a classroom prompt</span>
+        <span style="font-size: 0.78rem; color: #94a3b8;">Click any tier to randomize a VCE Physics routine</span>
       </div>
 
       <!-- ROW 1: Opportunities to Respond (OTR) -->
       <div>
         <div class="strategy-section-title">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>
-          Opportunities to Respond (OTR)
+          Opportunities to Respond (OTR) — Rapid Physics Probes
         </div>
         <div class="button-group-row">
           <button class="btn-strategy tier-1" data-strat-type="OTR" data-strat-tier="1">
@@ -493,7 +527,7 @@
               <div class="cat-tag">Category 1</div>
               <div class="label">Instantaneous</div>
             </div>
-            <div class="sub">No prep • Zero friction</div>
+            <div class="sub">Hand rules • Rapid stance • 0 Prep</div>
           </button>
           
           <button class="btn-strategy tier-2" data-strat-type="OTR" data-strat-tier="2">
@@ -501,7 +535,7 @@
               <div class="cat-tag">Category 2</div>
               <div class="label">Rapid Formative</div>
             </div>
-            <div class="sub">Minimal prep • Quick check</div>
+            <div class="sub">Whiteboard math • VCAA 2-sentence</div>
           </button>
           
           <button class="btn-strategy tier-3" data-strat-type="OTR" data-strat-tier="3">
@@ -509,7 +543,7 @@
               <div class="cat-tag">Category 3</div>
               <div class="label">Deep Synthesis</div>
             </div>
-            <div class="sub">High demand • Intensive insight</div>
+            <div class="sub">Forensic circuit debug • Socratic debate</div>
           </button>
         </div>
       </div>
@@ -518,7 +552,7 @@
       <div>
         <div class="strategy-section-title">
           <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
-          Visual Thinking Routines (Harvard Project Zero)
+          Visual Thinking Routines (VTR) — Whiteboard &amp; Display Demonstrations
         </div>
         <div class="button-group-row">
           <button class="btn-strategy tier-1" data-strat-type="VTR" data-strat-tier="1">
@@ -526,23 +560,23 @@
               <div class="cat-tag">Category 1</div>
               <div class="label">Instantaneous</div>
             </div>
-            <div class="sub">Spontaneous micro-routine</div>
+            <div class="sub">See-Think-Wonder • Headlines</div>
           </button>
           
           <button class="btn-strategy tier-2" data-strat-type="VTR" data-strat-tier="2">
             <div>
               <div class="cat-tag">Category 2</div>
-              <div class="label">Structured Thinking</div>
+              <div class="label">Display &amp; Diagram</div>
             </div>
-            <div class="sub">Low setup • Clear protocols</div>
+            <div class="sub">Student to the board • CSQ Graph analysis</div>
           </button>
           
           <button class="btn-strategy tier-3" data-strat-type="VTR" data-strat-tier="3">
             <div>
               <div class="cat-tag">Category 3</div>
-              <div class="label">Critical Inquiry</div>
+              <div class="label">Interactive Modeling</div>
             </div>
-            <div class="sub">Multi-perspective • Complex</div>
+            <div class="sub">Tug of War • Core formula mapping</div>
           </button>
         </div>
       </div>
@@ -553,12 +587,13 @@
           <div class="strategy-badge-line">
             <span class="pill-type" id="badgeType">Opportunity to Respond</span>
             <span class="pill-tier" id="badgeTier">Category 1</span>
+            <span class="pill-topic" id="badgeTopic">🧲 Magnetism &amp; Induction</span>
           </div>
-          <div class="strategy-title-lg" id="stratTitle">Fist-to-Five Confidence Calibration</div>
-          <p class="strategy-desc" id="stratDesc">Students simultaneously raise fingers (0 to 5) indicating their readiness to independently write a full-mark VCAA exam response for the current sub-topic.</p>
+          <div class="strategy-title-lg" id="stratTitle">Right-Hand Slap Rule Synchronized Flash</div>
+          <p class="strategy-desc" id="stratDesc">Point fingers in direction of B-field (into board = down/away), thumb along positive current or velocity, palm direction indicates magnetic force (F = qvB or F = nILB).</p>
           <div class="vce-prompt-box">
-            <strong>VCE Application &amp; Questioning Cue</strong>
-            <span id="stratVCE">'Show fingers now: 0 = completely lost, 3 = can state the theory with prompting, 5 = ready to tackle a 6-mark evaluative SAC question right now.'</span>
+            <strong>VCE Questioning Cue &amp; Application</strong>
+            <span id="stratVCE">'A proton travels East through a uniform magnetic field directed North. On 3, extend your right hand showing the force vector: 1, 2, 3... Out of the page!'</span>
           </div>
         </div>
       </div>
@@ -569,7 +604,7 @@
       <div class="card-heading">
         <h2>
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Senior Student Spotlight
+          Senior Physics Respondent
         </h2>
         <span id="studentCountBadge" style="font-size: 0.78rem; color: #f59e0b; font-weight: 700;">15 Students</span>
       </div>
@@ -577,7 +612,7 @@
       <!-- Spotlight Banner -->
       <div class="student-display-hero" id="spotlightHero">
         <div style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold-accent); margin-bottom: 0.4rem; font-weight: 800;">
-          Selected Respondent
+          Selected Student
         </div>
         <div class="student-name-headline" id="chosenStudentDisplay">
           Ready to Roll
@@ -593,7 +628,7 @@
       <!-- Class Roster Manager -->
       <div class="roster-manager">
         <div class="roster-summary">
-          <span>Upload CSV/TXT or paste names:</span>
+          <span>Upload CSV/TXT or paste cohort:</span>
           <div>
             <button class="btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.74rem;" id="uploadFileTriggerBtn">
               📁 Upload List
@@ -605,7 +640,7 @@
         <textarea id="manualRosterInput" placeholder="Enter one student per line..."></textarea>
 
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.75rem; color:#64748b;">Active Cohort:</span>
+          <span style="font-size:0.75rem; color:#64748b;">Year 12 Physics Cohort:</span>
           <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.7rem;" id="resetSampleClassBtn">Reset Default Class</button>
         </div>
 
@@ -616,152 +651,184 @@
 
   <script>
     /* =========================================================================
-       STRATEGIES DATABASE (OTR & VTR)
+       VCE PHYSICS (UNITS 3 & 4) STRATEGIES DATABASE
        ========================================================================= */
     const strategies = {
       OTR: {
-        1: [
+        1: [ // Category 1: Instantaneous (Zero Prep)
           {
-            name: "Fist-to-Five Confidence Calibration",
-            desc: "Students simultaneously raise fingers (0 to 5) indicating their readiness to independently write a full-mark VCAA exam response for the current sub-topic.",
-            vcePrompt: "'Show fingers now: 0 = completely lost, 3 = can state the theory with prompting, 5 = ready to tackle a 6-mark evaluative SAC question right now.'"
+            name: "Right-Hand Slap / Grip Rule Flash",
+            topic: "🧲 Magnetism & Induction",
+            desc: "Present a 3D magnetic deflection or solenoid diagram. Every student simultaneously aligns their right hand to reveal the direction of the magnetic force, induced field, or conventional current.",
+            vcePrompt: "'A beam of electrons travels horizontally East into a uniform B-field directed vertically Downwards. On 3, display your palm for force (remember electron = opposite to palm!): 1, 2, 3!'"
           },
           {
-            name: "Thumbs Stance (Binary Evaluation)",
-            desc: "Hold a 3-way thumb posture (Up = Strong agreement, Sideways = Conditional, Down = Refutation) in response to a provocative interpretation or case-study thesis.",
-            vcePrompt: "'Contention: The author's primary motif undermines the protagonist's moral agency. Thumbs up, sideways, or down on 3... 1, 2, 3!'"
+            name: "Fist-to-Five Lenz's Law 3-Step Chain",
+            topic: "🧲 Electromagnetic Induction",
+            desc: "Students rate their confidence articulating the mandatory VCAA 3-step explanation: 1) Change in magnetic flux ΔΦ/Δt; 2) Direction of induced B-field to oppose change; 3) Direction of induced current via right-hand grip rule.",
+            vcePrompt: "'Fist-to-five: How confident are you writing the full 3-mark VCAA answer explaining why a copper ring repels as a North pole approaches?'"
           },
           {
-            name: "30-Second Rapid Verbal Turn-and-Talk",
-            desc: "Students turn directly to an elbow partner and spend exactly 30 seconds articulating a key syllabus definition or mechanism without hesitating.",
-            vcePrompt: "'You have 30 seconds: Person A describes the physiological negative feedback loop / legal precedent to Person B using precise command terms.'"
+            name: "Photon vs Wave Binary Thumbs Probe",
+            topic: "🔬 Light & Matter",
+            desc: "Read an experimental observation. Students instantly display Thumbs Up (Explainable ONLY by Photon Particle Model) or Thumbs Down (Explainable by Classical Wave Model).",
+            vcePrompt: "'Observation: Emission of electrons occurs with zero measurable time delay even at extremely low light intensities. Thumbs up (Photon) or Thumbs down (Wave)? 1, 2, 3!'"
           },
           {
-            name: "Choral Keyword Callout",
-            desc: "Pose a fill-in-the-blank or key terminology prompt. Count down '3, 2, 1' and have the whole class vocalise the precise syllabus term simultaneously.",
-            vcePrompt: "'When real interest rates rise, aggregate consumption experiences what directional shift? Class on 3... 1, 2, 3: [Contraction]!'"
+            name: "Choral Physical Constant & Unit Callout",
+            topic: "⚡ Electricity & Light",
+            desc: "Call out a physical quantity. On '3, 2, 1', the entire cohort vocalizes the exact SI or alternative unit or conversion constant.",
+            vcePrompt: "'To convert photon energy from Electron-Volts (eV) to Joules (J), we multiply by what fundamental constant? On 3... 1, 2, 3: [1.60 × 10⁻¹⁹ C]!'"
           },
           {
-            name: "Stand Up / Sit Down (Criteria Check)",
-            desc: "Direct students to stand if they believe a presented exemplar response includes all mandatory command-term components, and remain seated if a critical flaw exists.",
-            vcePrompt: "'Look at Sample Response B on the board. Stand up if you would award full marks against the rubric; stay seated if a crucial limitation was omitted.'"
+            name: "30-Second Transmission Loss Sprint",
+            topic: "⚡ Power Transmission",
+            desc: "Students turn to their neighbor and explain within 30 seconds why VCAA assessors penalize students who use P = V²/R to calculate power loss in transmission lines instead of P = I²R.",
+            vcePrompt: "'Partner A: You have 30 seconds to explain to Partner B why V_drop across the cables is NOT the total supply voltage V_transmission.'"
           }
         ],
-        2: [
+        2: [ // Category 2: Rapid Formative (Minimal Prep)
           {
-            name: "1-Minute Mini-Whiteboard Thesis Draft",
-            desc: "Students draft a single, punchy contention sentence answering a VCAA examination prompt on their individual mini-whiteboard, then hold it up simultaneously.",
-            vcePrompt: "'Draft your opening thesis sentence addressing: To what extent was the outcome inevitable? 60 seconds on the clock. Whiteboards up!'"
+            name: "Mini-Whiteboard Photoelectric Calculation",
+            topic: "🔬 Light & Matter",
+            desc: "Display values for threshold frequency f₀ (or work function W in eV) and incoming photon wavelength λ. Students calculate maximum kinetic energy (E_k(max) = hf - W) on mini-whiteboards and flash answers simultaneously.",
+            vcePrompt: "'Light of λ = 350 nm strikes magnesium (W = 3.68 eV). Calculate E_k(max) in eV. 60 seconds on the clock. Whiteboards UP!'"
           },
           {
-            name: "Think-Ink-Pair-Share",
-            desc: "A structured pause: 45 seconds of silent thought, 60 seconds of silent writing ('Inking' key evidence), 60 seconds paired critique, then whole-class share.",
-            vcePrompt: "'Ink two pieces of statistical data or textual quotes that substantiate this argument before you speak with your partner.'"
+            name: "The 2-Sentence VCAA Command-Word Protocol",
+            topic: "🌊 Wave Motion / Interference",
+            desc: "Students write exactly two sentences: Sentence 1 states the relevant formula/physics principle; Sentence 2 directly addresses the scenario with correct comparative language.",
+            vcePrompt: "'Question: Explain what happens to the interference fringe spacing on a screen when red laser light is replaced with blue laser light. (Sentence 1: Δx = λL/d; Sentence 2: blue has smaller λ, therefore fringes compress).'"
           },
           {
-            name: "The 2-Sentence Micro Exit Ticket",
-            desc: "Students write exactly two sentences: Sentence 1 defines the core concept; Sentence 2 identifies a potential misconception or common exam trap.",
-            vcePrompt: "'Summarise today's Area of Study outcome in sentence one. In sentence two, state what mistake an average student makes in the SAC.'"
+            name: "Four Corners: The Nature of Light & Matter",
+            topic: "🔬 Wave-Particle Duality",
+            desc: "Assign corners: 1) Classical Wave Only, 2) Photon Packet Only, 3) Both, 4) Neither. Read physical phenomena (Double-slit interference, Photoelectric effect, Electron diffraction rings, Gravitational lensing). Students walk to their chosen stance.",
+            vcePrompt: "'Phenomenon: High-speed electrons passing through a crystalline graphite lattice produce circular concentric fringes on a fluorescent screen. Migrate to your corner now!'"
           },
           {
-            name: "Four Corners Stance",
-            desc: "Designate room corners: Strongly Agree, Agree with Reservations, Disagree with Reservations, Strongly Disagree. Pose a complex VCE evaluative dilemma.",
-            vcePrompt: "'Which ethical framework is best justified in this biological breakthrough? Move to your corner and defend your stance using syllabus terminology.'"
+            name: "Path Difference Constructive/Destructive Check",
+            topic: "🌊 Wave Interference",
+            desc: "Students calculate the path difference (S₁P - S₂P) for two coherent wave sources of given wavelength λ and declare whether point P is a nodal or antinodal line.",
+            vcePrompt: "'Two coherent microwave transmitters emit at λ = 4.0 cm. A receiver at Point P measures distance 38.0 cm from Source 1 and 30.0 cm from Source 2. Write pd in terms of λ and state: Maxima or Minima?'"
           },
           {
-            name: "Pass the Marker (Board Relay)",
-            desc: "Send 3 students up simultaneously to add one non-repeating key factor, variable, or piece of evidence to a collaborative brainstorm on the board.",
-            vcePrompt: "'Write one distinct constraint affecting fiscal policy implementation. Tag in a peer once your term is recorded.'"
+            name: "BUG Examination Stem Breakdown",
+            topic: "🧲 Transformers & Induction",
+            desc: "Display an authentic 4-mark VCAA question. Students Box the command word ('Explain', 'Determine', 'Compare'), Underline given constraints (e.g., 'ideal transformer', 'RMS values'), and write the governing formulas.",
+            vcePrompt: "'VCAA Exam Question: Box the command term, underline the core constraint, and list the 2 formulas required to find the secondary current.'"
           }
         ],
-        3: [
+        3: [ // Category 3: Deep Synthesis (High Demand)
           {
-            name: "Socratic Fishbowl Interrogation",
-            desc: "4–5 students sit in the inner ring to argue an ambiguous VCE exam scenario or text interpretation. Outer ring students track rhetorical evidence, biases, and gaps in reasoning.",
-            vcePrompt: "'Inner circle: Debate whether the policy initiative was justified under the stated economic conditions. Outer circle: Track which student relies most effectively on high-order command verbs.'"
+            name: "Socratic Fishbowl: Lenz's Law vs Conservation of Energy",
+            topic: "🧲 Electromagnetism",
+            desc: "4 students enter the fishbowl to debate the theoretical paradox: What would happen to energy conservation if the induced magnetic field assisted (reinforced) the change in magnetic flux rather than opposing it?",
+            vcePrompt: "'Fishbowl team: Prove using first principles why an opposing induced magnetic field is mandatory under the Law of Conservation of Energy, tracking runaway current loops.'"
           },
           {
-            name: "BUG Examination Breakdown & Timed Response",
-            desc: "Students perform the 'BUG' protocol (Box the command term, Underline key syllabus constraints, Glance at marks allocation) and execute a timed 4-minute structured answer.",
-            vcePrompt: "'Analyze Question 4: Box the command word, Underline the two specific conditions, and produce a calibrated 4-mark response.'"
+            name: "Forensic Transmission Grid Debugging",
+            topic: "⚡ Electrical Grid & Circuits",
+            desc: "Display a schematic of a power station, step-up transformer, transmission lines with non-zero resistance R_line, step-down transformer, and town load with deliberate VCAA calculation errors. Students detect the three critical bugs.",
+            vcePrompt: "'Examine this transmission calculation: Spot where the student confused peak-to-peak with RMS voltage, applied V_supply across R_line, and mismatched the transformer ratio.'"
           },
           {
-            name: "Silent Chalk Talk / Graffiti Wall",
-            desc: "High-level examination scenario or stimulus placed in the room centre. Students circulate in absolute silence, writing interpretations, countering peer assumptions, and linking ideas with arrows.",
-            vcePrompt: "'Zero talking for 5 minutes. Interrogate the data anomaly on the board. Challenge at least two peer hypotheses with alternative chemical or historical theories.'"
+            name: "Silent Chalk Talk: The Collapse of Classical Physics",
+            topic: "🔬 Light & Matter",
+            desc: "In absolute silence, students write on a central whiteboard board space annotating the 3 insurmountable failures of classical wave theory: 1) Instantaneous emission; 2) Existence of threshold frequency; 3) E_k independent of light intensity.",
+            vcePrompt: "'5 minutes of total silence. Add an annotation connecting Einstein's E = hf to Planck's blackbody hypothesis, or challenge a peer's explanation of work function.'"
           },
           {
-            name: "Devil's Advocate Defense Matrix",
-            desc: "Students are deliberately assigned to defend an unpopular, counter-intuitive, or critically flawed thesis using valid syllabus principles to master counter-arguments.",
-            vcePrompt: "'Even if you personally disagree, structure a rigorous 2-minute defense of the counter-argument to expose flaws in the dominant theory.'"
+            name: "Devil's Advocate: Defending Classical Wave Theory",
+            topic: "🔬 Wave vs Photon Models",
+            desc: "One student or pair is assigned to argue strictly from the 1890s classical wave perspective (e.g., continuous energy absorption, heating over time), while the class uses experimental data from Millikan and Hertz to dismantle their claims.",
+            vcePrompt: "'Argue why higher intensity light should theoretically eventually eject an electron under classical continuous wave front absorption, and explain where experimental reality refutes you.'"
           }
         ]
       },
       VTR: {
-        1: [
+        1: [ // Category 1: Instantaneous (Zero Prep)
           {
-            name: "See, Think, Wonder",
-            desc: "Display a primary source, graph, dataset, or diagram. Probe observation first before jumping into high-level interpretation.",
-            vcePrompt: "'1. What do you literally SEE in this data trend? 2. What do you THINK is driving it? 3. What does it make you WONDER regarding experimental limitations?'"
+            name: "See, Think, Wonder: Field Line Topography",
+            topic: "⚡ Electric & Magnetic Fields",
+            desc: "Display a 2D composite field diagram (e.g., two unequal opposing magnetic poles or a charged particle entering crossed E and B fields). 1: What do you see in the line density and curvature? 2: What physics principle dictates this? 3: What do you wonder about the neutral point where fields cancel?",
+            vcePrompt: "'Look at the field contour on screen: What do you literally SEE in the line spacing? What do you THINK about the net force at the saddle point? What does it make you WONDER regarding charge magnitude?'"
           },
           {
-            name: "Headlines",
-            desc: "Synthesise the central essence of the lesson's concept into a sharp, captivating 6-to-10 word newspaper headline.",
-            vcePrompt: "'Write a headline capturing the pivotal shift in today's case study as if it were front-page news the morning after.'"
+            name: "Headlines: Quantum Revolution 1905",
+            topic: "🔬 Light & Matter",
+            desc: "Synthesise Einstein's explanation of the photoelectric effect or Young's double-slit experiment into a sharp, captivating 6-to-8 word newspaper headline.",
+            vcePrompt: "'Write a headline capturing why the photon model shocked classical physicists who believed light was exclusively an electromagnetic wave.'"
           },
           {
-            name: "3-2-1 Bridge",
-            desc: "Students document 3 initial thoughts/words, 2 burning questions, and 1 analogy or metaphor regarding the Area of Study topic.",
-            vcePrompt: "'3 key syllabus terms, 2 unresolved questions for the upcoming SAC, and 1 analogy explaining this abstract mechanism.'"
+            name: "3-2-1 Bridge: Matter Waves",
+            topic: "🔬 de Broglie & Electron Diffraction",
+            desc: "Students record: 3 distinct differences between photons and electrons; 2 questions regarding de Broglie wavelength λ = h/mv; 1 overarching analogy connecting matter to waves.",
+            vcePrompt: "'3 facts comparing photon momentum p = h/λ to electron momentum p = mv; 2 questions on relativistic mass; 1 analogy explaining how massive particles display interference.'"
           },
           {
-            name: "Connect, Extend, Challenge",
-            desc: "Quick reflection: How does today's concept connect to previous knowledge? How did it extend thinking? What is still challenging?",
-            vcePrompt: "'What connects directly to Unit 3? What new complexity extended your understanding? What exam scenario would still challenge you?'"
+            name: "Connect, Extend, Challenge: AC Induction",
+            topic: "🧲 AC Generators vs DC Motors",
+            desc: "Reflect on electromagnetic induction: Connect to Faraday's law of flux change; Extend to how back-EMF regulates motor speed; Challenge: What happens to coil current when an external mechanical load stalls the motor?",
+            vcePrompt: "'Connect: How does split-ring commutator function compare to slip rings? Extend: Why does torque vary sinusoidally? Challenge: What is the back-EMF when the coil is stationary?'"
           }
         ],
-        2: [
+        2: [ // Category 2: Display & Diagram (Students at the Board)
           {
-            name: "Claim, Support, Question (CSQ)",
-            desc: "Make an explicit interpretive claim about the stimulus, provide textbook/textual evidence in support, and ask a probing question.",
-            vcePrompt: "'Formulate a definitive claim regarding authorial intent or experimental bias. Subsume two specific quotes/data points as support.'"
+            name: "Board CSQ: Photoelectric V₀ vs Frequency Graph",
+            topic: "🔬 Light & Matter",
+            desc: "A student comes to the front interactive display/whiteboard. Display a Stopping Voltage vs Frequency (V₀ vs f) graph: Student makes a Claim (What does the gradient represent?), Supports it with algebra (eV₀ = hf - W), and raises a Question regarding changing target metals.",
+            vcePrompt: "'[Student Name] to the board: Annotate the gradient, the x-intercept, and the y-intercept. Show how the Planck constant h is extracted from the slope.'"
           },
           {
-            name: "Colour, Symbol, Image (CSI)",
-            desc: "Non-verbal conceptual synthesis: Select a colour that captures the theme's mood, a symbol that represents the structure, and an image conveying the core dynamic.",
-            vcePrompt: "'Represent the socio-political tension of this era or the chemical equilibrium shift through one precise colour, one symbol, and one sketch.'"
+            name: "Interactive Whiteboard CSI: Fields Triad",
+            topic: "⚡ Gravitational, Electric & Magnetic Fields",
+            desc: "A student comes to the board to sketch: 1 Color representing each field's potential energy, 1 Symbol capturing its monopole/dipole nature, and 1 Diagram showing path trajectory of an electron fired perpendicular to the field.",
+            vcePrompt: "'[Student Name] to the board: Draw the trajectory comparison: Parabolic deflection in uniform E-field vs Circular arc in uniform B-field. Label where work is done (W = qV vs W = 0).'"
           },
           {
-            name: "Circle of Viewpoints",
-            desc: "Students step into the shoes of diverse stakeholders affected by a senior syllabus issue, exploring divergent motives and ethical constraints.",
-            vcePrompt: "'I am thinking from the viewpoint of [Stakeholder/Authority]. I think... because... A question from my perspective is...'"
+            name: "Parts, Purposes, Complexities: DC Motor Anatomy",
+            topic: "🧲 Electromagnetism & Motors",
+            desc: "Project an unlabeled schematic of a DC motor with armature, permanent magnetic poles, brushes, and split-ring commutator. A student comes out to label the parts, explain each purpose, and highlight the complexity of the torque at 90°.",
+            vcePrompt: "'[Student Name] to the board: Identify the position where torque is maximum vs zero. Explain why the split-ring commutator must reverse current every half-turn.'"
           },
           {
-            name: "I Used to Think..., Now I Think...",
-            desc: "Metacognitive protocol revealing shifts in conceptual depth, dismantling initial common misconceptions about the topic.",
-            vcePrompt: "'I used to think that this process was straightforward, but now I realise that the environmental variables significantly alter the outcome because...'"
+            name: "I Used to Think..., Now I Think... (Photon Momentum)",
+            topic: "🔬 Light & Matter",
+            desc: "Students contrast an initial misconception with their developed VCE understanding regarding how massless photons exert radiation pressure and have momentum p = h/λ.",
+            vcePrompt: "'I used to think momentum strictly required mass (p = mv), but now I realise that photons carry momentum p = h/λ because...'"
+          },
+          {
+            name: "Circle of Viewpoints: Newton vs Huygens vs Einstein",
+            topic: "🌊 History of Light Models",
+            desc: "Students take the historical perspective of Isaac Newton (Corpuscular), Christiaan Huygens (Wave), James Clerk Maxwell (EM wave), or Albert Einstein (Photons) defending how their model accounts for reflection, refraction, and diffraction.",
+            vcePrompt: "'Take the perspective of Huygens: Explain to Newton why light bending around obstacles (diffraction) invalidates his bullet-like corpuscles.'"
           }
         ],
-        3: [
+        3: [ // Category 3: Interactive Modeling (High Demand)
           {
-            name: "Tug of War (Dilemma Resolution)",
-            desc: "Identify two opposing forces in a deep VCE controversy. Map the 'tugs' (evidence weights) on each side, debate anchor points, and identify what could snap the rope.",
-            vcePrompt: "'On the rope: Economic Growth vs. Environmental Decarbonisation. Place your argument weight carefully: Which tug pulls hardest under current policy?'"
+            name: "Interactive Display: VCE Core Formula & Concept Web",
+            topic: "⚡ Electricity, Magnetism & Light",
+            desc: "Three students come up to the main interactive display to connect all primary syllabus variables: B, Φ, ε, I, V, P, f, λ, h, p, and W. Every linking line drawn between terms must state the exact equation and physical mechanism.",
+            vcePrompt: "'Students at the board: Map how magnetic flux change ΔΦ leads to transmission voltage V_stepup, and how that links to reduced thermal power loss P = I²R.'"
           },
           {
-            name: "The 4 C's Synthesis",
-            desc: "Rigorous textual or research paper breakdown across four quadrants: Connections, Challenges, Concepts, and Changes.",
-            vcePrompt: "'Analyze the assessor's report: What Connects to our work? What Challenges our assumptions? What key Concepts are highlighted? What Changes in your SAC strategy?'"
+            name: "Tug of War: The Great Dual Nature Debate",
+            topic: "🔬 Wave Model vs Particle Model of Light",
+            desc: "Draw a heavy rope down the centre of the board. Left: Wave Model (Young's double slit, polarisation, diffraction λ/w). Right: Particle Model (Photoelectric effect, Compton scattering, discrete line spectra). Students place evidence sticky-notes or annotations, debating which evidence 'tugs' hardest.",
+            vcePrompt: "'Come to the board and place an experimental proof on the rope. Defend why the existence of a sharp threshold frequency f₀ completely snaps the wave model's rope.'"
           },
           {
-            name: "Generate, Sort, Connect, Elaborate",
-            desc: "A powerhouse routine for VCE revision: Generate 20+ terms, sort them by central relevance, connect with active relational verbs, and elaborate on edge cases.",
-            vcePrompt: "'Map every variable in this Area of Study. Every linking arrow must contain an active explanatory verb (e.g., 'catalyses', 'inhibits', 'diminishes').'"
+            name: "VCAA Assessor's Report Post-Mortem (The 4 C's)",
+            topic: "⚡ Units 3 & 4 Exam Revision",
+            desc: "Project a notoriously challenging past VCAA exam question (average mark < 30%). Analyze across four quadrants: 1) Connections to Core Knowledge; 2) Challenges & Misconceptions; 3) Concepts Assessed; 4) Changes to our exam technique.",
+            vcePrompt: "'Review Question 18 from last year's exam: What fatal error did 70% of Victorian students make when resolving the direction of the magnetic force on the coil?'"
           },
           {
-            name: "Step Inside: Perceive, Know, Care",
-            desc: "Profound perspective-taking for historical figures, literary authors, or theoretical researchers: What does this person perceive, what do they know to be true, and what do they deeply care about?",
-            vcePrompt: "'Step inside the mindset of the decision-maker in 1975. What did their ideological lens prevent them from perceiving? How did that determine their action?'"
+            name: "Step Inside: The Electron in a Hydrogen Atom",
+            topic: "🔬 Atomic Spectra & Bohr Energy Levels",
+            desc: "Profound perspective-taking: A student steps inside the mindset of a bound atomic electron absorbing and emitting discrete photons. Perceive: Incoming photon frequencies matching ΔE = E₂ - E₁. Know: Non-continuous standing wave orbits (de Broglie standing waves 2πr = nλ). Care: Returning to ground state.",
+            vcePrompt: "'Step inside the electron: Why can you never absorb a photon with energy between E₁ and E₂? Explain de Broglie's condition for stable non-radiating standing waves.'"
           }
         ]
       }
@@ -800,8 +867,8 @@
           const gain = this.ctx.createGain();
 
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(450 + Math.random() * 200, this.ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(90, this.ctx.currentTime + 0.04);
+          osc.frequency.setValueAtTime(480 + Math.random() * 220, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(110, this.ctx.currentTime + 0.04);
 
           gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
@@ -821,17 +888,18 @@
           if (!this.ctx) return;
 
           const now = this.ctx.currentTime;
-          const notes = [261.63, 392.00, 523.25, 659.25, 783.99, 1174.66]; // C-G-C-E-G-D
+          // Harmonic Arpeggio: C4, G4, C5, E5, G5, C6
+          const notes = [261.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
 
           notes.forEach((freq, idx) => {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
 
-            osc.type = (idx === notes.length - 1) ? 'sine' : 'triangle';
+            osc.type = (idx >= notes.length - 2) ? 'sine' : 'triangle';
             osc.frequency.setValueAtTime(freq, now + idx * 0.07);
 
             gain.gain.setValueAtTime(0.001, now + idx * 0.07);
-            gain.gain.linearRampToValueAtTime(0.22, now + idx * 0.07 + 0.03);
+            gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.07 + 0.03);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.85);
 
             osc.connect(gain);
@@ -850,8 +918,8 @@
        ROSTER DATA & LOCAL STORAGE HELPERS
        ========================================================================= */
     const sampleVCEClass = [
-      "Charlotte Zhang",
       "Liam O'Connor",
+      "Charlotte Zhang",
       "Amara Patel",
       "Noah Van Der Berg",
       "Maya Chen",
@@ -886,7 +954,7 @@
 
     function updateStudentRoster(nameList) {
       students = nameList.map(n => n.trim()).filter(n => n.length > 0);
-      safeSetStorage('vce_students_cache', JSON.stringify(students));
+      safeSetStorage('vce_physics_students', JSON.stringify(students));
 
       const badge = document.getElementById('studentCountBadge');
       const cloud = document.getElementById('studentTagCloud');
@@ -921,16 +989,18 @@
 
       const badgeType = document.getElementById('badgeType');
       const badgeTier = document.getElementById('badgeTier');
+      const badgeTopic = document.getElementById('badgeTopic');
       const title = document.getElementById('stratTitle');
       const desc = document.getElementById('stratDesc');
       const vce = document.getElementById('stratVCE');
       const card = document.getElementById('strategyDisplayBox');
 
       badgeType.textContent = type === 'OTR' ? 'Opportunity to Respond' : 'Visual Thinking Routine';
+      badgeTopic.textContent = picked.topic || 'VCE Physics Core';
 
       const tierMap = {
         1: { text: '#a7f3d0', bg: 'rgba(16, 185, 129, 0.2)', name: 'Category 1: Instantaneous' },
-        2: { text: '#bfdbfe', bg: 'rgba(59, 130, 246, 0.2)', name: 'Category 2: Minimal Prep' },
+        2: { text: '#bae6fd', bg: 'rgba(56, 189, 248, 0.2)', name: 'Category 2: Formative / Board' },
         3: { text: '#fbcfe8', bg: 'rgba(236, 72, 153, 0.2)', name: 'Category 3: Deep Synthesis' }
       };
 
@@ -942,7 +1012,7 @@
       desc.textContent = picked.desc;
       vce.textContent = picked.vcePrompt;
 
-      // Visual flash
+      // Visual flash animation
       card.classList.remove('active-flash');
       void card.offsetWidth;
       card.classList.add('active-flash');
@@ -998,7 +1068,7 @@
     }
 
     /* =========================================================================
-       CONFETTI
+       CONFETTI BURST
        ========================================================================= */
     function burstConfetti() {
       const canvas = document.getElementById('confettiCanvas');
@@ -1008,7 +1078,7 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#ffffff'];
+      const colors = ['#38bdf8', '#f59e0b', '#10b981', '#ec4899', '#ffffff'];
 
       for (let i = 0; i < 65; i++) {
         particles.push({
@@ -1064,7 +1134,7 @@
     }
 
     /* =========================================================================
-       INITIALIZATION & BULLETPROOF EVENT BINDING
+       INITIALIZATION & EVENT BINDINGS
        ========================================================================= */
     function initializeApp() {
       // 1. Bind Strategy Buttons
@@ -1128,7 +1198,7 @@
           const blob = new Blob([html], { type: 'text/html' });
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
-          a.download = 'VCE_Pedagogical_Navigator.html';
+          a.download = 'VCE_Physics_Pedagogical_Navigator.html';
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -1137,7 +1207,7 @@
       }
 
       // 8. Hydrate Roster from Cache or Sample
-      const cached = safeGetStorage('vce_students_cache');
+      const cached = safeGetStorage('vce_physics_students');
       let loadedNames = sampleVCEClass;
       if (cached) {
         try {
@@ -1150,7 +1220,6 @@
       updateStudentRoster(loadedNames);
     }
 
-    // Execute immediately or on load
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initializeApp);
     } else {
