@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VCE Math Methods — Circular Functions Grapher</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --sin-color: #3b82f6;
+      --cos-color: #a855f7;
+      --tan-color: #10b981;
+      --line-color: #f43f5e;
+      --grid: rgba(148, 163, 184, 0.15);
+      --axis: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* Sidebar controls */
+    #sidebar {
+      width: 420px;
+      min-width: 380px;
+      height: 100%;
+      background: var(--panel);
+      border-right: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+
+    .header {
+      padding: 20px;
+      background: rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #0284c7;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .content {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Radio / Toggle pills */
+    .selector-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .toggle-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      background: rgba(30, 41, 59, 0.8);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .toggle-pill input[type="radio"],
+    .toggle-pill input[type="checkbox"] {
+      display: none;
+    }
+
+    .toggle-pill.sin.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--sin-color);
+      color: var(--sin-color);
+    }
+    .toggle-pill.cos.active {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: var(--cos-color);
+      color: var(--cos-color);
+    }
+    .toggle-pill.tan.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--tan-color);
+      color: var(--tan-color);
+    }
+
+    /* Sliders */
+    .param-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+      gap: 4px;
+    }
+    .param-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .param-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+
+    .param-name {
+      font-weight: 600;
+      font-style: italic;
+      color: #e2e8f0;
+    }
+
+    .param-val {
+      font-family: "Courier New", monospace;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #334155;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric-box {
+      background: rgba(15, 23, 42, 0.7);
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .metric-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-top: 2px;
+    }
+
+    /* Quick Reset & Info */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    button.btn {
+      flex: 1;
+      padding: 8px 12px;
+      background: #334155;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.btn:hover {
+      background: #475569;
+    }
+
+    /* Main Canvas Section */
+    #main-area {
+      flex: 1;
+      height: 100%;
+      position: relative;
+      background: #090d16;
+      display: flex;
+      flex-direction: column;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* Overlay Help HUD */
+    .hud {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      pointer-events: none;
+      display: flex;
+      gap: 14px;
+    }
+
+    .hud span b {
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR CONTROLS -->
+  <aside id="sidebar">
+    <div class="header">
+      <div class="badge">VCE Unit 1 & 2</div>
+      <h1>Circular Functions</h1>
+      <div class="subtitle">Mathematical Methods — Grapher &amp; Solver</div>
+    </div>
+
+    <div class="content">
+      <!-- Function Selection -->
+      <div class="card">
+        <div class="card-title">Select Active Function</div>
+        <div class="selector-group">
+          <label class="toggle-pill sin active" id="pill-sin">
+            <input type="radio" name="func-choice" value="sin" checked> Sine
+          </label>
+          <label class="toggle-pill cos" id="pill-cos">
+            <input type="radio" name="func-choice" value="cos"> Cosine
+          </label>
+          <label class="toggle-pill tan" id="pill-tan">
+            <input type="radio" name="func-choice" value="tan"> Tangent
+          </label>
+        </div>
+      </div>
+
+      <!-- Parameters Card: a, b, h, k -->
+      <div class="card">
+        <div class="card-title">Transformations: y = a·f(b(x - h)) + k</div>
+
+        <!-- a -->
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Dilation from x-axis (a):</span>
+            <span class="param-val" id="val-a">1.00</span>
+          </div>
+          <input type="range" id="slider-a" min="-4" max="4" step="0.25" value="1">
+        </div>
+
+        <!-- b -->
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Dilation from y-axis (b):</span>
+            <span class="param-val" id="val-b">1.00</span>
+          </div>
+          <input type="range" id="slider-b" min="0.25" max="4" step="0.25" value="1">
+        </div>
+
+        <!-- h -->
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Horizontal Translation (h):</span>
+            <span class="param-val" id="val-h">0</span>
+          </div>
+          <!-- Step in multiples of pi/12 from -2pi to 2pi (total 48 steps of pi/12) -->
+          <input type="range" id="slider-h" min="-24" max="24" step="1" value="0">
+        </div>
+
+        <!-- k -->
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Vertical Translation (k):</span>
+            <span class="param-val" id="val-k">0.00</span>
+          </div>
+          <input type="range" id="slider-k" min="-5" max="5" step="0.25" value="0">
+        </div>
+      </div>
+
+      <!-- Properties & Metrics -->
+      <div class="card">
+        <div class="card-title">Analytical Properties</div>
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <div class="metric-label">Amplitude</div>
+            <div class="metric-value" id="disp-amp">1.00</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Period (T)</div>
+            <div class="metric-value" id="disp-period">2π</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Range</div>
+            <div class="metric-value" id="disp-range">[-1, 1]</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Mean Position</div>
+            <div class="metric-value" id="disp-mean">y = 0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horizontal line y = c and Intersections -->
+      <div class="card">
+        <div class="card-title">
+          <span>Horizontal Line y = c</span>
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; text-transform:none; cursor:pointer;">
+            <input type="checkbox" id="check-line" checked> Show Line
+          </label>
+        </div>
+
+        <div class="param-row">
+          <div class="param-header">
+            <span class="param-name">Constant value (c):</span>
+            <span class="param-val" id="val-c" style="color:var(--line-color)">0.50</span>
+          </div>
+          <input type="range" id="slider-c" min="-5" max="5" step="0.1" value="0.5">
+        </div>
+
+        <div style="margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="font-weight:600; color:#e2e8f0;">Solutions in visible domain:</span>
+            <span id="solution-count" style="color:var(--primary); font-weight:700;">0 points</span>
+          </div>
+          <div id="solutions-list" style="max-height: 80px; overflow-y:auto; font-family:'Courier New', monospace; font-size:0.75rem; color:#cbd5e1; line-height:1.4;">
+            None
+          </div>
+        </div>
+      </div>
+
+      <!-- Reset and View controls -->
+      <div class="btn-row">
+        <button class="btn" id="btn-reset-view">Reset Zoom / Pan</button>
+        <button class="btn" id="btn-standard-domain">[0, 2π] View</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CANVAS GRAPH AREA -->
+  <main id="main-area">
+    <canvas id="graphCanvas"></canvas>
+    <div class="hud">
+      <span>🖱️ <b>Right-Click + Drag:</b> Pan</span>
+      <span>📜 <b>Scroll Wheel:</b> Zoom</span>
+      <span>⚡ <b>Grid:</b> Every π/6 (x) &amp; 1 unit (y)</span>
+    </div>
+  </main>
+
+  <script>
+    // --- State and Variables ---
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let currentFunc = 'sin'; // 'sin' | 'cos' | 'tan'
+    let a = 1.0;
+    let b = 1.0;
+    let h = 0.0; // In radians
+    let k = 0.0;
+    let cVal = 0.5;
+    let showLine = true;
+
+    // Viewport transforms (cartesian domain/range)
+    let originX = 0; // Screen X of cartesian (0,0)
+    let originY = 0; // Screen Y of cartesian (0,0)
+    let scaleX = 120; // Pixels per 1 radian (e.g. 120 px ~= 1 rad; pi ~= 377px)
+    let scaleY = 60;  // Pixels per 1 unit on y-axis
+
+    // Drag / Pan interaction state
+    let isRightDragging = false;
+    let isLeftDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+    // --- Fraction Helper for Radians in π/6 multiples ---
+    function formatPiFraction(multipleOfPiOver6) {
+      if (multipleOfPiOver6 === 0) return "0";
+      const sign = multipleOfPiOver6 < 0 ? "-" : "";
+      const num = Math.abs(multipleOfPiOver6);
+      const den = 6;
+
+      function gcd(x, y) { return y === 0 ? x : gcd(y, x % y); }
+      const g = gcd(num, den);
+      const simNum = num / g;
+      const simDen = den / g;
+
+      let piPart = "π";
+      if (simNum > 1) piPart = `${simNum}π`;
+
+      if (simDen === 1) {
+        return `${sign}${piPart}`;
+      } else {
+        return `${sign}${piPart}/${simDen}`;
+      }
+    }
+
+    // Helper to format values cleanly
+    function formatNumber(num) {
+      return Number(num).toFixed(2).replace(/\.00$/, '');
+    }
+
+    // Initialize Canvas Dimensions with HiDPI support
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+
+      if (originX === 0 && originY === 0) {
+        // Center initial view slightly towards the left for nice default [0, 2π] viewing
+        originX = rect.width * 0.18;
+        originY = rect.height * 0.55;
+      }
+      draw();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // --- Math Conversions ---
+    function toScreenX(x) { return originX + x * scaleX; }
+    function toScreenY(y) { return originY - y * scaleY; }
+    function toMathX(px) { return (px - originX) / scaleX; }
+    function toMathY(py) { return (originY - py) / scaleY; }
+
+    // Evaluates selected circular function
+    function evaluateFunc(xVal, fType = currentFunc) {
+      const arg = b * (xVal - h);
+      if (fType === 'sin') return a * Math.sin(arg) + k;
+      if (fType === 'cos') return a * Math.cos(arg) + k;
+      if (fType === 'tan') return a * Math.tan(arg) + k;
+      return 0;
+    }
+
+    // --- Update Analytical Readouts ---
+    function updateMetrics() {
+      const dispAmp = document.getElementById('disp-amp');
+      const dispPeriod = document.getElementById('disp-period');
+      const dispRange = document.getElementById('disp-range');
+      const dispMean = document.getElementById('disp-mean');
+
+      // Mean position
+      dispMean.textContent = `y = ${formatNumber(k)}`;
+
+      // Period T: 2pi/b for sin/cos, pi/b for tan
+      const basePeriodPi = (currentFunc === 'tan') ? 1 : 2;
+      const periodInUnitsOfPi = basePeriodPi / Math.abs(b);
+
+      // Nicely format period
+      const numer = basePeriodPi;
+      const denom = Math.abs(b);
+      // Represent fraction of pi
+      const factor = 100;
+      const nInt = Math.round(numer * factor);
+      const dInt = Math.round(denom * factor);
+      function gcd(x,y){return y===0?x:gcd(y, x%y);}
+      const g = gcd(nInt, dInt);
+      const pN = nInt / g;
+      const pD = dInt / g;
+
+      let periodStr = "";
+      if (pD === 1) {
+        periodStr = (pN === 1 ? "" : pN) + "π";
+      } else {
+        periodStr = (pN === 1 ? "π" : `${pN}π`) + `/${pD}`;
+      }
+      dispPeriod.textContent = periodStr;
+
+      if (currentFunc === 'tan') {
+        dispAmp.textContent = 'Undefined';
+        dispRange.textContent = 'R (-∞, ∞)';
+      } else {
+        const amplitude = Math.abs(a);
+        dispAmp.textContent = formatNumber(amplitude);
+        const yMin = k - amplitude;
+        const yMax = k + amplitude;
+        dispRange.textContent = `[${formatNumber(yMin)}, ${formatNumber(yMax)}]`;
+      }
+    }
+
+    // --- Analytical Intersection Finder ---
+    function findIntersections(xMin, xMax) {
+      if (!showLine) return [];
+      const solutions = [];
+
+      // Solve a * f(b(x - h)) + k = cVal  =>  f(b(x-h)) = (cVal - k) / a
+      if (Math.abs(a) < 1e-9) return []; // degenerate horizontal line
+
+      const target = (cVal - k) / a;
+
+      if (currentFunc === 'sin') {
+        if (Math.abs(target) > 1) return []; // No real solutions
+        const principal = Math.asin(target); // in [-pi/2, pi/2]
+        const period = (2 * Math.PI) / Math.abs(b);
+        const cycleMin = Math.floor((xMin - h) / period) - 2;
+        const cycleMax = Math.ceil((xMax - h) / period) + 2;
+
+        for (let n = cycleMin; n <= cycleMax; n++) {
+          // Sol 1: b(x - h) = principal + 2n*pi
+          const x1 = h + (principal + 2 * Math.PI * n) / b;
+          if (x1 >= xMin && x1 <= xMax) solutions.push(x1);
+
+          // Sol 2: b(x - h) = pi - principal + 2n*pi
+          const x2 = h + (Math.PI - principal + 2 * Math.PI * n) / b;
+          if (x2 >= xMin && x2 <= xMax) solutions.push(x2);
+        }
+      } else if (currentFunc === 'cos') {
+        if (Math.abs(target) > 1) return [];
+        const principal = Math.acos(target); // in [0, pi]
+        const period = (2 * Math.PI) / Math.abs(b);
+        const cycleMin = Math.floor((xMin - h) / period) - 2;
+        const cycleMax = Math.ceil((xMax - h) / period) + 2;
+
+        for (let n = cycleMin; n <= cycleMax; n++) {
+          // Sol 1: b(x - h) = principal + 2n*pi
+          const x1 = h + (principal + 2 * Math.PI * n) / b;
+          if (x1 >= xMin && x1 <= xMax) solutions.push(x1);
+
+          // Sol 2: b(x - h) = -principal + 2n*pi
+          if (principal > 1e-7) { // avoid duplicate if principal == 0
+            const x2 = h + (-principal + 2 * Math.PI * n) / b;
+            if (x2 >= xMin && x2 <= xMax) solutions.push(x2);
+          }
+        }
+      } else if (currentFunc === 'tan') {
+        const principal = Math.atan(target); // in (-pi/2, pi/2)
+        const period = Math.PI / Math.abs(b);
+        const cycleMin = Math.floor((xMin - h) / period) - 2;
+        const cycleMax = Math.ceil((xMax - h) / period) + 2;
+
+        for (let n = cycleMin; n <= cycleMax; n++) {
+          const x = h + (principal + Math.PI * n) / b;
+          if (x >= xMin && x <= xMax) solutions.push(x);
+        }
+      }
+
+      // Sort and deduplicate
+      solutions.sort((x1, x2) => x1 - x2);
+      const uniqueSolutions = [];
+      for (const sol of solutions) {
+        if (uniqueSolutions.length === 0 || Math.abs(sol - uniqueSolutions[uniqueSolutions.length - 1]) > 1e-5) {
+          uniqueSolutions.push(sol);
+        }
+      }
+      return uniqueSolutions;
+    }
+
+    // --- Drawing Routine ---
+    function draw() {
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const xMin = toMathX(0);
+      const xMax = toMathX(width);
+      const yMin = toMathY(height);
+      const yMax = toMathY(0);
+
+      // 1. GRID LINES
+      // Vertical grid lines at every pi/6
+      const stepX = Math.PI / 6;
+      const startMultipleX = Math.floor(xMin / stepX);
+      const endMultipleX = Math.ceil(xMax / stepX);
+
+      ctx.lineWidth = 1;
+      for (let m = startMultipleX; m <= endMultipleX; m++) {
+        const xVal = m * stepX;
+        const sx = toScreenX(xVal);
+
+        const isAxis = Math.abs(xVal) < 1e-7;
+        const isPi = (m % 6 === 0);
+
+        ctx.strokeStyle = isAxis ? 'rgba(255,255,255,0.7)' : (isPi ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.12)');
+        ctx.beginPath();
+        ctx.moveTo(sx, 0);
+        ctx.lineTo(sx, height);
+        ctx.stroke();
+
+        // X-axis label
+        if (!isAxis) {
+          ctx.fillStyle = isPi ? '#e2e8f0' : '#94a3b8';
+          ctx.font = isPi ? 'bold 11px system-ui' : '10px system-ui';
+          ctx.textAlign = 'center';
+          const labelY = Math.min(Math.max(toScreenY(0) + 16, 16), height - 8);
+          ctx.fillText(formatPiFraction(m), sx, labelY);
+        }
+      }
+
+      // Horizontal grid lines at every 1 unit
+      const startYInt = Math.floor(yMin);
+      const endYInt = Math.ceil(yMax);
+
+      for (let y = startYInt; y <= endYInt; y++) {
+        const sy = toScreenY(y);
+        const isAxis = (y === 0);
+
+        ctx.strokeStyle = isAxis ? 'rgba(255,255,255,0.7)' : 'rgba(148, 163, 184, 0.15)';
+        ctx.beginPath();
+        ctx.moveTo(0, sy);
+        ctx.lineTo(width, sy);
+        ctx.stroke();
+
+        if (!isAxis) {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '10px system-ui';
+          ctx.textAlign = 'right';
+          const labelX = Math.min(Math.max(toScreenX(0) - 8, 24), width - 8);
+          ctx.fillText(y.toString(), labelX, sy + 4);
+        }
+      }
+
+      // Coordinate Origin "0" label
+      const originScreenX = toScreenX(0);
+      const originScreenY = toScreenY(0);
+      if (originScreenX >= 0 && originScreenX <= width && originScreenY >= 0 && originScreenY <= height) {
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = 'bold 11px system-ui';
+        ctx.textAlign = 'right';
+        ctx.fillText("0", originScreenX - 6, originScreenY + 14);
+      }
+
+      // 2. TANGENT ASYMPTOTES (if Tan is active)
+      if (currentFunc === 'tan') {
+        ctx.save();
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.4)';
+        ctx.lineWidth = 1.2;
+
+        const p = Math.PI / Math.abs(b);
+        const firstAsymptote = h + (Math.PI / (2 * b));
+        const kStart = Math.floor((xMin - firstAsymptote) / p) - 1;
+        const kEnd = Math.ceil((xMax - firstAsymptote) / p) + 1;
+
+        for (let i = kStart; i <= kEnd; i++) {
+          const asympX = firstAsymptote + i * p;
+          const sx = toScreenX(asympX);
+          if (sx >= -10 && sx <= width + 10) {
+            ctx.beginPath();
+            ctx.moveTo(sx, 0);
+            ctx.lineTo(sx, height);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+
+      // 3. DRAW GRAPH OF CIRCULAR FUNCTION
+      ctx.save();
+      let funcColor = '#3b82f6';
+      if (currentFunc === 'cos') funcColor = '#a855f7';
+      if (currentFunc === 'tan') funcColor = '#10b981';
+
+      ctx.strokeStyle = funcColor;
+      ctx.lineWidth = 2.6;
+      ctx.beginPath();
+
+      let isDrawingSegment = false;
+      let prevY = 0;
+
+      // Sample along screen pixels for high-precision plotting
+      for (let px = 0; px <= width; px += 1) {
+        const x = toMathX(px);
+        const y = evaluateFunc(x);
+        const py = toScreenY(y);
+
+        if (currentFunc === 'tan') {
+          // Guard against asymptote jump
+          if (isNaN(y) || Math.abs(y) > 40 || (isDrawingSegment && Math.abs(py - prevY) > height * 0.7)) {
+            isDrawingSegment = false;
+            continue;
+          }
+        }
+
+        if (!isDrawingSegment) {
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          isDrawingSegment = true;
+        } else {
+          ctx.lineTo(px, py);
+        }
+        prevY = py;
+
+        if (currentFunc === 'tan' && (px % 4 === 0)) {
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+        }
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // 4. DRAW HORIZONTAL LINE y = c
+      if (showLine) {
+        const lineSy = toScreenY(cVal);
+        ctx.save();
+        ctx.strokeStyle = '#f43f5e';
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(0, lineSy);
+        ctx.lineTo(width, lineSy);
+        ctx.stroke();
+        ctx.restore();
+
+        // Label on line
+        ctx.fillStyle = '#f43f5e';
+        ctx.font = 'bold 11px system-ui';
+        ctx.textAlign = 'left';
+        ctx.fillText(`y = ${formatNumber(cVal)}`, 14, lineSy - 6);
+      }
+
+      // 5. SOLVE & DRAW INTERSECTION POINTS
+      const intersections = findIntersections(xMin, xMax);
+      const solCountBadge = document.getElementById('solution-count');
+      const solListEl = document.getElementById('solutions-list');
+
+      solCountBadge.textContent = `${intersections.length} point${intersections.length === 1 ? '' : 's'}`;
+
+      if (intersections.length > 0) {
+        solListEl.innerHTML = intersections.map(xSol => {
+          return `(${xSol.toFixed(3)}, ${cVal.toFixed(2)})`;
+        }).join('<br>');
+      } else {
+        solListEl.textContent = showLine ? 'No intersections in visible domain' : 'Line hidden';
+      }
+
+      if (showLine) {
+        intersections.forEach(xSol => {
+          const sx = toScreenX(xSol);
+          const sy = toScreenY(cVal);
+
+          // Outer glowing halo
+          ctx.fillStyle = 'rgba(244, 63, 94, 0.3)';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Dot
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = '#f43f5e';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Label coordinates
+          ctx.fillStyle = '#f8fafc';
+          ctx.font = '10px "Courier New", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`(${xSol.toFixed(2)}, ${cVal.toFixed(2)})`, sx, sy - 12);
+        });
+      }
+
+      // 6. ON-GRAPH EQUATION BADGE (Top-Left of graph)
+      drawEquationBadge();
+    }
+
+    // Function string formatter for the on-graph HUD badge
+    function drawEquationBadge() {
+      let funcName = currentFunc;
+      let aStr = '';
+      if (a === -1) aStr = '-';
+      else if (a !== 1) aStr = `${formatNumber(a)}`;
+
+      let bStr = '';
+      if (b !== 1) bStr = `${formatNumber(b)}`;
+
+      let hStr = '';
+      if (Math.abs(h) > 1e-4) {
+        const hPiStep = Math.round(h / (Math.PI / 12));
+        const sign = hPiStep > 0 ? ' - ' : ' + ';
+        hStr = `${sign}${formatPiFraction(Math.abs(hPiStep * 0.5))}`; // in terms of pi/6
+      }
+
+      let inside = '';
+      if (bStr && hStr) {
+        inside = `${bStr}(x${hStr})`;
+      } else if (bStr) {
+        inside = `${bStr}x`;
+      } else if (hStr) {
+        inside = `(x${hStr})`;
+      } else {
+        inside = 'x';
+      }
+
+      let kStr = '';
+      if (Math.abs(k) > 1e-4) {
+        kStr = k > 0 ? ` + ${formatNumber(k)}` : ` - ${formatNumber(Math.abs(k))}`;
+      }
+
+      const eqText = `y = ${aStr}${funcName}(${inside})${kStr}`;
+
+      // Draw Badge container on Canvas
+      ctx.save();
+      ctx.font = 'bold 15px system-ui';
+      const textMetrics = ctx.measureText(eqText);
+      const boxW = textMetrics.width + 24;
+      const boxH = 34;
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.strokeStyle = 'rgba(51, 65, 85, 0.9)';
+      ctx.lineWidth = 1;
+      ctx.roundRect(16, 16, boxW, boxH, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      // Draw text
+      let badgeColor = '#38bdf8';
+      if (currentFunc === 'cos') badgeColor = '#c084fc';
+      if (currentFunc === 'tan') badgeColor = '#34d399';
+
+      ctx.fillStyle = badgeColor;
+      ctx.textAlign = 'left';
+      ctx.fillText(eqText, 28, 38);
+      ctx.restore();
+    }
+
+    // --- Interactive Mouse Controls: Pan & Zoom ---
+
+    // Suppress default context menu on graph for smooth right-click drag
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+    canvas.addEventListener('mousedown', e => {
+      if (e.button === 2) { // Right Click
+        isRightDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+      } else if (e.button === 0) { // Left click pan support
+        isLeftDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+      }
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (isRightDragging || isLeftDragging) {
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+        originX += dx;
+        originY += dy;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        draw();
+      }
+    });
+
+    window.addEventListener('mouseup', e => {
+      if (e.button === 2) isRightDragging = false;
+      if (e.button === 0) isLeftDragging = false;
+    });
+
+    // Zoom on Mouse Wheel (Centered on cursor)
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
+
+      const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+      const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+      // Keep math coordinate under mouse fixed
+      originX = mouseX - (mouseX - originX) * zoomFactor;
+      originY = mouseY - (mouseY - originY) * zoomFactor;
+
+      scaleX *= zoomFactor;
+      scaleY *= zoomFactor;
+
+      // Limit bounds
+      scaleX = Math.max(15, Math.min(scaleX, 800));
+      scaleY = Math.max(10, Math.min(scaleY, 600));
+
+      draw();
+    }, { passive: false });
+
+    // --- UI Control Event Listeners ---
+
+    // Function radio pills
+    ['sin', 'cos', 'tan'].forEach(type => {
+      const pill = document.getElementById(`pill-${type}`);
+      pill.addEventListener('click', () => {
+        ['sin', 'cos', 'tan'].forEach(t => document.getElementById(`pill-${t}`).classList.remove('active'));
+        pill.classList.add('active');
+        currentFunc = type;
+        updateMetrics();
+        draw();
+      });
+    });
+
+    // Sliders
+    const sliderA = document.getElementById('slider-a');
+    const sliderB = document.getElementById('slider-b');
+    const sliderH = document.getElementById('slider-h');
+    const sliderK = document.getElementById('slider-k');
+    const sliderC = document.getElementById('slider-c');
+    const checkLine = document.getElementById('check-line');
+
+    sliderA.addEventListener('input', e => {
+      a = parseFloat(e.target.value);
+      document.getElementById('val-a').textContent = formatNumber(a);
+      updateMetrics();
+      draw();
+    });
+
+    sliderB.addEventListener('input', e => {
+      b = parseFloat(e.target.value);
+      document.getElementById('val-b').textContent = formatNumber(b);
+      updateMetrics();
+      draw();
+    });
+
+    sliderH.addEventListener('input', e => {
+      const stepIdx = parseInt(e.target.value); // Multiples of pi/12
+      h = stepIdx * (Math.PI / 12);
+      // Format readout in terms of pi/12 or pi/6
+      const multipleOfPiOver6 = stepIdx * 0.5;
+      document.getElementById('val-h').textContent = formatPiFraction(multipleOfPiOver6);
+      draw();
+    });
+
+    sliderK.addEventListener('input', e => {
+      k = parseFloat(e.target.value);
+      document.getElementById('val-k').textContent = formatNumber(k);
+      updateMetrics();
+      draw();
+    });
+
+    sliderC.addEventListener('input', e => {
+      cVal = parseFloat(e.target.value);
+      document.getElementById('val-c').textContent = formatNumber(cVal);
+      draw();
+    });
+
+    checkLine.addEventListener('change', e => {
+      showLine = e.target.checked;
+      draw();
+    });
+
+    // Reset View Button
+    document.getElementById('btn-reset-view').addEventListener('click', () => {
+      const rect = canvas.getBoundingClientRect();
+      originX = rect.width * 0.18;
+      originY = rect.height * 0.55;
+      scaleX = 120;
+      scaleY = 60;
+      draw();
+    });
+
+    // Standard Domain [0, 2pi] View Button
+    document.getElementById('btn-standard-domain').addEventListener('click', () => {
+      const rect = canvas.getBoundingClientRect();
+      // Domain [0, 2pi] should comfortably fit horizontally
+      const targetDomain = 2 * Math.PI;
+      scaleX = (rect.width * 0.75) / targetDomain;
+      scaleY = rect.height * 0.12;
+      originX = rect.width * 0.12;
+      originY = rect.height * 0.5;
+      draw();
+    });
+
+    // Initial setup
+    resizeCanvas();
+    updateMetrics();
+  </script>
+</body>
+</html>
