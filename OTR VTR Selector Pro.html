@@ -3,29 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VCE Physics (Units 3 & 4) Pedagogical Navigator</title>
+  <title>VCE Physics (Units 3 & 4) — Projector Edition</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --bg-gradient: radial-gradient(circle at 15% 15%, #0f172a 0%, #090d16 55%, #030712 100%);
-      --surface-glass: rgba(17, 24, 39, 0.78);
-      --surface-border: rgba(255, 255, 255, 0.12);
-      --surface-border-hover: rgba(255, 255, 255, 0.28);
+      --bg-gradient: radial-gradient(circle at 15% 15%, #0f172a 0%, #090d16 55%, #020617 100%);
+      --surface-glass: rgba(17, 24, 39, 0.85);
+      --surface-border: rgba(255, 255, 255, 0.16);
+      --surface-border-hover: rgba(255, 255, 255, 0.32);
       
       --accent-cat1: #10b981; /* Emerald */
-      --accent-cat1-glow: rgba(16, 185, 129, 0.35);
-      --accent-cat2: #38bdf8; /* Cyan / Electric */
-      --accent-cat2-glow: rgba(56, 189, 248, 0.35);
-      --accent-cat3: #ec4899; /* Quantum Magenta */
-      --accent-cat3-glow: rgba(236, 72, 153, 0.38);
+      --accent-cat1-glow: rgba(16, 185, 129, 0.4);
+      --accent-cat2: #38bdf8; /* Cyan */
+      --accent-cat2-glow: rgba(56, 189, 248, 0.4);
+      --accent-cat3: #f43f5e; /* Rose / High-Vis Pink */
+      --accent-cat3-glow: rgba(244, 63, 94, 0.45);
       
-      --gold-accent: #f59e0b;
-      --gold-glow: rgba(245, 158, 11, 0.45);
+      --gold-accent: #fbbf24;
+      --gold-glow: rgba(251, 191, 36, 0.5);
       --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --text-muted: #cbd5e1;
     }
 
     * {
@@ -40,92 +40,95 @@
       color: var(--text-main);
       font-family: 'Plus Jakarta Sans', sans-serif;
       min-height: 100vh;
-      padding: 1.4rem;
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.2rem;
+      gap: 1.4rem;
     }
 
+    /* HEADER */
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.1rem 1.8rem;
+      padding: 1.25rem 2rem;
       background: var(--surface-glass);
       backdrop-filter: blur(16px);
-      border-radius: 16px;
+      border-radius: 20px;
       border: 1px solid var(--surface-border);
     }
 
     .brand-title h1 {
-      font-size: 1.4rem;
+      font-size: 1.75rem;
       font-weight: 800;
       letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #38bdf8 0%, #ffffff 50%, #c084fc 100%);
+      background: linear-gradient(135deg, #38bdf8 0%, #ffffff 50%, #f472b6 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .brand-title p {
-      font-size: 0.8rem;
+      font-size: 0.95rem;
       color: var(--text-muted);
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      font-weight: 600;
-      margin-top: 0.15rem;
+      font-weight: 700;
+      margin-top: 0.2rem;
     }
 
     .physics-tags {
       display: flex;
-      gap: 0.4rem;
-      margin-top: 0.35rem;
+      gap: 0.6rem;
+      margin-top: 0.4rem;
     }
 
     .physics-tag {
-      font-size: 0.65rem;
+      font-size: 0.85rem;
       font-family: 'JetBrains Mono', monospace;
-      padding: 0.15rem 0.5rem;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+      font-weight: 700;
+      padding: 0.25rem 0.75rem;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
       color: #93c5fd;
     }
 
     .top-actions {
       display: flex;
-      gap: 0.65rem;
+      gap: 0.85rem;
       align-items: center;
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.08);
       border: 1px solid var(--surface-border);
-      color: #e2e8f0;
-      padding: 0.55rem 0.9rem;
-      font-size: 0.82rem;
-      font-weight: 600;
-      border-radius: 10px;
+      color: #f1f5f9;
+      padding: 0.75rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.18);
       border-color: var(--surface-border-hover);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
 
+    /* GRID LAYOUT */
     .dashboard-grid {
       display: grid;
-      grid-template-columns: 1fr 410px;
-      gap: 1.2rem;
+      grid-template-columns: 1fr 450px;
+      gap: 1.5rem;
       flex: 1;
     }
 
-    @media (max-width: 1080px) {
+    @media (max-width: 1200px) {
       .dashboard-grid {
         grid-template-columns: 1fr;
       }
@@ -133,275 +136,300 @@
 
     .card {
       background: var(--surface-glass);
-      backdrop-filter: blur(18px);
+      backdrop-filter: blur(20px);
       border: 1px solid var(--surface-border);
-      border-radius: 18px;
-      padding: 1.35rem;
+      border-radius: 22px;
+      padding: 1.6rem;
       display: flex;
       flex-direction: column;
-      gap: 1.15rem;
+      gap: 1.4rem;
     }
 
     .card-heading {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      padding-bottom: 0.9rem;
     }
 
     .card-heading h2 {
-      font-size: 1.08rem;
-      font-weight: 700;
+      font-size: 1.35rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
     }
 
     .strategy-section-title {
-      font-size: 0.76rem;
+      font-size: 1.15rem;
       font-weight: 800;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: #94a3b8;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.65rem;
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.55rem;
     }
 
+    /* BUTTON GROUP ROWS — DOUBLED TEXT SIZE */
     .button-group-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.8rem;
-      margin-bottom: 0.85rem;
+      gap: 1rem;
+      margin-bottom: 1.1rem;
     }
 
     .btn-strategy {
-      border: 1px solid transparent;
-      padding: 0.95rem 0.85rem;
-      border-radius: 13px;
+      border: 2px solid transparent;
+      padding: 1.25rem 1.1rem;
+      border-radius: 16px;
       cursor: pointer;
       text-align: left;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 96px;
+      min-height: 145px;
     }
 
     .btn-strategy:hover {
-      transform: translateY(-3px);
+      transform: translateY(-4px);
     }
 
     .btn-strategy:active {
       transform: translateY(0);
     }
 
+    /* DOUBLED: Category tags on buttons */
     .btn-strategy .cat-tag {
-      font-size: 0.66rem;
+      font-size: 1.05rem;
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.4rem;
     }
 
+    /* DOUBLED: Main titles on buttons */
     .btn-strategy .label {
-      font-size: 0.92rem;
-      font-weight: 700;
-      line-height: 1.25;
+      font-size: 1.55rem;
+      font-weight: 800;
+      line-height: 1.2;
     }
 
+    /* DOUBLED: Subtext descriptions on buttons */
     .btn-strategy .sub {
-      font-size: 0.7rem;
-      color: rgba(255, 255, 255, 0.7);
-      margin-top: 0.3rem;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+      margin-top: 0.45rem;
+      font-weight: 500;
+      line-height: 1.3;
     }
 
-    /* Category colors */
+    /* CATEGORY COLOR SCHEMES */
     .tier-1 {
-      background: linear-gradient(145deg, rgba(16, 185, 129, 0.16), rgba(16, 185, 129, 0.03));
-      border-color: rgba(16, 185, 129, 0.35);
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.24), rgba(16, 185, 129, 0.06));
+      border-color: rgba(16, 185, 129, 0.5);
       color: #a7f3d0;
     }
     .tier-1:hover {
-      border-color: var(--accent-cat1);
-      box-shadow: 0 6px 20px var(--accent-cat1-glow);
+      border-color: #34d399;
+      box-shadow: 0 8px 25px var(--accent-cat1-glow);
     }
     .tier-1 .cat-tag { color: #34d399; }
 
     .tier-2 {
-      background: linear-gradient(145deg, rgba(56, 189, 248, 0.16), rgba(56, 189, 248, 0.03));
-      border-color: rgba(56, 189, 248, 0.35);
+      background: linear-gradient(145deg, rgba(56, 189, 248, 0.24), rgba(56, 189, 248, 0.06));
+      border-color: rgba(56, 189, 248, 0.5);
       color: #bae6fd;
     }
     .tier-2:hover {
-      border-color: var(--accent-cat2);
-      box-shadow: 0 6px 20px var(--accent-cat2-glow);
+      border-color: #38bdf8;
+      box-shadow: 0 8px 25px var(--accent-cat2-glow);
     }
     .tier-2 .cat-tag { color: #38bdf8; }
 
     .tier-3 {
-      background: linear-gradient(145deg, rgba(236, 72, 153, 0.16), rgba(236, 72, 153, 0.03));
-      border-color: rgba(236, 72, 153, 0.35);
-      color: #fbcfe8;
+      background: linear-gradient(145deg, rgba(244, 63, 94, 0.24), rgba(244, 63, 94, 0.06));
+      border-color: rgba(244, 63, 94, 0.5);
+      color: #fecdd3;
     }
     .tier-3:hover {
-      border-color: var(--accent-cat3);
-      box-shadow: 0 6px 20px var(--accent-cat3-glow);
+      border-color: #fb7185;
+      box-shadow: 0 8px 25px var(--accent-cat3-glow);
     }
-    .tier-3 .cat-tag { color: #f472b6; }
+    .tier-3 .cat-tag { color: #fb7185; }
 
-    /* Strategy Display Box */
+    /* STRATEGY DISPLAY CARD (FOR PROJECTOR) */
     .strategy-display-card {
-      background: rgba(15, 23, 42, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 16px;
-      padding: 1.4rem;
-      min-height: 230px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      border-radius: 20px;
+      padding: 1.8rem;
+      min-height: 290px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
       transition: all 0.25s ease;
     }
 
     .strategy-display-card.active-flash {
-      border-color: rgba(255, 255, 255, 0.4);
-      box-shadow: 0 0 28px rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.8);
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.35);
     }
 
     .strategy-content {
       display: flex;
       flex-direction: column;
-      gap: 0.65rem;
+      gap: 1rem;
     }
 
     .strategy-badge-line {
       display: flex;
-      gap: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.65rem;
       align-items: center;
     }
 
+    /* DOUBLED: Pill labels */
     .pill-type {
-      font-size: 0.68rem;
+      font-size: 1.05rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      padding: 0.25rem 0.65rem;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.1);
-      color: #cbd5e1;
+      padding: 0.35rem 0.9rem;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
     }
 
     .pill-tier {
-      font-size: 0.68rem;
+      font-size: 1.05rem;
       font-weight: 800;
-      letter-spacing: 0.05em;
-      padding: 0.25rem 0.65rem;
-      border-radius: 20px;
+      letter-spacing: 0.06em;
+      padding: 0.35rem 0.9rem;
+      border-radius: 25px;
     }
 
     .pill-topic {
-      font-size: 0.68rem;
+      font-size: 1.05rem;
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
-      padding: 0.25rem 0.65rem;
-      border-radius: 20px;
-      background: rgba(56, 189, 248, 0.15);
+      padding: 0.35rem 0.9rem;
+      border-radius: 25px;
+      background: rgba(56, 189, 248, 0.2);
       color: #7dd3fc;
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      border: 1px solid rgba(56, 189, 248, 0.4);
     }
 
+    /* DOUBLED: Strategy Headline Title */
     .strategy-title-lg {
-      font-size: 1.45rem;
+      font-size: 2.35rem;
       font-weight: 800;
       color: #ffffff;
-      line-height: 1.25;
+      line-height: 1.22;
+      letter-spacing: -0.01em;
     }
 
+    /* DOUBLED: Strategy description */
     .strategy-desc {
-      font-size: 0.92rem;
-      line-height: 1.5;
-      color: #cbd5e1;
+      font-size: 1.45rem;
+      line-height: 1.55;
+      color: #e2e8f0;
+      font-weight: 500;
     }
 
+    /* DOUBLED: VCE Prompt Box text */
     .vce-prompt-box {
-      margin-top: 0.4rem;
-      padding: 0.85rem 1rem;
-      background: rgba(255, 255, 255, 0.04);
-      border-left: 3px solid var(--gold-accent);
-      border-radius: 0 10px 10px 0;
-      font-size: 0.88rem;
-      color: #fef3c7;
+      margin-top: 0.6rem;
+      padding: 1.35rem 1.5rem;
+      background: rgba(251, 191, 36, 0.08);
+      border-left: 5px solid var(--gold-accent);
+      border-radius: 0 14px 14px 0;
+      font-size: 1.65rem;
+      color: #fef08a;
       line-height: 1.45;
+      font-weight: 600;
     }
+
     .vce-prompt-box strong {
       color: var(--gold-accent);
       display: block;
-      margin-bottom: 0.25rem;
-      font-size: 0.72rem;
+      margin-bottom: 0.45rem;
+      font-size: 1.15rem;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.07em;
+      font-weight: 800;
     }
 
-    /* Right Column: Student Selector */
+    /* RIGHT COLUMN: STUDENT SPOTLIGHT (PROJECTOR READY) */
     .student-display-hero {
-      background: radial-gradient(circle at center, rgba(30, 41, 75, 0.8) 0%, rgba(13, 17, 30, 0.95) 100%);
-      border: 2px solid rgba(245, 158, 11, 0.35);
-      border-radius: 18px;
-      padding: 2rem 1.2rem;
+      background: radial-gradient(circle at center, rgba(30, 41, 75, 0.9) 0%, rgba(13, 17, 30, 0.98) 100%);
+      border: 3px solid rgba(245, 158, 11, 0.45);
+      border-radius: 22px;
+      padding: 2.2rem 1.4rem;
       text-align: center;
       position: relative;
       overflow: hidden;
-      min-height: 205px;
+      min-height: 230px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
     }
 
     .student-display-hero.winner-glow {
       border-color: var(--gold-accent);
-      box-shadow: 0 0 45px var(--gold-glow);
+      box-shadow: 0 0 50px var(--gold-glow);
       animation: pulseGlow 1.2s infinite alternate;
     }
 
+    /* DOUBLED: Spotlight Student Name */
     .student-name-headline {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 2.5rem;
-      font-weight: 700;
+      font-size: 3.4rem;
+      font-weight: 800;
       color: #ffffff;
-      text-shadow: 0 4px 20px rgba(0,0,0,0.6);
-      min-height: 64px;
+      text-shadow: 0 5px 25px rgba(0,0,0,0.8);
+      min-height: 85px;
       display: flex;
       align-items: center;
       justify-content: center;
       letter-spacing: -0.02em;
+      text-align: center;
+      line-height: 1.15;
     }
 
+    /* DOUBLED: Call Student Button */
     .btn-roll-student {
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       border: none;
       color: #111827;
-      font-size: 1.05rem;
+      font-size: 1.65rem;
       font-weight: 800;
-      padding: 1rem 1.4rem;
-      border-radius: 14px;
+      padding: 1.3rem 1.6rem;
+      border-radius: 16px;
       cursor: pointer;
-      box-shadow: 0 6px 20px var(--gold-glow);
+      box-shadow: 0 8px 24px var(--gold-glow);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
       width: 100%;
     }
 
+    .btn-roll-student svg {
+      width: 32px;
+      height: 32px;
+    }
+
     .btn-roll-student:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.75);
       background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     }
 
@@ -409,33 +437,35 @@
       transform: translateY(0);
     }
 
+    /* ROSTER CONTROLS */
     .roster-manager {
       margin-top: 0.4rem;
       display: flex;
       flex-direction: column;
-      gap: 0.65rem;
+      gap: 0.75rem;
     }
 
     .roster-summary {
-      font-size: 0.78rem;
+      font-size: 0.95rem;
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-weight: 600;
     }
 
     textarea#manualRosterInput {
       width: 100%;
-      height: 105px;
-      background: rgba(15, 23, 42, 0.65);
+      height: 110px;
+      background: rgba(15, 23, 42, 0.75);
       border: 1px solid var(--surface-border);
       border-radius: 12px;
-      color: #e2e8f0;
-      padding: 0.75rem;
+      color: #f1f5f9;
+      padding: 0.85rem;
       font-family: inherit;
-      font-size: 0.84rem;
+      font-size: 0.95rem;
       resize: vertical;
-      line-height: 1.4;
+      line-height: 1.45;
     }
     textarea#manualRosterInput:focus {
       outline: none;
@@ -443,28 +473,29 @@
     }
 
     .student-tag-cloud {
-      max-height: 110px;
+      max-height: 115px;
       overflow-y: auto;
       display: flex;
       flex-wrap: wrap;
-      gap: 0.35rem;
-      padding: 0.5rem;
-      background: rgba(15, 23, 42, 0.45);
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      gap: 0.4rem;
+      padding: 0.6rem;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .student-chip {
-      font-size: 0.72rem;
-      background: rgba(255, 255, 255, 0.08);
-      padding: 0.2rem 0.5rem;
-      border-radius: 6px;
-      color: #cbd5e1;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.3rem 0.65rem;
+      border-radius: 8px;
+      color: #e2e8f0;
     }
 
     @keyframes pulseGlow {
-      from { box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
-      to { box-shadow: 0 0 45px rgba(245, 158, 11, 0.85); }
+      from { box-shadow: 0 0 25px rgba(245, 158, 11, 0.45); }
+      to { box-shadow: 0 0 55px rgba(245, 158, 11, 0.9); }
     }
 
     #confettiCanvas {
@@ -484,7 +515,7 @@
 
   <header>
     <div class="brand-title">
-      <h1>VCE Physics (Units 3 &amp; 4) Pedagogical Navigator</h1>
+      <h1>VCE Physics (Units 3 &amp; 4) — Projector Navigator</h1>
       <p>Senior Secondary Formative Revision &amp; Active Cognition</p>
       <div class="physics-tags">
         <span class="physics-tag">⚡ Electricity</span>
@@ -495,7 +526,7 @@
     </div>
     <div class="top-actions">
       <button class="btn-secondary" id="downloadAppBtn" title="Save offline copy">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Save Offline HTML
       </button>
       <button class="btn-secondary" id="toggleAudioBtn">
@@ -509,16 +540,16 @@
     <main class="card">
       <div class="card-heading">
         <h2>
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
           Physics Inquiry &amp; Response Routines
         </h2>
-        <span style="font-size: 0.78rem; color: #94a3b8;">Click any tier to randomize a VCE Physics routine</span>
+        <span style="font-size: 0.95rem; color: #94a3b8; font-weight: 600;">Click any button to randomize a classroom prompt</span>
       </div>
 
       <!-- ROW 1: Opportunities to Respond (OTR) -->
       <div>
         <div class="strategy-section-title">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>
           Opportunities to Respond (OTR) — Rapid Physics Probes
         </div>
         <div class="button-group-row">
@@ -527,7 +558,7 @@
               <div class="cat-tag">Category 1</div>
               <div class="label">Instantaneous</div>
             </div>
-            <div class="sub">Hand rules • Rapid stance • 0 Prep</div>
+            <div class="sub">Hand rules • Stances • 0 Prep</div>
           </button>
           
           <button class="btn-strategy tier-2" data-strat-type="OTR" data-strat-tier="2">
@@ -543,7 +574,7 @@
               <div class="cat-tag">Category 3</div>
               <div class="label">Deep Synthesis</div>
             </div>
-            <div class="sub">Forensic circuit debug • Socratic debate</div>
+            <div class="sub">Grid debugging • Socratic debate</div>
           </button>
         </div>
       </div>
@@ -551,7 +582,7 @@
       <!-- ROW 2: Visual Thinking Routines (VTR) -->
       <div>
         <div class="strategy-section-title">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
           Visual Thinking Routines (VTR) — Whiteboard &amp; Display Demonstrations
         </div>
         <div class="button-group-row">
@@ -568,7 +599,7 @@
               <div class="cat-tag">Category 2</div>
               <div class="label">Display &amp; Diagram</div>
             </div>
-            <div class="sub">Student to the board • CSQ Graph analysis</div>
+            <div class="sub">Student to board • Graph analysis</div>
           </button>
           
           <button class="btn-strategy tier-3" data-strat-type="VTR" data-strat-tier="3">
@@ -586,13 +617,13 @@
         <div class="strategy-content" id="strategyContent">
           <div class="strategy-badge-line">
             <span class="pill-type" id="badgeType">Opportunity to Respond</span>
-            <span class="pill-tier" id="badgeTier">Category 1</span>
+            <span class="pill-tier" id="badgeTier">Category 1: Instantaneous</span>
             <span class="pill-topic" id="badgeTopic">🧲 Magnetism &amp; Induction</span>
           </div>
           <div class="strategy-title-lg" id="stratTitle">Right-Hand Slap Rule Synchronized Flash</div>
           <p class="strategy-desc" id="stratDesc">Point fingers in direction of B-field (into board = down/away), thumb along positive current or velocity, palm direction indicates magnetic force (F = qvB or F = nILB).</p>
           <div class="vce-prompt-box">
-            <strong>VCE Questioning Cue &amp; Application</strong>
+            <strong>VCE Questioning Cue &amp; Student Instruction</strong>
             <span id="stratVCE">'A proton travels East through a uniform magnetic field directed North. On 3, extend your right hand showing the force vector: 1, 2, 3... Out of the page!'</span>
           </div>
         </div>
@@ -603,15 +634,15 @@
     <aside class="card">
       <div class="card-heading">
         <h2>
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Senior Physics Respondent
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Physics Respondent
         </h2>
-        <span id="studentCountBadge" style="font-size: 0.78rem; color: #f59e0b; font-weight: 700;">15 Students</span>
+        <span id="studentCountBadge" style="font-size: 1.05rem; color: #f59e0b; font-weight: 800;">15 Students</span>
       </div>
 
-      <!-- Spotlight Banner -->
+      <!-- Spotlight Banner (High visibility) -->
       <div class="student-display-hero" id="spotlightHero">
-        <div style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold-accent); margin-bottom: 0.4rem; font-weight: 800;">
+        <div style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--gold-accent); margin-bottom: 0.5rem; font-weight: 800;">
           Selected Student
         </div>
         <div class="student-name-headline" id="chosenStudentDisplay">
@@ -619,9 +650,9 @@
         </div>
       </div>
 
-      <!-- Action Button -->
+      <!-- Action Button (Doubled size for easy clicking) -->
       <button class="btn-roll-student" id="pickStudentBtn">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         Randomly Call Student
       </button>
 
@@ -630,7 +661,7 @@
         <div class="roster-summary">
           <span>Upload CSV/TXT or paste cohort:</span>
           <div>
-            <button class="btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.74rem;" id="uploadFileTriggerBtn">
+            <button class="btn-secondary" style="padding: 0.45rem 0.85rem; font-size: 0.85rem;" id="uploadFileTriggerBtn">
               📁 Upload List
             </button>
             <input type="file" id="csvFileInput" accept=".txt,.csv" style="display: none;" />
@@ -640,8 +671,8 @@
         <textarea id="manualRosterInput" placeholder="Enter one student per line..."></textarea>
 
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.75rem; color:#64748b;">Year 12 Physics Cohort:</span>
-          <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.7rem;" id="resetSampleClassBtn">Reset Default Class</button>
+          <span style="font-size:0.85rem; color:#94a3b8; font-weight:600;">Year 12 Physics Cohort:</span>
+          <button class="btn-secondary" style="padding:0.3rem 0.65rem; font-size:0.8rem;" id="resetSampleClassBtn">Reset Default Class</button>
         </div>
 
         <div class="student-tag-cloud" id="studentTagCloud"></div>
@@ -651,7 +682,7 @@
 
   <script>
     /* =========================================================================
-       VCE PHYSICS (UNITS 3 & 4) STRATEGIES DATABASE
+       VCE PHYSICS (UNITS 3 & 4) DATABASE
        ========================================================================= */
     const strategies = {
       OTR: {
@@ -835,7 +866,7 @@
     };
 
     /* =========================================================================
-       AUDIO SYNTHESIZER (Web Audio API - With Complete Error Shielding)
+       AUDIO SYNTHESIZER (Web Audio API)
        ========================================================================= */
     class SafeSoundEngine {
       constructor() {
@@ -888,7 +919,6 @@
           if (!this.ctx) return;
 
           const now = this.ctx.currentTime;
-          // Harmonic Arpeggio: C4, G4, C5, E5, G5, C6
           const notes = [261.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
 
           notes.forEach((freq, idx) => {
@@ -899,7 +929,7 @@
             osc.frequency.setValueAtTime(freq, now + idx * 0.07);
 
             gain.gain.setValueAtTime(0.001, now + idx * 0.07);
-            gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.07 + 0.03);
+            gain.gain.linearRampToValueAtTime(0.22, now + idx * 0.07 + 0.03);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.85);
 
             osc.connect(gain);
@@ -963,7 +993,7 @@
       badge.textContent = `${students.length} Student${students.length === 1 ? '' : 's'}`;
 
       if (students.length === 0) {
-        cloud.innerHTML = '<span style="font-size:0.75rem; color:#64748b; font-style:italic; padding:0.25rem;">No students loaded.</span>';
+        cloud.innerHTML = '<span style="font-size:0.85rem; color:#94a3b8; font-style:italic; padding:0.25rem;">No students loaded.</span>';
         headline.textContent = 'Load class list to begin';
         return;
       }
@@ -999,9 +1029,9 @@
       badgeTopic.textContent = picked.topic || 'VCE Physics Core';
 
       const tierMap = {
-        1: { text: '#a7f3d0', bg: 'rgba(16, 185, 129, 0.2)', name: 'Category 1: Instantaneous' },
-        2: { text: '#bae6fd', bg: 'rgba(56, 189, 248, 0.2)', name: 'Category 2: Formative / Board' },
-        3: { text: '#fbcfe8', bg: 'rgba(236, 72, 153, 0.2)', name: 'Category 3: Deep Synthesis' }
+        1: { text: '#a7f3d0', bg: 'rgba(16, 185, 129, 0.25)', name: 'Category 1: Instantaneous' },
+        2: { text: '#bae6fd', bg: 'rgba(56, 189, 248, 0.25)', name: 'Category 2: Formative / Board' },
+        3: { text: '#fecdd3', bg: 'rgba(244, 63, 94, 0.25)', name: 'Category 3: Deep Synthesis' }
       };
 
       badgeTier.textContent = tierMap[tier].name;
@@ -1078,15 +1108,15 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const colors = ['#38bdf8', '#f59e0b', '#10b981', '#ec4899', '#ffffff'];
+      const colors = ['#38bdf8', '#fbbf24', '#34d399', '#f43f5e', '#ffffff'];
 
-      for (let i = 0; i < 65; i++) {
+      for (let i = 0; i < 75; i++) {
         particles.push({
-          x: canvas.width / 2 + (Math.random() * 160 - 80),
-          y: canvas.height * 0.42 + (Math.random() * 80 - 40),
-          vx: (Math.random() - 0.5) * 12,
-          vy: (Math.random() - 0.9) * 11 - 3,
-          size: Math.random() * 6 + 4,
+          x: canvas.width / 2 + (Math.random() * 200 - 100),
+          y: canvas.height * 0.42 + (Math.random() * 90 - 45),
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.9) * 12 - 4,
+          size: Math.random() * 8 + 5,
           color: colors[Math.floor(Math.random() * colors.length)],
           rotation: Math.random() * 360,
           rotSpeed: (Math.random() - 0.5) * 8,
@@ -1102,9 +1132,9 @@
         particles.forEach(p => {
           p.x += p.vx;
           p.y += p.vy;
-          p.vy += 0.32;
+          p.vy += 0.35;
           p.rotation += p.rotSpeed;
-          p.alpha -= 0.015;
+          p.alpha -= 0.014;
 
           if (p.alpha > 0) {
             active = true;
@@ -1198,7 +1228,7 @@
           const blob = new Blob([html], { type: 'text/html' });
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
-          a.download = 'VCE_Physics_Pedagogical_Navigator.html';
+          a.download = 'VCE_Physics_Projector_Edition.html';
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
