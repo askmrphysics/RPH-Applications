@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phillips fx-82AU PLUS II Emulator</title>
+  <title>PHILLIPS fx-82AU PLUS II Emulator</title>
   <style id="calcThemeStyles">
     :root {
       /* Chassis Themes */
@@ -185,7 +185,7 @@
       background: rgba(255,255,255,0.12);
     }
 
-    /* 3X Height Screen Bezel & Customizable LCD */
+    /* 3X Height Screen Bezel & LCD */
     .lcd-bezel {
       background: #181b1d;
       border-radius: 12px;
@@ -239,7 +239,7 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
       padding: 6px 2px;
       border-bottom: 1px solid currentColor;
       opacity: 0.9;
@@ -272,20 +272,17 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1px;
+      gap: 2px;
     }
     .hist-item .hist-res {
       font-weight: 900;
       text-align: right;
       font-size: 14.5px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
     }
 
     /* Active Working Area */
     .lcd-active-area {
-      min-height: 98px;
+      height: 88px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
@@ -296,7 +293,7 @@
     .lcd-line1 {
       font-size: 17px;
       line-height: 22px;
-      min-height: 48px;
+      min-height: 42px;
       word-break: break-all;
       white-space: pre-wrap;
       font-weight: 700;
@@ -308,81 +305,65 @@
     }
 
     .lcd-line2 {
-      font-size: 21px;
+      font-size: 22px;
       font-weight: 900;
       text-align: right;
       letter-spacing: 1px;
-      min-height: 36px;
+      min-height: 26px;
       white-space: nowrap;
       overflow: hidden;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: flex-end;
     }
 
-    /* Natural-V.P.A.M. Stacked Fractions & Blank Rectangle Templates */
-    .math-frac {
+    /* Natural Display Recursive Vinculum Fraction */
+    .vinculum-frac {
       display: inline-flex;
       flex-direction: column;
-      align-items: center;
       vertical-align: middle;
-      margin: 1px 3px;
+      text-align: center;
+      margin: 0 3px;
       font-size: 0.88em;
-      line-height: 1.05;
+      line-height: 1.1;
     }
-    .math-mixed {
-      display: inline-flex;
-      align-items: center;
-      vertical-align: middle;
-      margin: 1px 3px;
-      gap: 2px;
-    }
-    .math-whole {
-      display: inline-flex;
-      align-items: center;
-    }
-    .math-num, .math-den {
+    .v-num, .v-den {
+      min-width: 14px;
+      min-height: 16px;
+      padding: 1px 3px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 1px 3px;
-      min-height: 16px;
-      min-width: 14px;
+      border-radius: 2px;
     }
-    .math-bar {
-      width: 100%;
-      min-width: 14px;
+    .v-box-empty {
+      border: 1px solid currentColor;
+      min-width: 12px;
+      min-height: 12px;
+    }
+    .v-bar {
       border-top: 2px solid currentColor;
+      width: 100%;
       margin: 1px 0;
     }
-    /* Blank Rectangle Template (□ and ■) */
-    .slot-box {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 12px;
-      height: 14px;
-      border: 1.6px solid currentColor;
-      margin: 1px;
-      vertical-align: middle;
-    }
-    .slot-box.filled {
-      background: currentColor;
+    .v-box-active {
+      outline: 1px dashed currentColor;
+      background: rgba(128,128,128,0.22);
     }
 
     .cursor {
       display: inline-block;
-      width: 2.5px;
+      width: 8px;
       height: 16px;
       background: currentColor;
-      vertical-align: middle;
-      animation: blink 0.85s steps(2, start) infinite;
-      margin: 0 1px;
+      vertical-align: text-bottom;
+      animation: blink 0.9s steps(2, start) infinite;
+      margin-left: 1px;
     }
     .cursor.overwrite {
       width: 10px;
       height: 3px;
-      vertical-align: baseline;
+      margin-bottom: 2px;
     }
 
     @keyframes blink {
@@ -390,7 +371,7 @@
       50% { opacity: 0; }
     }
 
-    /* Keypad Layout & Alignment */
+    /* Keypad Grid Layout */
     .keypad {
       display: flex;
       flex-direction: column;
@@ -535,44 +516,6 @@
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 6px 6px;
-    }
-
-    /* Overlays */
-    .menu-screen, .stat-table {
-      position: absolute;
-      inset: 2px;
-      background: var(--lcd-bg);
-      color: var(--lcd-dark);
-      display: flex;
-      flex-direction: column;
-      font-size: 13px;
-      font-weight: bold;
-      line-height: 18px;
-      padding: 8px 6px;
-      overflow-y: auto;
-      z-index: 20;
-    }
-    .menu-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 1px 0;
-    }
-    .stat-table table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: right;
-      font-size: 12px;
-    }
-    .stat-table th, .stat-table td {
-      padding: 2px 4px;
-      border: 1px solid rgba(0,0,0,0.3);
-    }
-    .stat-table th {
-      background: rgba(0,0,0,0.06);
-    }
-    .stat-table tr.selected td {
-      background: var(--lcd-dark);
-      color: var(--lcd-bg);
     }
 
     /* Context Color Change Menus */
@@ -724,18 +667,15 @@
         </div>
 
         <!-- 3X Height Screen: History Tape -->
-        <div class="lcd-history-tape" id="historyTape" title="Click any item to recall 2D expression">
+        <div class="lcd-history-tape" id="historyTape" title="Click any item to copy expression">
           <!-- Populated by engine -->
         </div>
 
         <!-- Active Input & Result Area -->
         <div class="lcd-active-area">
-          <div class="lcd-line1" id="line1"><span class="cursor"></span></div>
+          <div class="lcd-line1" id="line1">0<span class="cursor"></span></div>
           <div class="lcd-line2" id="line2"></div>
         </div>
-
-        <!-- Menus / Stat Tables Overlay -->
-        <div class="menu-screen" id="menuOverlay" style="display:none;"></div>
       </div>
     </div>
 
@@ -778,7 +718,7 @@
       <div class="function-grid">
         <!-- Row 1 -->
         <div class="key-cell">
-          <div class="key-labels"><span class="label-shift">□■/□</span><span></span></div>
+          <div class="key-labels"><span class="label-shift">■/□</span><span></span></div>
           <button class="calc-btn btn-fun" id="k-frac">■/□</button>
         </div>
         <div class="key-cell">
@@ -846,7 +786,7 @@
           <button class="calc-btn btn-fun" id="k-rpar">)</button>
         </div>
         <div class="key-cell">
-          <div class="key-labels"><span class="label-shift">a b/c↔d/c</span><span class="label-alpha">Y</span></div>
+          <div class="key-labels"><span class="label-shift">a b/c</span><span class="label-alpha">Y</span></div>
           <button class="calc-btn btn-fun" id="k-sd">S<=>D</button>
         </div>
         <div class="key-cell">
@@ -857,19 +797,9 @@
 
       <!-- Main Grid (4 Rows x 5 Columns) -->
       <div class="main-grid">
-        <!-- Row 1: 7, 8, 9, DEL, AC -->
-        <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
-          <button class="calc-btn btn-num" id="k-7">7</button>
-        </div>
-        <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
-          <button class="calc-btn btn-num" id="k-8">8</button>
-        </div>
-        <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
-          <button class="calc-btn btn-num" id="k-9">9</button>
-        </div>
+        <div class="key-cell"><button class="calc-btn btn-num" id="k-7">7</button></div>
+        <div class="key-cell"><button class="calc-btn btn-num" id="k-8">8</button></div>
+        <div class="key-cell"><button class="calc-btn btn-num" id="k-9">9</button></div>
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">INS</span><span></span></div>
           <button class="calc-btn btn-del" id="k-del">DEL</button>
@@ -879,19 +809,9 @@
           <button class="calc-btn btn-del" id="k-ac">AC</button>
         </div>
 
-        <!-- Row 2: 4, 5, 6, *, / -->
-        <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
-          <button class="calc-btn btn-num" id="k-4">4</button>
-        </div>
-        <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
-          <button class="calc-btn btn-num" id="k-5">5</button>
-        </div>
-        <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
-          <button class="calc-btn btn-num" id="k-6">6</button>
-        </div>
+        <div class="key-cell"><button class="calc-btn btn-num" id="k-4">4</button></div>
+        <div class="key-cell"><button class="calc-btn btn-num" id="k-5">5</button></div>
+        <div class="key-cell"><button class="calc-btn btn-num" id="k-6">6</button></div>
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">nPr</span><span class="label-alpha">GCD</span></div>
           <button class="calc-btn btn-fun" id="k-mul">×</button>
@@ -901,19 +821,12 @@
           <button class="calc-btn btn-fun" id="k-div">÷</button>
         </div>
 
-        <!-- Row 3: 1, 2, 3, +, - -->
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">STAT</span><span></span></div>
           <button class="calc-btn btn-num" id="k-1">1</button>
         </div>
-        <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
-          <button class="calc-btn btn-num" id="k-2">2</button>
-        </div>
-        <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
-          <button class="calc-btn btn-num" id="k-3">3</button>
-        </div>
+        <div class="key-cell"><button class="calc-btn btn-num" id="k-2">2</button></div>
+        <div class="key-cell"><button class="calc-btn btn-num" id="k-3">3</button></div>
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">Pol</span><span></span></div>
           <button class="calc-btn btn-fun" id="k-add">+</button>
@@ -923,7 +836,6 @@
           <button class="calc-btn btn-fun" id="k-sub">-</button>
         </div>
 
-        <!-- Row 4: 0, ., x10^x, Ans, = -->
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">Rnd</span><span></span></div>
           <button class="calc-btn btn-num" id="k-0">0</button>
@@ -963,7 +875,7 @@
 </div>
 
 <div class="screen-tip">
-  💡 <strong>Pro Tips:</strong> Press <strong>■/□</strong> repeatedly for stacked fractions • Use <strong>▲/▼/◀/▶</strong> to navigate boxes &amp; replay in 2D • Right-click <strong>Screen</strong>, <strong>Keys</strong>, or <strong>Chassis</strong> for 12-Color Palettes
+  💡 <strong>Pro Tips:</strong> Use <strong>■/□</strong> to stack fractions • Use <strong>▲/▼/◀/▶</strong> to enter boxes • Right-click anywhere for independent color customization
 </div>
 
 <script>
@@ -1107,7 +1019,6 @@
     { name: "Silver Gray", hex: "#cbd5e1", id: "forest" }
   ];
 
-  // Active Theme Variable Registry
   const currentTheme = {
     chassisGrad: "linear-gradient(175deg, #33383f 0%, #202428 55%, #181b1e 100%)",
     chassisBorder: "#141618",
@@ -1126,7 +1037,6 @@
   let popoutScreenWin = null;
   let popoutKeypadWin = null;
 
-  // Propagates all colors and gradients to main document AND active pop-out windows
   function syncAllThemes() {
     const applyToDoc = (doc) => {
       if (!doc || !doc.documentElement) return;
@@ -1141,13 +1051,6 @@
       root.style.setProperty('--key-fun-text', currentTheme.keyFunText);
       root.style.setProperty('--key-del-grad', currentTheme.keyDelGrad);
       root.style.setProperty('--key-del-text', currentTheme.keyDelText);
-
-      // Explicitly update pop-out keyboard chassis wrapper if present
-      const popKp = doc.getElementById('popKeypadChassis');
-      if (popKp) {
-        popKp.style.background = currentTheme.chassisGrad;
-        popKp.style.borderColor = currentTheme.chassisBorder;
-      }
     };
 
     applyToDoc(document);
@@ -1155,7 +1058,7 @@
     if (popoutKeypadWin && !popoutKeypadWin.closed) applyToDoc(popoutKeypadWin.document);
   }
 
-  // Context Menu DOM Elements
+  // Context Menu
   const ctxMenu = document.getElementById('customCtxMenu');
   const ctxTitle = document.getElementById('ctxTitle');
   const ctxGrid = document.getElementById('ctxGrid');
@@ -1243,7 +1146,7 @@
     ctxTabBar.style.display = 'none';
 
     if (type === 'lcd') {
-      ctxTitle.textContent = 'LCD Screen Theme (144 Combinations)';
+      ctxTitle.textContent = 'LCD Screen Theme';
       ctxTabBar.style.display = 'flex';
       renderLcdPaletteGrid('bg');
     } else if (type === 'chassis') {
@@ -1280,7 +1183,6 @@
     ctxMenu.style.top = `${Math.max(10, posY)}px`;
   }
 
-  // Intercept Right Clicks on Main Window
   window.addEventListener('contextmenu', (e) => {
     const isScreen = e.target.closest('#lcdBezelContainer');
     const isButton = e.target.closest('.calc-btn, .dpad-btn');
@@ -1298,283 +1200,120 @@
     }
   });
 
-  // =========================================================
-  // RECURSIVE 2D MATH TREE ENGINE (NATURAL-V.P.A.M.)
-  // =========================================================
-  // Each container is an Array of nodes.
-  // A node is either:
-  //   - string token (e.g. '2', '+', 'sin(', 'π')
-  //   - { type: 'frac', num: [...], den: [...] }
-  //   - { type: 'mixed', whole: [...], num: [...], den: [...] }
-
-  const initialRoot = [];
+  // Natural V.P.A.M. Recursive Data Tree
   const state = {
     power: true,
-    mode: 'COMP',
-    statType: '1-VAR',
-    statData: [],
-    statCurRow: 0,
-    statCurCol: 0,
-    showFreq: false,
-    statEditing: false,
-
-    displayFormat: 'MthIO-MathO', // Default to Natural MathO so fractions show naturally
-    angleUnit: 'Deg',
-    numFormat: 'Norm',
-    fixVal: 3,
-    sciVal: 3,
-    normVal: 2,
-    fractionFormat: 'd/c',
-    decPoint: '.',
-
+    tree: [], // Array of elements: string or { type: 'frac', num: [], den: [] }
+    cursorPath: [], // Array of steps e.g. [{ idx: 0, part: 'num' }]
+    cursorCharPos: 0,
+    ans: 0,
+    lastResult: null,
+    calcHistory: [],
+    histIndex: -1,
     shift: false,
     alpha: false,
     sto: false,
     rcl: false,
-    insertMode: true,
-
-    ans: 0,
-    independentM: 0,
-    vars: { A:0, B:0, C:0, D:0, E:0, F:0, X:0, Y:0, M:0 },
-
-    rootList: initialRoot,
-    cursorList: initialRoot,
-    cursorIndex: 0,
-    resultDisplayed: false, // True right after '=' is pressed
-
-    calcHistory: [], // Stores { tree, result }
-    histIndex: -1,
-    multiStatements: [],
-    multiIndex: 0,
-    lastResult: null,
-    engOffset: 0,
-    factoredForm: null,
-    sdToggleState: 0, // 0: default, 1: decimal, 2: improper frac, 3: mixed frac
-
-    activeMenu: null
+    vars: { A:0, B:0, C:0, D:0, E:0, F:0, X:0, Y:0, M:0 }
   };
 
-  function cloneTree(list) {
-    return list.map(node => {
-      if (typeof node === 'string') return node;
-      if (node.type === 'frac') {
-        return { type: 'frac', num: cloneTree(node.num), den: cloneTree(node.den) };
-      }
-      if (node.type === 'mixed') {
-        return { type: 'mixed', whole: cloneTree(node.whole), num: cloneTree(node.num), den: cloneTree(node.den) };
-      }
-      return node;
-    });
+  const line1 = document.getElementById('line1');
+  const line2 = document.getElementById('line2');
+  const historyTape = document.getElementById('historyTape');
+  const indS = document.getElementById('ind-s');
+  const indA = document.getElementById('ind-a');
+
+  function updateIndicators() {
+    indS.classList.toggle('active', state.shift);
+    indA.classList.toggle('active', state.alpha);
   }
 
-  // Finds parent metadata for any sublist in the 2D expression tree
-  function findParentInfo(targetList, currentList = state.rootList) {
-    for (let i = 0; i < currentList.length; i++) {
-      const node = currentList[i];
-      if (node && typeof node === 'object') {
-        if (node.type === 'frac') {
-          if (node.num === targetList) return { parentList: currentList, parentIndex: i, node, part: 'num' };
-          if (node.den === targetList) return { parentList: currentList, parentIndex: i, node, part: 'den' };
-          const resNum = findParentInfo(targetList, node.num);
-          if (resNum) return resNum;
-          const resDen = findParentInfo(targetList, node.den);
-          if (resDen) return resDen;
-        } else if (node.type === 'mixed') {
-          if (node.whole === targetList) return { parentList: currentList, parentIndex: i, node, part: 'whole' };
-          if (node.num === targetList) return { parentList: currentList, parentIndex: i, node, part: 'num' };
-          if (node.den === targetList) return { parentList: currentList, parentIndex: i, node, part: 'den' };
-          const resW = findParentInfo(targetList, node.whole);
-          if (resW) return resW;
-          const resN = findParentInfo(targetList, node.num);
-          if (resN) return resN;
-          const resD = findParentInfo(targetList, node.den);
-          if (resD) return resD;
+  // Returns array and target context container for active cursor path
+  function getActiveContext(tree, path) {
+    let curr = tree;
+    for (let step of path) {
+      if (!curr[step.idx] || curr[step.idx].type !== 'frac') return null;
+      curr = curr[step.idx][step.part];
+    }
+    return curr;
+  }
+
+  // Recursive Renderer for Natural Stacked Fractions
+  function renderTreeToHTML(treeList, currentPath, targetPath, isInsideActive) {
+    let html = '';
+    for (let i = 0; i < treeList.length; i++) {
+      const node = treeList[i];
+      if (typeof node === 'string') {
+        const isThisCursorLocation = isInsideActive && targetPath.length === currentPath.length;
+        if (isThisCursorLocation) {
+          const before = escapeHtml(node.slice(0, state.cursorCharPos));
+          const after = escapeHtml(node.slice(state.cursorCharPos));
+          html += before + `<span class="cursor"></span>` + after;
+        } else {
+          html += escapeHtml(node);
         }
+      } else if (node && node.type === 'frac') {
+        const stepNum = currentPath.concat([{ idx: i, part: 'num' }]);
+        const stepDen = currentPath.concat([{ idx: i, part: 'den' }]);
+        const isNumActive = matchesPath(stepNum, targetPath);
+        const isDenActive = matchesPath(stepDen, targetPath);
+
+        const numContent = renderTreeToHTML(node.num, stepNum, targetPath, isNumActive);
+        const denContent = renderTreeToHTML(node.den, stepDen, targetPath, isDenActive);
+
+        const numEmpty = node.num.length === 0;
+        const denEmpty = node.den.length === 0;
+
+        html += `<span class="vinculum-frac">
+          <span class="v-num ${isNumActive ? 'v-box-active' : ''} ${numEmpty && !isNumActive ? 'v-box-empty' : ''}">${numContent || (isNumActive ? '<span class="cursor"></span>' : '')}</span>
+          <span class="v-bar"></span>
+          <span class="v-den ${isDenActive ? 'v-box-active' : ''} ${denEmpty && !isDenActive ? 'v-box-empty' : ''}">${denContent || (isDenActive ? '<span class="cursor"></span>' : '')}</span>
+        </span>`;
       }
     }
-    return null;
+
+    // Trailing cursor if target list is empty
+    if (treeList.length === 0 && isInsideActive && targetPath.length === currentPath.length) {
+      html += `<span class="cursor"></span>`;
+    }
+    return html;
   }
 
-  // Serializes 2D tree into mathematical string for evaluation
-  function treeToMathString(list = state.rootList) {
+  function matchesPath(p1, p2) {
+    if (p1.length > p2.length) return false;
+    for (let k = 0; k < p1.length; k++) {
+      if (p1[k].idx !== p2[k].idx || p1[k].part !== p2[k].part) return false;
+    }
+    return true;
+  }
+
+  // Convert recursive tree to executable JS expression
+  function treeToFormula(treeList) {
     let out = '';
-    for (let i = 0; i < list.length; i++) {
-      const node = list[i];
+    for (let node of treeList) {
       if (typeof node === 'string') {
         out += node;
-      } else if (node.type === 'frac') {
-        const n = treeToMathString(node.num).trim() || '0';
-        const d = treeToMathString(node.den).trim() || '1';
-        // Check if preceded by a number or fraction (implicit multiplication, manual p.16)
-        const prev = i > 0 ? list[i - 1] : null;
-        const multPrefix = (prev && (typeof prev === 'object' || /[\d)πeA-FX-YM]$/.test(prev))) ? '*' : '';
-        out += `${multPrefix}((${n})/(${d}))`;
-      } else if (node.type === 'mixed') {
-        const w = treeToMathString(node.whole).trim() || '0';
-        const n = treeToMathString(node.num).trim() || '0';
-        const d = treeToMathString(node.den).trim() || '1';
-        const prev = i > 0 ? list[i - 1] : null;
-        const multPrefix = (prev && (typeof prev === 'object' || /[\d)πeA-FX-YM]$/.test(prev))) ? '*' : '';
-        out += `${multPrefix}mixedFrac(${w},(${n}),(${d}))`;
+      } else if (node && node.type === 'frac') {
+        const n = node.num.length > 0 ? treeToFormula(node.num) : '0';
+        const d = node.den.length > 0 ? treeToFormula(node.den) : '1';
+        out += `((${n})/(${d}))`;
       }
     }
     return out;
   }
 
-  // Renders 2D tree into HTML with authentic vinculums and rectangular slot templates (■ / □)
-  function renderTreeToHTML(list = state.rootList, showCursor = true, isSubSlot = false) {
-    const isCurrentList = showCursor && (state.cursorList === list);
-    const cursorClass = !state.insertMode ? 'cursor overwrite' : 'cursor';
-
-    // If this is an empty fraction/mixed slot, render the authentic Casio rectangular template box!
-    if (list.length === 0 && isSubSlot) {
-      if (isCurrentList) {
-        // Active empty slot: solid rectangle ■ with blinking cursor next to it
-        return `<span class="slot-box filled"></span><span class="${cursorClass}"></span>`;
-      } else {
-        // Inactive empty slot: outlined blank rectangle □
-        return `<span class="slot-box"></span>`;
-      }
-    }
-
-    let html = '';
-    for (let i = 0; i <= list.length; i++) {
-      if (isCurrentList && state.cursorIndex === i) {
-        html += `<span class="${cursorClass}"></span>`;
-      }
-      if (i < list.length) {
-        const node = list[i];
-        if (typeof node === 'string') {
-          html += escapeHtml(node);
-        } else if (node.type === 'frac') {
-          const numHTML = renderTreeToHTML(node.num, showCursor, true);
-          const denHTML = renderTreeToHTML(node.den, showCursor, true);
-          html += `<span class="math-frac">
-            <span class="math-num">${numHTML}</span>
-            <span class="math-bar"></span>
-            <span class="math-den">${denHTML}</span>
-          </span>`;
-        } else if (node.type === 'mixed') {
-          const wholeHTML = renderTreeToHTML(node.whole, showCursor, true);
-          const numHTML = renderTreeToHTML(node.num, showCursor, true);
-          const denHTML = renderTreeToHTML(node.den, showCursor, true);
-          html += `<span class="math-mixed">
-            <span class="math-whole">${wholeHTML}</span>
-            <span class="math-frac">
-              <span class="math-num">${numHTML}</span>
-              <span class="math-bar"></span>
-              <span class="math-den">${denHTML}</span>
-            </span>
-          </span>`;
-        }
-      }
-    }
-    return html;
-  }
-
-  // Screen Elements
-  const indS = document.getElementById('ind-s');
-  const indA = document.getElementById('ind-a');
-  const indM = document.getElementById('ind-m');
-  const indSto = document.getElementById('ind-sto');
-  const indRcl = document.getElementById('ind-rcl');
-  const indStat = document.getElementById('ind-stat');
-  const indAng = document.getElementById('ind-ang');
-  const indFix = document.getElementById('ind-fix');
-  const indSci = document.getElementById('ind-sci');
-  const indMath = document.getElementById('ind-math');
-  const indArrow = document.getElementById('ind-arrow');
-  const indDisp = document.getElementById('ind-disp');
-
-  const line1 = document.getElementById('line1');
-  const line2 = document.getElementById('line2');
-  const historyTape = document.getElementById('historyTape');
-  const menuOverlay = document.getElementById('menuOverlay');
-
-  function updateIndicators() {
-    indS.classList.toggle('active', state.shift);
-    indA.classList.toggle('active', state.alpha);
-    indM.classList.toggle('active', state.independentM !== 0 || state.vars.M !== 0);
-    indSto.classList.toggle('active', state.sto);
-    indRcl.classList.toggle('active', state.rcl);
-    indStat.classList.toggle('active', state.mode === 'STAT');
-    indAng.textContent = state.angleUnit === 'Deg' ? 'D' : (state.angleUnit === 'Rad' ? 'R' : 'G');
-    indAng.classList.add('active');
-    indFix.classList.toggle('active', state.numFormat === 'Fix');
-    indSci.classList.toggle('active', state.numFormat === 'Sci');
-    indMath.classList.toggle('active', state.displayFormat.startsWith('MthIO'));
-    indArrow.classList.toggle('active', state.calcHistory.length > 0);
-    indDisp.classList.toggle('active', state.multiStatements.length > 1 && state.multiIndex < state.multiStatements.length - 1);
-  }
-
-  function loadHistoryEntry(entry) {
-    state.rootList = cloneTree(entry.tree);
-    state.cursorList = state.rootList;
-    state.cursorIndex = state.rootList.length;
-    state.lastResult = entry.result;
-    state.resultDisplayed = false;
-    state.factoredForm = null;
-    renderScreen();
-  }
-
-  function renderHistoryTape() {
-    historyTape.innerHTML = '';
-    state.calcHistory.forEach((item) => {
-      const el = document.createElement('div');
-      el.className = 'hist-item';
-      el.title = 'Click to recall 2D expression';
-      const exprHTML = renderTreeToHTML(item.tree, false, false);
-      const resHTML = formatOutputHTML(item.result);
-      el.innerHTML = `
-        <div class="hist-expr">${exprHTML}</div>
-        <div class="hist-res">${resHTML}</div>
-      `;
-      el.addEventListener('click', () => loadHistoryEntry(item));
-      historyTape.appendChild(el);
-    });
-    historyTape.scrollTop = historyTape.scrollHeight;
-  }
-
   function renderScreen() {
     updateIndicators();
-
     if (!state.power) {
       line1.innerHTML = '';
       line2.innerHTML = '';
       historyTape.innerHTML = '';
-      menuOverlay.style.display = 'none';
       syncPopoutScreen();
       return;
     }
 
-    if (state.activeMenu) {
-      renderMenu();
-      menuOverlay.style.display = 'flex';
-      syncPopoutScreen();
-      return;
-    } else {
-      menuOverlay.style.display = 'none';
-    }
-
-    if (state.mode === 'STAT' && state.statEditing) {
-      renderStatEditor();
-      menuOverlay.style.display = 'flex';
-      syncPopoutScreen();
-      return;
-    }
-
-    // Line 1: 2D Natural Display Expression
-    line1.innerHTML = renderTreeToHTML(state.rootList, !state.resultDisplayed, false);
-
-    // Line 2: Calculation Result
-    if (state.factoredForm) {
-      line2.textContent = state.factoredForm;
-    } else if (state.lastResult !== null) {
-      line2.innerHTML = formatOutputHTML(state.lastResult);
-    } else {
-      line2.innerHTML = '';
-    }
-
+    line1.innerHTML = renderTreeToHTML(state.tree, [], state.cursorPath, true) || '<span class="cursor"></span>';
+    line2.textContent = state.lastResult !== null ? formatOutputNumber(state.lastResult) : '';
     syncPopoutScreen();
   }
 
@@ -1585,1246 +1324,269 @@
       const target = popDoc.getElementById('popLcdInner');
       if (target) {
         target.innerHTML = document.getElementById('lcdBezelContainer').outerHTML;
-        target.querySelectorAll('.hist-item').forEach((el, index) => {
-          el.addEventListener('click', () => {
-            if (state.calcHistory[index]) {
-              loadHistoryEntry(state.calcHistory[index]);
-            }
-          });
-        });
       }
-    } catch (e) {}
+    } catch(e) {}
   }
 
   function escapeHtml(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  function renderMenu() {
-    const menu = state.activeMenu;
-    let html = `<div style="font-size:12px; margin-bottom:5px; border-bottom:1px solid currentColor; padding-bottom:3px;">${menu.title}</div>`;
-    menu.items.forEach(item => {
-      html += `<div class="menu-row"><span>${item.id}:${item.label}</span></div>`;
-    });
-    menuOverlay.innerHTML = html;
-  }
-
-  function renderStatEditor() {
-    let hasY = state.statType !== '1-VAR';
-    let html = `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
-      <span>STAT: ${state.statType}</span><span>Rows: ${state.statData.length}</span></div>`;
-    html += '<div class="stat-table"><table><thead><tr><th></th><th>X</th>';
-    if (hasY) html += '<th>Y</th>';
-    if (state.showFreq) html += '<th>FREQ</th>';
-    html += '</tr></thead><tbody>';
-
-    let maxShow = Math.max(state.statData.length + 1, 12);
-    for (let i = 0; i < maxShow; i++) {
-      let row = state.statData[i] || { x: '', y: '', freq: '' };
-      let sel = i === state.statCurRow;
-      html += `<tr class="${sel ? 'selected' : ''}"><td>${i+1}</td><td>${row.x}</td>`;
-      if (hasY) html += `<td>${row.y}</td>`;
-      if (state.showFreq) html += `<td>${row.freq || 1}</td>`;
-      html += '</tr>';
-    }
-    html += '</tbody></table></div>';
-    menuOverlay.innerHTML = html;
-  }
-
-  // Formats output number as HTML (supports vertical vinculum fractions in MthIO-MathO and S<=>D)
-  function formatOutputHTML(val) {
-    if (typeof val === 'string') return escapeHtml(val);
-    if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
+  function formatOutputNumber(val) {
+    if (typeof val === 'string') return val;
     if (isNaN(val) || !isFinite(val)) return 'Math ERROR';
-
-    if (state.engOffset !== 0) {
-      let shifted = val / Math.pow(10, state.engOffset);
-      return escapeHtml(shifted + '×10^' + state.engOffset);
-    }
-
-    // Determine whether to display as fraction
-    const wantFrac = (state.sdToggleState === 2 || state.sdToggleState === 3) ||
-                     (state.sdToggleState === 0 && state.displayFormat === 'MthIO-MathO' && !Number.isInteger(val));
-
-    if (wantFrac) {
-      let frac = toFraction(val);
-      if (frac && frac.d !== 1) {
-        const useMixed = (state.sdToggleState === 3) || (state.sdToggleState === 0 && state.fractionFormat === 'ab/c');
-        const isMathO = state.displayFormat.startsWith('MthIO');
-
-        if (useMixed && Math.abs(frac.n) > frac.d) {
-          let whole = Math.trunc(frac.n / frac.d);
-          let rem = Math.abs(frac.n % frac.d);
-          if (isMathO) {
-            return `<span class="math-mixed">
-              <span class="math-whole">${whole}</span>
-              <span class="math-frac">
-                <span class="math-num">${rem}</span>
-                <span class="math-bar"></span>
-                <span class="math-den">${frac.d}</span>
-              </span>
-            </span>`;
-          }
-          return `${whole}⌟${rem}⌟${frac.d}`;
-        }
-
-        if (isMathO) {
-          return `<span class="math-frac">
-            <span class="math-num">${frac.n}</span>
-            <span class="math-bar"></span>
-            <span class="math-den">${frac.d}</span>
-          </span>`;
-        }
-        return `${frac.n}⌟${frac.d}`;
-      }
-    }
-
-    if (state.numFormat === 'Fix') {
-      return escapeHtml(val.toFixed(state.fixVal));
-    } else if (state.numFormat === 'Sci') {
-      return escapeHtml(val.toExponential(state.sciVal));
-    } else {
-      let abs = Math.abs(val);
-      let limitLow = state.normVal === 1 ? 1e-2 : 1e-9;
-      if (abs !== 0 && (abs < limitLow || abs >= 1e10)) {
-        return escapeHtml(val.toExponential(4).replace('e', '×10^'));
-      }
-      let s = parseFloat(val.toPrecision(10)).toString();
-      if (state.decPoint === ',') s = s.replace('.', ',');
-      return escapeHtml(s);
-    }
-  }
-
-  function toFraction(val, maxDenom = 10000) {
-    let sign = val < 0 ? -1 : 1;
-    val = Math.abs(val);
-    let bestN = 1, bestD = 1, bestErr = Math.abs(val - 1);
-    for (let d = 1; d <= maxDenom; d++) {
-      let n = Math.round(val * d);
-      let err = Math.abs(val - n / d);
-      if (err < 1e-10) return { n: sign * n, d: d };
-      if (err < bestErr) {
-        bestErr = err; bestN = n; bestD = d;
-      }
-    }
-    if (bestErr < 1e-5) return { n: sign * bestN, d: bestD };
-    return null;
-  }
-
-  function primeFactorize(n) {
-    n = Math.round(n);
-    if (n <= 1 || n > 9999999999) return null;
-    let original = n;
-    let factors = {};
-    for (let d = 2; d * d <= n; d++) {
-      while (n % d === 0) {
-        factors[d] = (factors[d] || 0) + 1;
-        n /= d;
-      }
-    }
-    if (n > 1) {
-      if (n > 999 && n !== original) factors[`(${n})`] = 1;
-      else factors[n] = (factors[n] || 0) + 1;
-    }
-    let parts = [];
-    for (let k in factors) {
-      if (factors[k] > 1) parts.push(`${k}^${factors[k]}`);
-      else parts.push(`${k}`);
-    }
-    return parts.join('×');
-  }
-
-  // Prepares input buffer if user starts typing after '=' was pressed
-  function prepareForNewInput(isOperator = false) {
-    if (state.resultDisplayed) {
-      state.resultDisplayed = false;
-      state.rootList = [];
-      state.cursorList = state.rootList;
-      state.cursorIndex = 0;
-      if (isOperator && state.lastResult !== null) {
-        state.rootList.push('Ans');
-        state.cursorIndex = 1;
-      }
-      state.lastResult = null;
-    }
-  }
-
-  // Inserts a string token at current cursor location in the 2D tree
-  function insertToken(token, isOperator = false) {
-    state.factoredForm = null;
-    prepareForNewInput(isOperator);
-
-    if (state.insertMode || state.cursorIndex >= state.cursorList.length || typeof state.cursorList[state.cursorIndex] === 'object') {
-      state.cursorList.splice(state.cursorIndex, 0, token);
-    } else {
-      state.cursorList.splice(state.cursorIndex, 1, token);
-    }
-    state.cursorIndex++;
-    renderScreen();
-  }
-
-  // Authentic Casio Natural-V.P.A.M. Fraction Key Insertion
-  function handleFractionKey() {
-    state.factoredForm = null;
-    prepareForNewInput(false);
-
-    if (!state.displayFormat.startsWith('MthIO')) {
-      // Linear mode fallback
-      insertToken('⌟');
-      return;
-    }
-
-    if (state.shift) {
-      // SHIFT + ■/□ => Mixed fraction template [whole] [num / den]
-      state.shift = false;
-      const mixedNode = { type: 'mixed', whole: [], num: [], den: [] };
-      state.cursorList.splice(state.cursorIndex, 0, mixedNode);
-      state.cursorList = mixedNode.whole;
-      state.cursorIndex = 0;
-      renderScreen();
-      return;
-    }
-
-    // Standard ■/□ press:
-    // Check if there are contiguous digits/decimal immediately before cursor in current list
-    let numDigits = [];
-    let scanIdx = state.cursorIndex - 1;
-    while (scanIdx >= 0 && typeof state.cursorList[scanIdx] === 'string' && /^[\d.]$/.test(state.cursorList[scanIdx])) {
-      numDigits.unshift(state.cursorList[scanIdx]);
-      scanIdx--;
-    }
-
-    if (numDigits.length > 0) {
-      // Manual p.21 Method 1: e.g. typing '2' then '■/□' puts '2' into numerator and jumps to denominator □
-      const removeCount = numDigits.length;
-      const startRemove = state.cursorIndex - removeCount;
-      const fracNode = { type: 'frac', num: numDigits, den: [] };
-      state.cursorList.splice(startRemove, removeCount, fracNode);
-      state.cursorList = fracNode.den;
-      state.cursorIndex = 0;
-    } else {
-      // Manual p.21 Method 2 & Stacked Fractions:
-      // Creates empty numerator ■ and empty denominator □, placing cursor inside numerator ■.
-      // Pressing ■/□ repeatedly stacks another fraction inside the current active numerator/denominator!
-      const fracNode = { type: 'frac', num: [], den: [] };
-      state.cursorList.splice(state.cursorIndex, 0, fracNode);
-      state.cursorList = fracNode.num;
-      state.cursorIndex = 0;
-    }
-
-    renderScreen();
-  }
-
-  function deleteToken() {
-    state.factoredForm = null;
-    if (state.resultDisplayed) {
-      state.resultDisplayed = false;
-      state.lastResult = null;
-      renderScreen();
-      return;
-    }
-
-    if (state.cursorIndex > 0) {
-      const prevNode = state.cursorList[state.cursorIndex - 1];
-      if (typeof prevNode === 'string') {
-        state.cursorList.splice(state.cursorIndex - 1, 1);
-        state.cursorIndex--;
-      } else if (prevNode && typeof prevNode === 'object') {
-        // If fraction is completely empty, delete it; otherwise step inside its denominator
-        const isEmptyFrac = prevNode.type === 'frac' && prevNode.num.length === 0 && prevNode.den.length === 0;
-        const isEmptyMixed = prevNode.type === 'mixed' && prevNode.whole.length === 0 && prevNode.num.length === 0 && prevNode.den.length === 0;
-        if (isEmptyFrac || isEmptyMixed) {
-          state.cursorList.splice(state.cursorIndex - 1, 1);
-          state.cursorIndex--;
-        } else {
-          state.cursorList = prevNode.den;
-          state.cursorIndex = prevNode.den.length;
-        }
-      }
-    } else {
-      // At index 0 of a sublist (inside a fraction or mixed fraction)
-      const info = findParentInfo(state.cursorList);
-      if (info) {
-        const { parentList, parentIndex, node, part } = info;
-        const isEmptyFrac = node.type === 'frac' && node.num.length === 0 && node.den.length === 0;
-        const isEmptyMixed = node.type === 'mixed' && node.whole.length === 0 && node.num.length === 0 && node.den.length === 0;
-        if (isEmptyFrac || isEmptyMixed) {
-          parentList.splice(parentIndex, 1);
-          state.cursorList = parentList;
-          state.cursorIndex = parentIndex;
-        } else if (part === 'den') {
-          state.cursorList = node.num;
-          state.cursorIndex = node.num.length;
-        } else if (part === 'num' && node.type === 'mixed') {
-          state.cursorList = node.whole;
-          state.cursorIndex = node.whole.length;
-        } else {
-          state.cursorList = parentList;
-          state.cursorIndex = parentIndex;
-        }
-      }
-    }
-    renderScreen();
-  }
-
-  function clearAll() {
-    state.rootList = [];
-    state.cursorList = state.rootList;
-    state.cursorIndex = 0;
-    state.resultDisplayed = false;
-    state.lastResult = null;
-    state.factoredForm = null;
-    state.engOffset = 0;
-    state.activeMenu = null;
-    state.sdToggleState = 0;
-    if (state.mode === 'STAT') state.statEditing = false;
-    renderScreen();
-  }
-
-  // Menus
-  function openModeMenu() {
-    state.activeMenu = {
-      title: "Calculation Mode",
-      items: [
-        { id: 1, label: "COMP", action: () => setMode('COMP') },
-        { id: 2, label: "STAT", action: () => openStatTypeMenu() },
-        { id: 3, label: "VERIF", action: () => setMode('VERIF') },
-        { id: 0, label: "Authenticity", action: () => showAuthenticity() }
-      ]
-    };
-    renderScreen();
-  }
-
-  function openSetupMenu(page = 1) {
-    if (page === 1) {
-      state.activeMenu = {
-        title: "Setup (1/2) ▼",
-        items: [
-          { id: 1, label: "MthIO", action: () => openMthIOMenu() },
-          { id: 2, label: "LineIO", action: () => { state.displayFormat = 'LineIO'; closeMenu(); } },
-          { id: 3, label: "Deg", action: () => { state.angleUnit = 'Deg'; closeMenu(); } },
-          { id: 4, label: "Rad", action: () => { state.angleUnit = 'Rad'; closeMenu(); } },
-          { id: 5, label: "Gra", action: () => { state.angleUnit = 'Gra'; closeMenu(); } },
-          { id: 6, label: "Fix", action: () => promptFix() },
-          { id: 7, label: "Sci", action: () => promptSci() },
-          { id: 8, label: "Norm", action: () => promptNorm() }
-        ],
-        onNext: () => openSetupMenu(2)
-      };
-    } else {
-      state.activeMenu = {
-        title: "Setup (2/2) ▲",
-        items: [
-          { id: 1, label: "ab/c", action: () => { state.fractionFormat = 'ab/c'; closeMenu(); } },
-          { id: 2, label: "d/c", action: () => { state.fractionFormat = 'd/c'; closeMenu(); } },
-          { id: 3, label: "STAT", action: () => openStatFreqMenu() },
-          { id: 4, label: "Disp", action: () => openDispPointMenu() },
-          { id: 5, label: "CONT", action: () => closeMenu() }
-        ],
-        onPrev: () => openSetupMenu(1)
-      };
-    }
-    renderScreen();
-  }
-
-  function openMthIOMenu() {
-    state.activeMenu = {
-      title: "MthIO Format",
-      items: [
-        { id: 1, label: "MathO", action: () => { state.displayFormat = 'MthIO-MathO'; closeMenu(); } },
-        { id: 2, label: "LineO", action: () => { state.displayFormat = 'MthIO-LineO'; closeMenu(); } }
-      ]
-    };
-    renderScreen();
-  }
-
-  function openStatFreqMenu() {
-    state.activeMenu = {
-      title: "STAT Frequency?",
-      items: [
-        { id: 1, label: "ON", action: () => { state.showFreq = true; closeMenu(); } },
-        { id: 2, label: "OFF", action: () => { state.showFreq = false; closeMenu(); } }
-      ]
-    };
-    renderScreen();
-  }
-
-  function openDispPointMenu() {
-    state.activeMenu = {
-      title: "Decimal Display",
-      items: [
-        { id: 1, label: "Dot (.)", action: () => { state.decPoint = '.'; closeMenu(); } },
-        { id: 2, label: "Comma (,)", action: () => { state.decPoint = ','; closeMenu(); } }
-      ]
-    };
-    renderScreen();
-  }
-
-  function promptFix() {
-    closeMenu();
-    let val = parseInt(prompt("Fix 0~9?", "3"), 10);
-    if (!isNaN(val) && val >= 0 && val <= 9) {
-      state.numFormat = 'Fix'; state.fixVal = val;
-    }
-    renderScreen();
-  }
-  function promptSci() {
-    closeMenu();
-    let val = parseInt(prompt("Sci 0~9?", "3"), 10);
-    if (!isNaN(val) && val >= 0 && val <= 9) {
-      state.numFormat = 'Sci'; state.sciVal = val;
-    }
-    renderScreen();
-  }
-  function promptNorm() {
-    closeMenu();
-    let val = parseInt(prompt("Norm 1 or 2?", "2"), 10);
-    if (val === 1 || val === 2) {
-      state.numFormat = 'Norm'; state.normVal = val;
-    }
-    renderScreen();
-  }
-
-  function openStatTypeMenu() {
-    state.activeMenu = {
-      title: "Select Stat Type",
-      items: [
-        { id: 1, label: "1-VAR", action: () => startStat('1-VAR') },
-        { id: 2, label: "A+BX", action: () => startStat('A+BX') },
-        { id: 3, label: "_+CX²", action: () => startStat('_+CX2') },
-        { id: 4, label: "ln X", action: () => startStat('ln X') },
-        { id: 5, label: "e^X", action: () => startStat('e^X') },
-        { id: 6, label: "A·B^X", action: () => startStat('A*B^X') },
-        { id: 7, label: "A·X^B", action: () => startStat('A*X^B') },
-        { id: 8, label: "1/X", action: () => startStat('1/X') }
-      ]
-    };
-    renderScreen();
-  }
-
-  function startStat(type) {
-    state.mode = 'STAT';
-    state.statType = type;
-    state.statData = [];
-    state.statCurRow = 0;
-    state.statCurCol = 0;
-    state.statEditing = true;
-    closeMenu();
-  }
-
-  function openStatMenu() {
-    let items = [
-      { id: 1, label: "Type", action: () => openStatTypeMenu() },
-      { id: 2, label: "Data", action: () => { state.statEditing = true; closeMenu(); } },
-      { id: 3, label: "Sum", action: () => openStatSumMenu() },
-      { id: 4, label: "Var", action: () => openStatVarMenu() },
-      { id: 5, label: "MinMax", action: () => openStatMinMaxMenu() }
-    ];
-    if (state.statType !== '1-VAR') {
-      items.push({ id: 6, label: "Reg", action: () => openStatRegMenu() });
-    }
-    state.activeMenu = { title: "STAT Menu", items };
-    renderScreen();
-  }
-
-  function openStatSumMenu() {
-    let items = [
-      { id: 1, label: "∑x²", action: () => { insertToken("∑x²"); closeMenu(); } },
-      { id: 2, label: "∑x", action: () => { insertToken("∑x"); closeMenu(); } }
-    ];
-    if (state.statType !== '1-VAR') {
-      items.push({ id: 3, label: "∑y²", action: () => { insertToken("∑y²"); closeMenu(); } });
-      items.push({ id: 4, label: "∑y", action: () => { insertToken("∑y"); closeMenu(); } });
-      items.push({ id: 5, label: "∑xy", action: () => { insertToken("∑xy"); closeMenu(); } });
-    }
-    state.activeMenu = { title: "STAT Sum", items };
-    renderScreen();
-  }
-
-  function openStatVarMenu() {
-    let items = [
-      { id: 1, label: "n", action: () => { insertToken("stat_n"); closeMenu(); } },
-      { id: 2, label: "x̄", action: () => { insertToken("x̄"); closeMenu(); } },
-      { id: 3, label: "σx", action: () => { insertToken("σx"); closeMenu(); } },
-      { id: 4, label: "sx", action: () => { insertToken("sx"); closeMenu(); } }
-    ];
-    if (state.statType !== '1-VAR') {
-      items.push({ id: 5, label: "ȳ", action: () => { insertToken("ȳ"); closeMenu(); } });
-      items.push({ id: 6, label: "σy", action: () => { insertToken("σy"); closeMenu(); } });
-      items.push({ id: 7, label: "sy", action: () => { insertToken("sy"); closeMenu(); } });
-    }
-    state.activeMenu = { title: "STAT Var", items };
-    renderScreen();
-  }
-
-  function openStatMinMaxMenu() {
-    let items = [
-      { id: 1, label: "minX", action: () => { insertToken("minX"); closeMenu(); } },
-      { id: 2, label: "maxX", action: () => { insertToken("maxX"); closeMenu(); } },
-      { id: 3, label: "Q1", action: () => { insertToken("stat_Q1"); closeMenu(); } },
-      { id: 4, label: "med", action: () => { insertToken("stat_med"); closeMenu(); } },
-      { id: 5, label: "Q3", action: () => { insertToken("stat_Q3"); closeMenu(); } }
-    ];
-    state.activeMenu = { title: "STAT MinMax", items };
-    renderScreen();
-  }
-
-  function openStatRegMenu() {
-    let items = [
-      { id: 1, label: "A", action: () => { insertToken("reg_A"); closeMenu(); } },
-      { id: 2, label: "B", action: () => { insertToken("reg_B"); closeMenu(); } },
-      { id: 3, label: "r", action: () => { insertToken("reg_r"); closeMenu(); } }
-    ];
-    if (state.statType === '_+CX2') {
-      items.push({ id: 4, label: "C", action: () => { insertToken("reg_C"); closeMenu(); } });
-    }
-    state.activeMenu = { title: "STAT Reg", items };
-    renderScreen();
-  }
-
-  function openHypMenu() {
-    state.activeMenu = {
-      title: "Hyperbolic Functions",
-      items: [
-        { id: 1, label: "sinh", action: () => { insertToken("sinh("); closeMenu(); } },
-        { id: 2, label: "cosh", action: () => { insertToken("cosh("); closeMenu(); } },
-        { id: 3, label: "tanh", action: () => { insertToken("tanh("); closeMenu(); } },
-        { id: 4, label: "sinh⁻¹", action: () => { insertToken("sinh⁻¹("); closeMenu(); } },
-        { id: 5, label: "cosh⁻¹", action: () => { insertToken("cosh⁻¹("); closeMenu(); } },
-        { id: 6, label: "tanh⁻¹", action: () => { insertToken("tanh⁻¹("); closeMenu(); } }
-      ]
-    };
-    renderScreen();
-  }
-
-  function openVerifyMenu() {
-    state.activeMenu = {
-      title: "VERIFY Relational",
-      items: [
-        { id: 1, label: "=", action: () => { insertToken(" = ", true); closeMenu(); } },
-        { id: 2, label: "≠", action: () => { insertToken(" ≠ ", true); closeMenu(); } },
-        { id: 3, label: ">", action: () => { insertToken(" > ", true); closeMenu(); } },
-        { id: 4, label: "<", action: () => { insertToken(" < ", true); closeMenu(); } },
-        { id: 5, label: "≧", action: () => { insertToken(" ≧ ", true); closeMenu(); } },
-        { id: 6, label: "≦", action: () => { insertToken(" ≦ ", true); closeMenu(); } }
-      ]
-    };
-    renderScreen();
-  }
-
-  function openDrgMenu() {
-    state.activeMenu = {
-      title: "Angle Symbol",
-      items: [
-        { id: 1, label: "° (deg)", action: () => { insertToken("°"); closeMenu(); } },
-        { id: 2, label: "r (rad)", action: () => { insertToken("ʳ"); closeMenu(); } },
-        { id: 3, label: "g (grad)", action: () => { insertToken("ᵍ"); closeMenu(); } }
-      ]
-    };
-    renderScreen();
-  }
-
-  function showAuthenticity() {
-    closeMenu();
-    line1.textContent = "ID: PHILLIPS-82AU-2026";
-    line2.textContent = "phillips.com/calc/";
-  }
-
-  function closeMenu() {
-    state.activeMenu = null;
-    renderScreen();
-  }
-
-  function setMode(newMode) {
-    state.mode = newMode;
-    closeMenu();
-  }
-
-  // Math Evaluation Engine
-  function evaluateExpression(raw) {
-    if (!raw || raw.trim() === '') return 0;
-    if (raw.includes(':')) {
-      state.multiStatements = raw.split(':').map(s => s.trim()).filter(Boolean);
-      state.multiIndex = 0;
-      return executeSingleExpr(state.multiStatements[0]);
-    }
-    return executeSingleExpr(raw);
-  }
-
-  function executeSingleExpr(exprStr) {
-    const relOps = [' ≧ ', ' ≦ ', ' ≠ ', ' = ', ' > ', ' < '];
-    for (let op of relOps) {
-      if (exprStr.includes(op)) return evaluateVerifyExpr(exprStr);
-    }
-    let code = preprocessMath(exprStr);
-    try {
-      let result = Function('ctx', `with(ctx) { return (${code}); }`)(createMathContext());
-      return result;
-    } catch (e) {
-      return NaN;
-    }
-  }
-
-  function evaluateVerifyExpr(exprStr) {
-    let parts = exprStr.split(/\s*(=|≠|>|<|≧|≦)\s*/);
-    if (parts.length < 3) return false;
-    for (let i = 0; i < parts.length - 2; i += 2) {
-      let left = executeSingleExpr(parts[i]);
-      let op = parts[i+1];
-      let right = executeSingleExpr(parts[i+2]);
-      let ok = false;
-      if (op === '=') ok = Math.abs(left - right) < 1e-11;
-      else if (op === '≠') ok = Math.abs(left - right) >= 1e-11;
-      else if (op === '>') ok = left > right;
-      else if (op === '<') ok = left < right;
-      else if (op === '≧') ok = left >= right - 1e-12;
-      else if (op === '≦') ok = left <= right + 1e-12;
-      if (!ok) return false;
-    }
-    return true;
-  }
-
-  function preprocessMath(str) {
-    let s = str;
-
-    // Auto-close any unclosed parentheses at the end of the expression (Manual p.14 *3)
-    const openCount = (s.match(/\(/g) || []).length;
-    const closeCount = (s.match(/\)/g) || []).length;
-    if (openCount > closeCount) {
-      s += ')'.repeat(openCount - closeCount);
-    }
-
-    // Handle nPr and nCr infix
-    let prev;
-    do {
-      prev = s;
-      s = s.replace(/(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)\s*(?:P|nPr)\s*(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)/g, 'nPr($1,$2)');
-      s = s.replace(/(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)\s*(?:C|nCr)\s*(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)/g, 'nCr($1,$2)');
-    } while (s !== prev);
-
-    s = s.replace(/Pol\(([^,]+),([^)]+)\)/g, 'Pol($1,$2)');
-    s = s.replace(/Rec\(([^,]+),([^)]+)\)/g, 'Rec($1,$2)');
-
-    s = s.replace(/Ans/g, ' Ans ');
-    s = s.replace(/π/g, ' Math.PI ');
-    s = s.replace(/\be\b/g, ' Math.E ');
-
-    s = s.replace(/×10\^/g, '*1e');
-    s = s.replace(/×/g, '*').replace(/÷/g, '/');
-    s = s.replace(/\(-\)/g, '-');
-
-    s = s.replace(/sin⁻¹\(/g, 'asin(').replace(/cos⁻¹\(/g, 'acos(').replace(/tan⁻¹\(/g, 'atan(');
-    s = s.replace(/sinh⁻¹\(/g, 'asinh(').replace(/cosh⁻¹\(/g, 'acosh(').replace(/tanh⁻¹\(/g, 'atanh(');
-    s = s.replace(/sin\(/g, 'sin(').replace(/cos\(/g, 'cos(').replace(/tan\(/g, 'tan(');
-    s = s.replace(/sinh\(/g, 'sinh(').replace(/cosh\(/g, 'cosh(').replace(/tanh\(/g, 'tanh(');
-
-    s = s.replace(/ln\(/g, 'Math.log(').replace(/log\(/g, 'log10(').replace(/√\(/g, 'Math.sqrt(');
-    s = s.replace(/Abs\(/g, 'Math.abs(').replace(/³√\(/g, 'Math.cbrt(');
-
-    s = s.replace(/RanInt#\(([^,]+),([^)]+)\)/g, 'RanInt($1,$2)');
-    s = s.replace(/Ran#/g, 'Ran()');
-    s = s.replace(/GCD\(([^,]+),([^)]+)\)/g, 'gcd($1,$2)').replace(/LCM\(([^,]+),([^)]+)\)/g, 'lcm($1,$2)');
-
-    s = s.replace(/(\d+)\s*⌟\s*(\d+)\s*⌟\s*(\d+)/g, 'mixedFrac($1,$2,$3)');
-    s = s.replace(/(\d+)\s*⌟\s*(\d+)/g, '($1/$2)');
-    s = s.replace(/\^/g, '**');
-
-    // Casio implicit multiplication
-    s = s.replace(/(\d+)\s*\(/g, '$1*(');
-    s = s.replace(/\)\s*\(/g, ')*(');
-    s = s.replace(/\)\s*(\d+)/g, ')*$1');
-
-    s = s.replace(/(\d+)\s*°\s*(\d+)\s*'\s*(\d+(\.\d+)?)\s*"/g, 'dmsToDec($1,$2,$3)');
-    s = s.replace(/(\d+)\s*°\s*(\d+)\s*'/g, 'dmsToDec($1,$2,0)');
-    s = s.replace(/(\d+)\s*°/g, 'dmsToDec($1,0,0)');
-
-    s = s.replace(/(\d+(\.\d+)?)ʳ/g, 'fromRad($1)');
-    s = s.replace(/(\d+(\.\d+)?)ᵍ/g, 'fromGrad($1)');
-    s = s.replace(/(\d+)!/g, 'fact($1)');
-    s = s.replace(/%/g, '*0.01');
-
+    let s = parseFloat(val.toPrecision(10)).toString();
     return s;
   }
 
-  function createMathContext() {
-    let toDeg = val => state.angleUnit === 'Deg' ? (val * Math.PI / 180) : (state.angleUnit === 'Gra' ? (val * Math.PI / 200) : val);
-    let fromDeg = val => state.angleUnit === 'Deg' ? (val * 180 / Math.PI) : (state.angleUnit === 'Gra' ? (val * 200 / Math.PI) : val);
+  // Insert character or stacked fraction into current active box
+  function insertTokenAtCursor(token) {
+    const list = getActiveContext(state.tree, state.cursorPath);
+    if (!list) return;
 
-    let ctx = {
-      Math: Math,
-      Ans: state.ans,
-      A: state.vars.A, B: state.vars.B, C: state.vars.C,
-      D: state.vars.D, E: state.vars.E, F: state.vars.F,
-      X: state.vars.X, Y: state.vars.Y, M: state.independentM,
-      sin: x => Math.sin(toDeg(x)),
-      cos: x => Math.cos(toDeg(x)),
-      tan: x => Math.tan(toDeg(x)),
-      asin: x => fromDeg(Math.asin(x)),
-      acos: x => fromDeg(Math.acos(x)),
-      atan: x => fromDeg(Math.atan(x)),
-      sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh,
-      asinh: Math.asinh, acosh: Math.acosh, atanh: Math.atanh,
-      log10: x => Math.log10(x),
-      fact: n => {
-        n = Math.round(n);
-        if (n < 0 || n > 69) return NaN;
-        let r = 1;
-        for (let i = 2; i <= n; i++) r *= i;
-        return r;
-      },
-      nPr: (n, r) => {
-        n = Math.round(Number(n));
-        r = Math.round(Number(r));
-        if (isNaN(n) || isNaN(r) || r < 0 || r > n) return NaN;
-        let p = 1;
-        for (let i = 0; i < r; i++) p *= (n - i);
-        return p;
-      },
-      nCr: (n, r) => {
-        n = Math.round(Number(n));
-        r = Math.round(Number(r));
-        if (isNaN(n) || isNaN(r) || r < 0 || r > n) return NaN;
-        if (r === 0 || r === n) return 1;
-        if (r > n / 2) r = n - r;
-        let c = 1;
-        for (let i = 1; i <= r; i++) c = (c * (n - i + 1)) / i;
-        return Math.round(c);
-      },
-      Pol: (x, y) => {
-        let r = Math.hypot(x, y);
-        let th = fromDeg(Math.atan2(y, x));
-        state.vars.X = r; state.vars.Y = th;
-        return r;
-      },
-      Rec: (r, th) => {
-        let rad = toDeg(th);
-        let x = r * Math.cos(rad);
-        let y = r * Math.sin(rad);
-        state.vars.X = x; state.vars.Y = y;
-        return x;
-      },
-      Ran: () => Math.random(),
-      RanInt: (a, b) => Math.floor(Math.random() * (b - a + 1)) + a,
-      gcd: (a, b) => {
-        a = Math.abs(a); b = Math.abs(b);
-        while (b) { let t = b; b = a % b; a = t; }
-        return a;
-      },
-      lcm: (a, b) => (!a || !b) ? 0 : Math.abs(a * b) / ctx.gcd(a, b),
-      mixedFrac: (w, n, d) => (w >= 0) ? (w + n / d) : (w - n / d),
-      dmsToDec: (d, m, s) => Number(d) + Number(m)/60 + Number(s)/3600,
-      fromRad: v => state.angleUnit === 'Deg' ? (v * 180 / Math.PI) : (state.angleUnit === 'Gra' ? (v * 200 / Math.PI) : v),
-      fromGrad: v => state.angleUnit === 'Deg' ? (v * 0.9) : (state.angleUnit === 'Rad' ? (v * Math.PI / 200) : v)
-    };
-
-    if (state.statData.length > 0) {
-      Object.assign(ctx, computeStats(state.statData));
+    if (token === 'FRAC') {
+      // Create nested fraction
+      const newFrac = { type: 'frac', num: [], den: [] };
+      let insertIdx = list.length;
+      list.push(newFrac);
+      state.cursorPath.push({ idx: insertIdx, part: 'num' });
+      state.cursorCharPos = 0;
+    } else {
+      // String token
+      if (list.length === 0 || typeof list[list.length - 1] !== 'string') {
+        list.push(token);
+        state.cursorCharPos = token.length;
+      } else {
+        const lastStr = list[list.length - 1];
+        list[list.length - 1] = lastStr.slice(0, state.cursorCharPos) + token + lastStr.slice(state.cursorCharPos);
+        state.cursorCharPos += token.length;
+      }
     }
-    return ctx;
+    renderScreen();
   }
 
-  function computeStats(data) {
-    let n = 0, sumX = 0, sumX2 = 0, sumY = 0, sumY2 = 0, sumXY = 0;
-    let xs = [], ys = [];
-    data.forEach(d => {
-      let freq = d.freq ? Number(d.freq) : 1;
-      let x = Number(d.x) || 0;
-      let y = Number(d.y) || 0;
-      n += freq;
-      sumX += x * freq;
-      sumX2 += x * x * freq;
-      sumY += y * freq;
-      sumY2 += y * y * freq;
-      sumXY += x * y * freq;
-      for (let k = 0; k < freq; k++) { xs.push(x); ys.push(y); }
-    });
+  function deleteTokenAtCursor() {
+    const list = getActiveContext(state.tree, state.cursorPath);
+    if (!list) return;
 
-    xs.sort((a,b) => a - b);
-    let xbar = n ? sumX / n : 0;
-    let ybar = n ? sumY / n : 0;
-    let sx = n > 1 ? Math.sqrt((sumX2 - sumX*sumX/n)/(n - 1)) : 0;
-    let sigx = n ? Math.sqrt((sumX2 - sumX*sumX/n)/n) : 0;
-    let sy = n > 1 ? Math.sqrt((sumY2 - sumY*sumY/n)/(n - 1)) : 0;
-    let sigy = n ? Math.sqrt((sumY2 - sumY*sumY/n)/n) : 0;
-
-    let minX = xs[0] || 0;
-    let maxX = xs[xs.length - 1] || 0;
-    let q1 = xs[Math.floor(xs.length * 0.25)] || 0;
-    let med = xs[Math.floor(xs.length * 0.5)] || 0;
-    let q3 = xs[Math.floor(xs.length * 0.75)] || 0;
-
-    let denom = (n * sumX2 - sumX * sumX);
-    let regB = denom !== 0 ? (n * sumXY - sumX * sumY) / denom : 0;
-    let regA = ybar - regB * xbar;
-    let rDenom = Math.sqrt((n * sumX2 - sumX*sumX) * (n * sumY2 - sumY*sumY));
-    let regR = rDenom ? (n * sumXY - sumX * sumY) / rDenom : 0;
-
-    return {
-      stat_n: n, 'x̄': xbar, 'ȳ': ybar,
-      σx: sigx, sx: sx, σy: sigy, sy: sy,
-      '∑x': sumX, '∑x²': sumX2, '∑y': sumY, '∑y²': sumY2, '∑xy': sumXY,
-      minX: minX, maxX: maxX, stat_Q1: q1, stat_med: med, stat_Q3: q3,
-      reg_A: regA, reg_B: regB, reg_r: regR
-    };
-  }
-
-  // =========================================================
-  // 2D NAVIGATION & KEY HANDLERS
-  // =========================================================
-  function moveCursorUp() {
-    // Walk up ancestor chain to see if cursor is inside a denominator (or can enter a numerator)
-    let list = state.cursorList;
-    while (list !== state.rootList) {
-      const info = findParentInfo(list);
-      if (!info) break;
-      if (info.part === 'den') {
-        state.cursorList = info.node.num;
-        state.cursorIndex = info.node.num.length;
-        state.resultDisplayed = false;
-        renderScreen();
-        return true;
+    if (list.length > 0) {
+      const last = list[list.length - 1];
+      if (typeof last === 'string') {
+        if (state.cursorCharPos > 0) {
+          list[list.length - 1] = last.slice(0, state.cursorCharPos - 1) + last.slice(state.cursorCharPos);
+          state.cursorCharPos--;
+          if (list[list.length - 1].length === 0) list.pop();
+        } else {
+          list.pop();
+        }
+      } else {
+        list.pop();
       }
-      list = info.parentList;
+    } else if (state.cursorPath.length > 0) {
+      state.cursorPath.pop();
+      const parent = getActiveContext(state.tree, state.cursorPath);
+      state.cursorCharPos = parent && parent.length > 0 && typeof parent[parent.length-1] === 'string' ? parent[parent.length-1].length : 0;
     }
-    return false;
+    renderScreen();
   }
 
-  function moveCursorDown() {
-    // Walk up ancestor chain to see if cursor is inside a numerator or whole part
-    let list = state.cursorList;
-    while (list !== state.rootList) {
-      const info = findParentInfo(list);
-      if (!info) break;
-      if (info.part === 'num' || info.part === 'whole') {
-        state.cursorList = info.node.den;
-        state.cursorIndex = info.node.den.length;
-        state.resultDisplayed = false;
-        renderScreen();
-        return true;
-      }
-      list = info.parentList;
-    }
-    return false;
-  }
+  function evaluateCurrent() {
+    const raw = treeToFormula(state.tree);
+    if (!raw.trim()) return;
 
-  const keyMap = {
-    'k-on': () => {
-      state.power = true;
-      state.activeMenu = null;
-      clearAll();
-    },
-    'k-ac': () => {
-      if (state.shift) {
-        state.power = false;
-        state.shift = false;
-      } else {
-        clearAll();
-      }
-      renderScreen();
-    },
-    'k-shift': () => {
-      state.shift = !state.shift;
-      state.alpha = false;
-      renderScreen();
-    },
-    'k-alpha': () => {
-      state.alpha = !state.alpha;
-      state.shift = false;
-      renderScreen();
-    },
-    'k-mode': () => {
-      if (state.shift) { state.shift = false; openSetupMenu(1); }
-      else openModeMenu();
-    },
-    'k-del': () => {
-      if (state.shift) {
-        state.insertMode = !state.insertMode;
-        state.shift = false;
-      } else {
-        deleteToken();
-      }
-      renderScreen();
-    },
+    try {
+      let code = raw
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/π/g, 'Math.PI')
+        .replace(/\be\b/g, 'Math.E')
+        .replace(/\^/g, '**');
 
-    // D-Pad Up: Moves from Denominator -> Numerator, or scrolls 2D Calculation History
-    'k-up': () => {
-      if (state.activeMenu && state.activeMenu.onPrev) {
-        state.activeMenu.onPrev();
-        return;
-      }
-      if (state.mode === 'STAT' && state.statEditing) {
-        if (state.statCurRow > 0) state.statCurRow--;
-        renderScreen();
-        return;
-      }
-      if (!state.resultDisplayed && moveCursorUp()) return;
-
-      // Scroll History (2D Replay)
-      if (state.calcHistory.length > 0) {
-        if (state.histIndex < state.calcHistory.length - 1) {
-          state.histIndex++;
-          const entry = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
-          loadHistoryEntry(entry);
-        }
-      }
-    },
-
-    // D-Pad Down: Moves from Numerator -> Denominator, or scrolls 2D Calculation History
-    'k-down': () => {
-      if (state.activeMenu && state.activeMenu.onNext) {
-        state.activeMenu.onNext();
-        return;
-      }
-      if (state.mode === 'STAT' && state.statEditing) {
-        state.statCurRow++;
-        renderScreen();
-        return;
-      }
-      if (!state.resultDisplayed && moveCursorDown()) return;
-
-      // Scroll History (2D Replay)
-      if (state.histIndex > 0) {
-        state.histIndex--;
-        const entry = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
-        loadHistoryEntry(entry);
-      }
-    },
-
-    // D-Pad Left: 2D Replay & Box-to-Box Navigation
-    'k-left': () => {
-      if (state.mode === 'STAT' && state.statEditing) {
-        if (state.statCurCol > 0) state.statCurCol--;
-        renderScreen();
-        return;
-      }
-      if (state.resultDisplayed) {
-        // Replay edit at end of current 2D expression (Manual p.24)
-        state.resultDisplayed = false;
-        state.cursorList = state.rootList;
-        state.cursorIndex = state.rootList.length;
-        renderScreen();
-        return;
-      }
-
-      if (state.cursorIndex > 0) {
-        const prevNode = state.cursorList[state.cursorIndex - 1];
-        if (prevNode && typeof prevNode === 'object') {
-          state.cursorList = prevNode.den;
-          state.cursorIndex = prevNode.den.length;
-        } else {
-          state.cursorIndex--;
-        }
-      } else {
-        const info = findParentInfo(state.cursorList);
-        if (info) {
-          if (info.part === 'den') {
-            state.cursorList = info.node.num;
-            state.cursorIndex = info.node.num.length;
-          } else if (info.part === 'num' && info.node.type === 'mixed') {
-            state.cursorList = info.node.whole;
-            state.cursorIndex = info.node.whole.length;
-          } else {
-            state.cursorList = info.parentList;
-            state.cursorIndex = info.parentIndex;
-          }
-        } else {
-          // Wrap around to end of root expression (Manual p.16)
-          state.cursorIndex = state.rootList.length;
-        }
-      }
-      renderScreen();
-    },
-
-    // D-Pad Right: 2D Replay & Box-to-Box Navigation
-    'k-right': () => {
-      if (state.mode === 'STAT' && state.statEditing) {
-        state.statCurCol++;
-        renderScreen();
-        return;
-      }
-      if (state.resultDisplayed) {
-        // Replay edit at start of current 2D expression (Manual p.24)
-        state.resultDisplayed = false;
-        state.cursorList = state.rootList;
-        state.cursorIndex = 0;
-        renderScreen();
-        return;
-      }
-
-      if (state.cursorIndex < state.cursorList.length) {
-        const nextNode = state.cursorList[state.cursorIndex];
-        if (nextNode && typeof nextNode === 'object') {
-          if (nextNode.type === 'mixed') {
-            state.cursorList = nextNode.whole;
-            state.cursorIndex = 0;
-          } else {
-            state.cursorList = nextNode.num;
-            state.cursorIndex = 0;
-          }
-        } else {
-          state.cursorIndex++;
-        }
-      } else {
-        const info = findParentInfo(state.cursorList);
-        if (info) {
-          if (info.part === 'whole') {
-            state.cursorList = info.node.num;
-            state.cursorIndex = 0;
-          } else if (info.part === 'num') {
-            state.cursorList = info.node.den;
-            state.cursorIndex = 0;
-          } else {
-            // Exit fraction to the right
-            state.cursorList = info.parentList;
-            state.cursorIndex = info.parentIndex + 1;
-          }
-        } else {
-          // Wrap around to beginning of root expression (Manual p.16)
-          state.cursorIndex = 0;
-        }
-      }
-      renderScreen();
-    },
-
-    'k-eq': () => {
-      if (state.shift) {
-        openVerifyMenu();
-        state.shift = false;
-        return;
-      }
-      if (state.activeMenu) return;
-
-      const flatExpr = treeToMathString(state.rootList);
-      if (flatExpr.trim() === '') return;
-
-      let res = evaluateExpression(flatExpr);
+      let res = Function(`return (${code})`)();
       state.lastResult = res;
-      state.resultDisplayed = true;
-      if (typeof res === 'number' && !isNaN(res)) state.ans = res;
 
-      // Save deep clone of 2D tree so Replay preserves vertical vinculum fractions
+      // Add full visual representation to history tape
+      const renderedHistoryHtml = renderTreeToHTML(state.tree, [], [], false);
       state.calcHistory.push({
-        tree: cloneTree(state.rootList),
+        tree: JSON.parse(JSON.stringify(state.tree)),
+        displayHtml: renderedHistoryHtml,
         result: res
       });
-      if (state.calcHistory.length > 40) state.calcHistory.shift();
-      state.histIndex = -1;
-      state.sdToggleState = 0;
+
       renderHistoryTape();
-      renderScreen();
-    },
-
-    'k-0': () => handleNumericKey('0'),
-    'k-1': () => {
-      if (state.shift) { openStatMenu(); state.shift = false; }
-      else handleNumericKey('1');
-    },
-    'k-2': () => handleNumericKey('2'),
-    'k-3': () => handleNumericKey('3'),
-    'k-4': () => handleNumericKey('4'),
-    'k-5': () => handleNumericKey('5'),
-    'k-6': () => handleNumericKey('6'),
-    'k-7': () => handleNumericKey('7'),
-    'k-8': () => handleNumericKey('8'),
-    'k-9': () => handleNumericKey('9'),
-
-    'k-dot': () => {
-      if (state.shift) { insertToken('Ran#'); state.shift = false; }
-      else if (state.alpha) { insertToken('RanInt#('); state.alpha = false; }
-      else insertToken('.');
-    },
-    'k-add': () => {
-      if (state.shift) { insertToken('Pol('); state.shift = false; }
-      else insertToken('+', true);
-    },
-    'k-sub': () => {
-      if (state.shift) { insertToken('Rec('); state.shift = false; }
-      else insertToken('-', true);
-    },
-    'k-mul': () => {
-      if (state.shift) { insertToken('P', true); state.shift = false; }
-      else if (state.alpha) { insertToken('GCD('); state.alpha = false; }
-      else insertToken('×', true);
-    },
-    'k-div': () => {
-      if (state.shift) { insertToken('C', true); state.shift = false; }
-      else if (state.alpha) { insertToken('LCM('); state.alpha = false; }
-      else insertToken('÷', true);
-    },
-    'k-lpar': () => insertToken('('),
-    'k-rpar': () => {
-      if (state.shift) { insertToken(','); state.shift = false; }
-      else if (state.alpha) { insertToken('X'); state.alpha = false; }
-      else insertToken(')');
-    },
-    'k-frac': () => handleFractionKey(),
-    'k-sqrt': () => {
-      if (state.shift) { insertToken('³√('); state.shift = false; }
-      else insertToken('√(');
-    },
-    'k-sqr': () => {
-      if (state.shift) { insertToken('^3', true); state.shift = false; }
-      else insertToken('^2', true);
-    },
-    'k-pow': () => insertToken('^', true),
-    'k-log': () => {
-      if (state.shift) { insertToken('10^('); state.shift = false; }
-      else insertToken('log(');
-    },
-    'k-ln': () => {
-      if (state.shift) { insertToken('e^('); state.shift = false; }
-      else insertToken('ln(');
-    },
-    'k-hyp': () => {
-      if (state.alpha) { insertToken('C'); state.alpha = false; }
-      else openHypMenu();
-    },
-    'k-sin': () => {
-      if (state.shift) { insertToken('sin⁻¹('); state.shift = false; }
-      else if (state.alpha) { insertToken('D'); state.alpha = false; }
-      else insertToken('sin(');
-    },
-    'k-cos': () => {
-      if (state.shift) { insertToken('cos⁻¹('); state.shift = false; }
-      else if (state.alpha) { insertToken('E'); state.alpha = false; }
-      else insertToken('cos(');
-    },
-    'k-tan': () => {
-      if (state.shift) { insertToken('tan⁻¹('); state.shift = false; }
-      else if (state.alpha) { insertToken('F'); state.alpha = false; }
-      else insertToken('tan(');
-    },
-    'k-neg': () => {
-      if (state.alpha) { insertToken('A'); state.alpha = false; }
-      else insertToken('(-)');
-    },
-    'k-dms': () => {
-      if (state.shift) {
-        if (state.lastResult !== null && !isNaN(state.lastResult)) {
-          let fact = primeFactorize(state.lastResult);
-          if (fact) state.factoredForm = fact;
-        }
-        state.shift = false;
-        renderScreen();
-      } else if (state.alpha) {
-        insertToken('B'); state.alpha = false;
-      } else {
-        insertToken('°');
-      }
-    },
-    'k-eng': () => {
-      if (state.shift) { state.engOffset -= 3; state.shift = false; }
-      else state.engOffset += 3;
-      renderScreen();
-    },
-    'k-sd': () => {
-      if (state.shift) {
-        state.sdToggleState = (state.sdToggleState === 3) ? 2 : 3;
-        state.shift = false;
-      } else {
-        state.sdToggleState = (state.sdToggleState === 1) ? 2 : 1;
-      }
-      renderScreen();
-    },
-    'k-mplus': () => {
-      let val = state.lastResult !== null ? state.lastResult : evaluateExpression(treeToMathString(state.rootList));
-      if (state.shift) {
-        state.independentM -= val;
-        state.shift = false;
-      } else if (state.alpha) {
-        insertToken('M');
-        state.alpha = false;
-      } else {
-        state.independentM += val;
-      }
-      renderScreen();
-    },
-    'k-ans': () => {
-      if (state.shift) { openDrgMenu(); state.shift = false; }
-      else if (state.alpha) { insertToken('%', true); state.alpha = false; }
-      else insertToken('Ans');
-    },
-    'k-exp': () => {
-      if (state.shift) { insertToken('π'); state.shift = false; }
-      else if (state.alpha) { insertToken('e'); state.alpha = false; }
-      else insertToken('×10^', true);
-    },
-    'k-rcl': () => {
-      if (state.shift) { state.sto = true; state.shift = false; }
-      else state.rcl = true;
-      renderScreen();
+    } catch(e) {
+      state.lastResult = 'Math ERROR';
     }
+    renderScreen();
+  }
+
+  function renderHistoryTape() {
+    historyTape.innerHTML = '';
+    state.calcHistory.forEach((item, idx) => {
+      const el = document.createElement('div');
+      el.className = 'hist-item';
+      el.title = 'Click to replay calculation';
+      el.innerHTML = `
+        <div class="hist-expr">${item.displayHtml}</div>
+        <div class="hist-res">${formatOutputNumber(item.result)}</div>
+      `;
+      el.addEventListener('click', () => {
+        state.tree = JSON.parse(JSON.stringify(item.tree));
+        state.cursorPath = [];
+        state.cursorCharPos = 0;
+        renderScreen();
+      });
+      historyTape.appendChild(el);
+    });
+    historyTape.scrollTop = historyTape.scrollHeight;
+  }
+
+  // ==========================================
+  // SINGLE CENTRAL COMMAND ROUTER (DEBOUNCE PROTECTED)
+  // ==========================================
+  let isExecutingCommand = false;
+
+  function routeCommand(cmd) {
+    if (isExecutingCommand) return;
+    isExecutingCommand = true;
+
+    try {
+      if (cmd.startsWith('CHAR:')) {
+        insertTokenAtCursor(cmd.replace('CHAR:', ''));
+      } else if (cmd === 'FRAC') {
+        insertTokenAtCursor('FRAC');
+      } else if (cmd === 'DEL') {
+        deleteTokenAtCursor();
+      } else if (cmd === 'AC') {
+        if (state.shift) {
+          state.power = false;
+          state.shift = false;
+        } else {
+          state.tree = [];
+          state.cursorPath = [];
+          state.cursorCharPos = 0;
+          state.lastResult = null;
+          renderScreen();
+        }
+      } else if (cmd === 'EQ') {
+        evaluateCurrent();
+      } else if (cmd === 'SHIFT') {
+        state.shift = !state.shift;
+        state.alpha = false;
+        updateIndicators();
+      } else if (cmd === 'ALPHA') {
+        state.alpha = !state.alpha;
+        state.shift = false;
+        updateIndicators();
+      } else if (cmd === 'ON') {
+        state.power = true;
+        renderScreen();
+      } else if (cmd === 'NAV_UP') {
+        if (state.cursorPath.length > 0) {
+          state.cursorPath[state.cursorPath.length - 1].part = 'num';
+          state.cursorCharPos = 0;
+          renderScreen();
+        }
+      } else if (cmd === 'NAV_DOWN') {
+        if (state.cursorPath.length > 0) {
+          state.cursorPath[state.cursorPath.length - 1].part = 'den';
+          state.cursorCharPos = 0;
+          renderScreen();
+        }
+      } else if (cmd === 'NAV_LEFT') {
+        if (state.cursorCharPos > 0) {
+          state.cursorCharPos--;
+          renderScreen();
+        } else if (state.cursorPath.length > 0) {
+          state.cursorPath.pop();
+          renderScreen();
+        }
+      } else if (cmd === 'NAV_RIGHT') {
+        if (state.cursorPath.length > 0) {
+          state.cursorPath.pop();
+          renderScreen();
+        }
+      }
+    } finally {
+      setTimeout(() => { isExecutingCommand = false; }, 20);
+    }
+  }
+
+  // Key mappings table
+  const keyActionMap = {
+    'k-0': () => routeCommand('CHAR:0'),
+    'k-1': () => routeCommand('CHAR:1'),
+    'k-2': () => routeCommand('CHAR:2'),
+    'k-3': () => routeCommand('CHAR:3'),
+    'k-4': () => routeCommand('CHAR:4'),
+    'k-5': () => routeCommand('CHAR:5'),
+    'k-6': () => routeCommand('CHAR:6'),
+    'k-7': () => routeCommand('CHAR:7'),
+    'k-8': () => routeCommand('CHAR:8'),
+    'k-9': () => routeCommand('CHAR:9'),
+    'k-dot': () => routeCommand('CHAR:.'),
+    'k-add': () => routeCommand('CHAR:+'),
+    'k-sub': () => routeCommand('CHAR:-'),
+    'k-mul': () => routeCommand('CHAR:×'),
+    'k-div': () => routeCommand('CHAR:÷'),
+    'k-lpar': () => routeCommand('CHAR:('),
+    'k-rpar': () => routeCommand('CHAR:)'),
+    'k-frac': () => routeCommand('FRAC'),
+    'k-del': () => routeCommand('DEL'),
+    'k-ac': () => routeCommand('AC'),
+    'k-eq': () => routeCommand('EQ'),
+    'k-shift': () => routeCommand('SHIFT'),
+    'k-alpha': () => routeCommand('ALPHA'),
+    'k-on': () => routeCommand('ON'),
+    'k-up': () => routeCommand('NAV_UP'),
+    'k-down': () => routeCommand('NAV_DOWN'),
+    'k-left': () => routeCommand('NAV_LEFT'),
+    'k-right': () => routeCommand('NAV_RIGHT'),
+    'k-sqr': () => routeCommand('CHAR:^2'),
+    'k-sqrt': () => routeCommand('CHAR:√('),
+    'k-pow': () => routeCommand('CHAR:^'),
+    'k-log': () => routeCommand('CHAR:log('),
+    'k-ln': () => routeCommand('CHAR:ln('),
+    'k-sin': () => routeCommand('CHAR:sin('),
+    'k-cos': () => routeCommand('CHAR:cos('),
+    'k-tan': () => routeCommand('CHAR:tan('),
+    'k-neg': () => routeCommand('CHAR:(-)')
   };
 
-  function handleNumericKey(ch) {
-    if (state.activeMenu) {
-      let num = parseInt(ch, 10);
-      let match = state.activeMenu.items.find(it => it.id === num);
-      if (match && match.action) match.action();
-      return;
-    }
-    if (state.sto) {
-      let varName = getVarNameFromKey(ch);
-      if (varName) {
-        let val = state.lastResult !== null ? state.lastResult : ( evaluateExpression(treeToMathString(state.rootList)) || 0 );
-        state.vars[varName] = val;
-        state.sto = false;
-        renderScreen();
-      }
-      return;
-    }
-    if (state.rcl) {
-      let varName = getVarNameFromKey(ch);
-      if (varName) {
-        insertToken(varName);
-        state.rcl = false;
-        renderScreen();
-      }
-      return;
-    }
-    insertToken(ch);
-  }
-
-  function getVarNameFromKey(ch) {
-    const varMap = { '1':'A', '2':'B', '3':'C', '4':'D', '5':'E', '6':'F', '7':'X', '8':'Y', '9':'M' };
-    return varMap[ch] || null;
-  }
-
-  function bindKeyEvents(scope) {
-    for (let id in keyMap) {
-      const el = scope.querySelector ? scope.querySelector('#' + id) : document.getElementById(id);
-      if (el) {
-        el.addEventListener('click', (e) => {
+  // Direct Button Click Delegation (Only runs once per click)
+  function attachKeyListeners(rootElem) {
+    for (let id in keyActionMap) {
+      const btn = rootElem.querySelector('#' + id);
+      if (btn) {
+        btn.onclick = (e) => {
           e.preventDefault();
-          keyMap[id]();
-        });
+          e.stopPropagation();
+          keyActionMap[id]();
+        };
       }
     }
   }
-  bindKeyEvents(document);
+  attachKeyListeners(document);
 
-  // Physical Keyboard Support
+  // Global Physical Keyboard Support (Scoped only to Main Window)
   window.addEventListener('keydown', (e) => {
-    if (e.key >= '0' && e.key <= '9') handleNumericKey(e.key);
-    else if (e.key === '+') keyMap['k-add']();
-    else if (e.key === '-') keyMap['k-sub']();
-    else if (e.key === '*' || e.key === 'x') keyMap['k-mul']();
-    else if (e.key === '/') keyMap['k-div']();
-    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); keyMap['k-eq'](); }
-    else if (e.key === 'Backspace') { e.preventDefault(); keyMap['k-del'](); }
-    else if (e.key === 'Escape') keyMap['k-ac']();
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); keyMap['k-left'](); }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); keyMap['k-right'](); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); keyMap['k-up'](); }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); keyMap['k-down'](); }
-    else if (e.key === '(') keyMap['k-lpar']();
-    else if (e.key === ')') keyMap['k-rpar']();
-    else if (e.key === '.') keyMap['k-dot']();
-    else if (e.key === ',') insertToken(',');
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key >= '0' && e.key <= '9') { e.preventDefault(); routeCommand('CHAR:' + e.key); }
+    else if (e.key === '+') { e.preventDefault(); routeCommand('CHAR:+'); }
+    else if (e.key === '-') { e.preventDefault(); routeCommand('CHAR:-'); }
+    else if (e.key === '*' || e.key === 'x') { e.preventDefault(); routeCommand('CHAR:×'); }
+    else if (e.key === '/') { e.preventDefault(); routeCommand('CHAR:÷'); }
+    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); routeCommand('EQ'); }
+    else if (e.key === 'Backspace') { e.preventDefault(); routeCommand('DEL'); }
+    else if (e.key === 'Escape') { e.preventDefault(); routeCommand('AC'); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); routeCommand('NAV_UP'); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); routeCommand('NAV_DOWN'); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); routeCommand('NAV_LEFT'); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); routeCommand('NAV_RIGHT'); }
   });
 
   // ==========================================
-  // POP-OUT SCREEN WINDOW WITH THEME INHERITANCE
+  // POP-OUT SCREEN WINDOW
   // ==========================================
   document.getElementById('btnPopScreen').addEventListener('click', () => {
     if (popoutScreenWin && !popoutScreenWin.closed) {
@@ -2833,10 +1595,7 @@
     }
 
     popoutScreenWin = window.open('', 'PhillipsPopoutScreen', 'width=540,height=560,resizable=yes');
-    if (!popoutScreenWin) {
-      alert("Pop-up was blocked. Please allow pop-ups for this emulator.");
-      return;
-    }
+    if (!popoutScreenWin) return;
 
     const cssContent = document.getElementById('calcThemeStyles').innerHTML;
     popoutScreenWin.document.write(`
@@ -2847,162 +1606,43 @@
         <style>
           ${cssContent}
           body {
-            background: var(--chassis-grad);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            position: relative;
-            transition: background 0.25s ease;
+            background: #111417; margin: 0; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            height: 100vh; width: 100vw; overflow: hidden; position: relative;
           }
           #popLcdWrapper {
-            width: 404px;
-            height: 382px;
-            transform-origin: center center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 404px; height: 382px; transform-origin: center center;
+            display: flex; align-items: center; justify-content: center;
           }
-          #popLcdInner {
-            width: 100%;
-          }
-          .zoom-ctx-menu {
-            position: fixed;
-            background: #1e2227;
-            border: 2px solid #3b424d;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.85);
-            padding: 12px 14px;
-            z-index: 9999;
-            color: #fff;
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            font-size: 13px;
-            width: 220px;
-          }
-          .zoom-ctx-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 13px;
-            border-bottom: 1px solid #374151;
-            padding-bottom: 5px;
-          }
-          .zoom-slider-row {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-          }
-          .zoom-slider-row input[type=range] {
-            width: 100%;
-            cursor: pointer;
-          }
-          .zoom-val-badge {
-            font-weight: 800;
-            color: #38bdf8;
-            font-size: 14px;
-            text-align: center;
-          }
-          .zoom-ticks {
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: #94a3b8;
-          }
-          .zoom-close {
-            cursor: pointer;
-            color: #9ca3af;
-          }
-          .zoom-close:hover { color: #fff; }
+          #popLcdInner { width: 100%; }
         </style>
       </head>
       <body>
         <div id="popLcdWrapper">
           <div id="popLcdInner"></div>
         </div>
-
-        <div class="zoom-ctx-menu" id="popZoomMenu">
-          <div class="zoom-ctx-header">
-            <span>Extra Zoom Multiplier</span>
-            <span class="zoom-close" id="btnZoomClose">✕</span>
-          </div>
-          <div class="zoom-slider-row">
-            <div class="zoom-val-badge" id="zoomValDisplay">1.0×</div>
-            <input type="range" id="zoomSlider" min="1.0" max="4.0" step="0.5" value="1.0">
-            <div class="zoom-ticks">
-              <span>1x</span><span>1.5</span><span>2x</span><span>2.5</span><span>3x</span><span>3.5</span><span>4x</span>
-            </div>
-          </div>
-        </div>
       </body>
       </html>
     `);
     popoutScreenWin.document.close();
 
-    const initPopScreen = () => {
-      const popDoc = popoutScreenWin.document;
-      const zoomMenu = popDoc.getElementById('popZoomMenu');
-      const zoomSlider = popDoc.getElementById('zoomSlider');
-      const zoomVal = popDoc.getElementById('zoomValDisplay');
-      const zoomWrapper = popDoc.getElementById('popLcdWrapper');
-      const zoomClose = popDoc.getElementById('btnZoomClose');
-      if (!zoomWrapper) return;
-
-      const BASE_SCREEN_W = 404;
-      const BASE_SCREEN_H = 382;
-      let manualZoomMultiplier = 1.0;
-
+    popoutScreenWin.addEventListener('load', () => {
+      const container = popoutScreenWin.document.getElementById('popLcdWrapper');
       function scalePopoutScreen() {
         const w = popoutScreenWin.innerWidth;
         const h = popoutScreenWin.innerHeight;
-        const baseFit = Math.min(w / BASE_SCREEN_W, h / BASE_SCREEN_H) * 0.95;
-        const finalScale = baseFit * manualZoomMultiplier;
-        zoomWrapper.style.transform = `scale(${finalScale})`;
+        const scale = Math.min(w / 404, h / 382) * 0.95;
+        container.style.transform = `scale(${scale})`;
       }
-
       popoutScreenWin.addEventListener('resize', scalePopoutScreen);
-
-      zoomSlider.addEventListener('input', (e) => {
-        manualZoomMultiplier = parseFloat(e.target.value);
-        zoomVal.textContent = manualZoomMultiplier.toFixed(1) + '×';
-        scalePopoutScreen();
-      });
-
-      zoomClose.addEventListener('click', () => {
-        zoomMenu.style.display = 'none';
-      });
-
-      popDoc.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        zoomMenu.style.display = 'flex';
-        let px = Math.min(e.clientX, popoutScreenWin.innerWidth - 240);
-        let py = Math.min(e.clientY, popoutScreenWin.innerHeight - 150);
-        zoomMenu.style.left = `${Math.max(10, px)}px`;
-        zoomMenu.style.top = `${Math.max(10, py)}px`;
-      });
-
-      popDoc.addEventListener('click', (e) => {
-        if (!zoomMenu.contains(e.target)) zoomMenu.style.display = 'none';
-      });
-
+      scalePopoutScreen();
       syncAllThemes();
       syncPopoutScreen();
-      scalePopoutScreen();
-    };
-
-    initPopScreen();
-    popoutScreenWin.addEventListener('load', initPopScreen);
+    });
   });
 
   // ==========================================
-  // POP-OUT KEYBOARD WINDOW WITH CHASSIS BACKGROUND PROPAGATION
+  // POP-OUT KEYBOARD WINDOW (DOUBLE-REGISTRATION PREVENTED)
   // ==========================================
   document.getElementById('btnPopKeypad').addEventListener('click', () => {
     if (popoutKeypadWin && !popoutKeypadWin.closed) {
@@ -3010,11 +1650,8 @@
       return;
     }
 
-    popoutKeypadWin = window.open('', 'PhillipsPopoutKeypad', 'width=470,height=600,resizable=yes');
-    if (!popoutKeypadWin) {
-      alert("Pop-up was blocked. Please allow pop-ups for this emulator.");
-      return;
-    }
+    popoutKeypadWin = window.open('', 'PhillipsPopoutKeypad', 'width=460,height=580,resizable=yes');
+    if (!popoutKeypadWin) return;
 
     const cssContent = document.getElementById('calcThemeStyles').innerHTML;
     const keypadHTML = document.getElementById('calcKeypad').outerHTML;
@@ -3023,42 +1660,23 @@
       <!DOCTYPE html>
       <html>
       <head>
-        <title>PHILLIPS Keyboard - Proportional Scaling</title>
+        <title>PHILLIPS Keyboard - Independent Window</title>
         <style>
           ${cssContent}
           body {
-            background: #0f1215;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            width: 100vw;
-          }
-          /* Chassis-styled container so keyboard background color always propagates */
-          #popKeypadChassis {
-            width: 436px;
-            height: 530px;
             background: var(--chassis-grad);
-            border: 3px solid var(--chassis-border);
-            border-radius: 34px;
-            padding: 18px 18px 26px 18px;
-            box-shadow: 0 16px 40px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.22), inset 0 -4px 6px rgba(0,0,0,0.5);
-            transform-origin: center center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            transition: background 0.25s ease, border-color 0.25s ease;
+            margin: 0; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            height: 100vh; width: 100vw; overflow: hidden;
           }
-          #popKeypadChassis .keypad {
-            width: 100%;
+          #popKeypadContainer {
+            width: 404px; height: 480px; transform-origin: center center;
+            display: flex; align-items: center; justify-content: center;
           }
         </style>
       </head>
       <body>
-        <div id="popKeypadChassis">
+        <div id="popKeypadContainer">
           ${keypadHTML}
         </div>
       </body>
@@ -3066,46 +1684,40 @@
     `);
     popoutKeypadWin.document.close();
 
-    const initPopKeypad = () => {
+    popoutKeypadWin.addEventListener('load', () => {
       const popDoc = popoutKeypadWin.document;
-      const container = popDoc.getElementById('popKeypadChassis');
-      if (!container) return;
+      const container = popDoc.getElementById('popKeypadContainer');
 
-      const BASE_KP_W = 436;
-      const BASE_KP_H = 530;
-
-      function scaleKeypadWindow() {
+      function scalePopoutKeypad() {
         const w = popoutKeypadWin.innerWidth;
         const h = popoutKeypadWin.innerHeight;
-        const scale = Math.min(w / BASE_KP_W, h / BASE_KP_H) * 0.95;
+        const scale = Math.min(w / 404, h / 480) * 0.94;
         container.style.transform = `scale(${scale})`;
       }
 
-      popoutKeypadWin.addEventListener('resize', scaleKeypadWindow);
-      scaleKeypadWindow();
+      popoutKeypadWin.addEventListener('resize', scalePopoutKeypad);
+      scalePopoutKeypad();
 
-      bindKeyEvents(popDoc);
+      // Attach clicks exclusively to popout doc without bubbling to main window
+      attachKeyListeners(popDoc);
 
+      // Chassis & Key color palettes in pop-out window
       popDoc.addEventListener('contextmenu', (e) => {
         const isButton = e.target.closest('.calc-btn, .dpad-btn');
         if (isButton) {
           e.preventDefault();
-          showContextMenu(100, 100, 'keys');
+          showContextMenu(window.screenX + 40, window.screenY + 60, 'keys');
         } else {
           e.preventDefault();
-          showContextMenu(100, 100, 'chassis');
+          showContextMenu(window.screenX + 40, window.screenY + 60, 'chassis');
         }
       });
 
       syncAllThemes();
-    };
-
-    initPopKeypad();
-    popoutKeypadWin.addEventListener('load', initPopKeypad);
+    });
   });
 
   syncAllThemes();
-  renderHistoryTape();
   renderScreen();
 })();
 </script>

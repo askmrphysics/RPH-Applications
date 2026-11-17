@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VCE Specialist Mathematics - Slope Field Visualizer</title>
+  <style>
+    :root {
+      --bg-main: #131722;
+      --bg-panel: #1e222d;
+      --bg-input: #2a2e39;
+      --border: #363c4e;
+      --accent: #2962ff;
+      --accent-hover: #1e4bd8;
+      --text: #d1d4dc;
+      --text-muted: #787b86;
+      --text-white: #ffffff;
+      --axis-highlight: #ffeb3b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    /* Left Control Sidebar */
+    #sidebar {
+      width: 390px;
+      min-width: 390px;
+      height: 100%;
+      background-color: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.4);
+    }
+
+    .header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #242936 0%, var(--bg-panel) 100%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--text-white);
+      letter-spacing: -0.3px;
+    }
+
+    .header .subtitle {
+      font-size: 0.72rem;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .btn-icon {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-white);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .scroll-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .scroll-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scroll-content::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    .section-title {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card {
+      background-color: #171b26;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-row label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      min-width: 55px;
+    }
+
+    input[type="text"], select {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-white);
+      padding: 7px 10px;
+      font-size: 0.88rem;
+      outline: none;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: 600;
+      user-select: text;
+    }
+
+    input[type="text"]:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+    }
+
+    .slider-header span.val {
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: 700;
+      color: var(--text-white);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--border);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .color-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .color-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: 1px solid var(--border);
+      width: 26px;
+      height: 26px;
+      border-radius: 5px;
+      cursor: pointer;
+      background: none;
+      padding: 0;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+    input[type="color"]::-webkit-color-swatch {
+      border: none;
+      border-radius: 4px;
+    }
+
+    .btn {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-white);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .btn-capture {
+      background: #1b5e20;
+      border-color: #2e7d32;
+    }
+    .btn-capture:hover {
+      background: #2e7d32;
+      border-color: #4caf50;
+    }
+
+    .btn-exam-active {
+      background: #2962ff !important;
+      border-color: #5383ff !important;
+      color: #ffffff !important;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+
+    /* Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider-toggle {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border);
+      transition: .3s;
+      border-radius: 20px;
+    }
+    .slider-toggle:before {
+      position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px;
+      background-color: var(--text-muted);
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider-toggle {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+    input:checked + .slider-toggle:before {
+      transform: translateX(16px);
+      background-color: #fff;
+    }
+
+    /* Canvas Workspace */
+    #workspace {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background-color: var(--bg-main);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* Floating HUD Readout */
+    #hud {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(30, 34, 45, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 13px;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      font-family: 'Courier New', Courier, monospace;
+      color: var(--text-white);
+      pointer-events: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    #hud span.label {
+      color: var(--text-muted);
+    }
+
+    #tips {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(30, 34, 45, 0.75);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.73rem;
+      color: var(--text);
+      pointer-events: none;
+    }
+
+    /* Toast Notification for Screen Capture */
+    #toast {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #00e676;
+      color: #0b2212;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 10px 20px;
+      border-radius: 25px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+      pointer-events: none;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .error-msg {
+      color: #ff5252;
+      font-size: 0.75rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Controls -->
+  <aside id="sidebar">
+    <div class="header">
+      <div>
+        <h1>Slope Field Visualizer</h1>
+        <div class="subtitle">VCE Specialist Mathematics (Unit 3 & 4)</div>
+      </div>
+      <button class="btn-icon" id="btnFullscreenTop" title="Toggle Fullscreen">
+        <span id="fsIcon">⛶</span>
+      </button>
+    </div>
+
+    <div class="scroll-content">
+
+      <!-- Screen Capture & Export Card -->
+      <div class="card" style="border-color: #2e7d32; background: #132418;">
+        <div class="section-title" style="color: #69f0ae;">Document Export & Capture</div>
+        <div class="grid-2">
+          <button class="btn btn-capture" id="btnCopyClipboard">📋 Copy Image</button>
+          <button class="btn" id="btnDownloadPng">💾 Save PNG</button>
+        </div>
+        <div style="font-size: 0.68rem; color: #a5d6a7;">
+          Copies graph to clipboard ready to paste (<kbd>Ctrl+V</kbd>) into Word, Docs, or SAC papers.
+        </div>
+      </div>
+
+      <!-- Presets -->
+      <div class="card">
+        <div class="section-title">DE Presets (VCE Syllabus)</div>
+        <select id="presetSelect">
+          <option value="a*y*(b - y/k)" selected>Logistic Growth: dy/dx = a*y*(b - y/k)</option>
+          <option value="a*y*(1 - y)">Simple Logistic: dy/dx = a*y*(1 - y)</option>
+          <option value="-a*(y - b)">Newton's Law of Cooling: dy/dx = -a*(y - b)</option>
+          <option value="-x/y">Concentric Circles: dy/dx = -x/y</option>
+          <option value="x/y">Hyperbolas / Saddle: dy/dx = x/y</option>
+          <option value="sin(x) - a*y">Damped Oscillator: dy/dx = sin(x) - a*y</option>
+          <option value="a*x + b*y">Linear System: dy/dx = a*x + b*y</option>
+        </select>
+      </div>
+
+      <!-- Differential Equation Input -->
+      <div class="card">
+        <div class="section-title">Differential Equation</div>
+        <div class="input-row">
+          <label for="eqInput">dy/dx =</label>
+          <input type="text" id="eqInput" value="a*y*(b - y/k)" spellcheck="false" autocomplete="off">
+        </div>
+        <div id="errorText" class="error-msg">Invalid math syntax</div>
+        <div style="font-size: 0.69rem; color: var(--text-muted);">
+          Variables: <code>x, y</code> &bull; Constants: <code>a, b, c (or k), d</code> &bull; Functions: <code>sin, cos, exp, log, sqrt, ^</code>
+        </div>
+      </div>
+
+      <!-- Parameters a, b, c/k, d -->
+      <div class="card">
+        <div class="section-title">Parameters & Constants</div>
+        <div class="slider-row">
+          <div class="slider-header"><span>Parameter a</span><span class="val" id="valA">1.0</span></div>
+          <input type="range" id="paramA" min="-5" max="5" step="0.1" value="1.0">
+        </div>
+        <div class="slider-row">
+          <div class="slider-header"><span>Parameter b</span><span class="val" id="valB">1.0</span></div>
+          <input type="range" id="paramB" min="-5" max="5" step="0.1" value="1.0">
+        </div>
+        <div class="slider-row">
+          <div class="slider-header"><span>Parameter c (or k)</span><span class="val" id="valC">1.0</span></div>
+          <input type="range" id="paramC" min="0.1" max="10" step="0.1" value="1.0">
+        </div>
+        <div class="slider-row">
+          <div class="slider-header"><span>Parameter d</span><span class="val" id="valD">0.0</span></div>
+          <input type="range" id="paramD" min="-5" max="5" step="0.1" value="0.0">
+        </div>
+      </div>
+
+      <!-- Initial Condition Point (x0, y0) -->
+      <div class="card">
+        <div class="section-title">
+          <span>Initial Condition (x₀, y₀)</span>
+          <span style="font-size: 0.69rem; color: var(--accent); text-transform: none;">Click & drag on canvas</span>
+        </div>
+        <div class="slider-row">
+          <div class="slider-header"><span>x₀</span><span class="val" id="valX0">0.00</span></div>
+          <input type="range" id="paramX0" min="-5" max="5" step="0.05" value="0.0">
+        </div>
+        <div class="slider-row">
+          <div class="slider-header"><span>y₀</span><span class="val" id="valY0">0.20</span></div>
+          <input type="range" id="paramY0" min="-5" max="5" step="0.05" value="0.2">
+        </div>
+      </div>
+
+      <!-- Typography & Label Zoom Slider -->
+      <div class="card">
+        <div class="section-title">Labels & Typography</div>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Font Size (Axes & Coordinates)</span>
+            <span class="val" id="valFontSize">12px</span>
+          </div>
+          <input type="range" id="fontSizeSlider" min="9" max="26" step="1" value="12">
+        </div>
+        <div class="toggle-wrap" style="margin-top: 4px;">
+          <span style="font-size: 0.8rem;">Show (x₀, y₀) Label on Graph</span>
+          <label class="switch">
+            <input type="checkbox" id="togglePointLabel" checked>
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Resolution & Segment Length -->
+      <div class="card">
+        <div class="section-title">Slope Field Resolution</div>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Grid Density (Base Intervals)</span>
+            <span class="val" id="valRes">20</span>
+          </div>
+          <input type="range" id="gridRes" min="10" max="45" step="1" value="20">
+        </div>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Segment Length Scale</span>
+            <span class="val" id="valLen">1.0</span>
+          </div>
+          <input type="range" id="segLen" min="0.3" max="2.0" step="0.1" value="1.0">
+        </div>
+      </div>
+
+      <!-- Euler's Method Overlay -->
+      <div class="card">
+        <div class="toggle-wrap">
+          <span style="font-weight: 600; font-size: 0.85rem; color: var(--text-white);">Euler's Method Overlay</span>
+          <label class="switch">
+            <input type="checkbox" id="eulerToggle">
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+        <div id="eulerSettings" style="display: none; flex-direction: column; gap: 8px; margin-top: 6px;">
+          <div class="slider-row">
+            <div class="slider-header">
+              <span>Step Size (h / Δx)</span>
+              <span class="val" id="valEulerH">0.50</span>
+            </div>
+            <input type="range" id="eulerH" min="0.05" max="1.5" step="0.05" value="0.5">
+          </div>
+          <div class="slider-row">
+            <div class="slider-header">
+              <span>Step Count</span>
+              <span class="val" id="valEulerSteps">12</span>
+            </div>
+            <input type="range" id="eulerSteps" min="2" max="40" step="1" value="12">
+          </div>
+        </div>
+      </div>
+
+      <!-- Colors & Theme Customization -->
+      <div class="card">
+        <div class="section-title">
+          <span>Colors & Theme</span>
+          <button class="btn" id="btnExamTheme" style="padding: 2px 8px; font-size: 0.68rem;">Exam Paper Mode (White)</button>
+        </div>
+        <div class="color-row">
+          <span style="font-size: 0.85rem;">Screen Background</span>
+          <div class="color-picker-wrap">
+            <input type="color" id="bgColor" value="#131722">
+          </div>
+        </div>
+        <div class="color-row">
+          <span style="font-size: 0.85rem;">Axes & Labels</span>
+          <div class="color-picker-wrap">
+            <input type="color" id="axesColor" value="#ffffff">
+          </div>
+        </div>
+        <div class="color-row">
+          <span style="font-size: 0.85rem;">Slope Field</span>
+          <div class="color-picker-wrap">
+            <input type="color" id="fieldColor" value="#526075">
+          </div>
+        </div>
+        <div class="color-row">
+          <span style="font-size: 0.85rem;">Particular Solution (RK4)</span>
+          <div class="color-picker-wrap">
+            <input type="color" id="solColor" value="#00e676">
+          </div>
+        </div>
+        <div class="color-row">
+          <span style="font-size: 0.85rem;">Euler's Method Curve</span>
+          <div class="color-picker-wrap">
+            <input type="color" id="eulerColor" value="#ffab00">
+          </div>
+        </div>
+      </div>
+
+      <!-- View Actions -->
+      <div class="grid-2">
+        <button class="btn" id="btnResetView">Reset View [-5, 5]</button>
+        <button class="btn" id="btnFullscreen">⛶ Fullscreen</button>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Workspace & Canvas -->
+  <main id="workspace">
+    <canvas id="graphCanvas"></canvas>
+    
+    <!-- Floating HUD Coordinate Readout -->
+    <div id="hud">
+      <div><span class="label">Cursor:  </span><span id="hudCoords">x: 0.00, y: 0.00</span></div>
+      <div><span class="label">dy/dx:   </span><span id="hudSlope">0.00</span></div>
+      <div style="margin-top: 4px; border-top: 1px dashed var(--border); padding-top: 4px;">
+        <span class="label">Initial: </span><span id="hudInit">(0.00, 0.20)</span>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div id="tips">
+      &bull; <strong>Hover near an axis</strong> & drag to stretch/compress scale<br>
+      &bull; <strong>Right-click & drag:</strong> Pan &bull; <strong>Scroll:</strong> Zoom &bull; <strong>Left-click:</strong> Move (x₀, y₀)
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast">✔ Image copied to clipboard! Ready to paste into document.</div>
+  </main>
+
+  <script>
+    /* ==========================================================================
+       Application State
+       ========================================================================== */
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    const toast = document.getElementById('toast');
+
+    // World coordinate window (Initial: [-5, 5] on both axes)
+    let view = {
+      xMin: -5.0,
+      xMax: 5.0,
+      yMin: -5.0,
+      yMax: 5.0
+    };
+
+    // Initial point (x0, y0)
+    let initialPoint = { x: 0.0, y: 0.2 };
+
+    // Parameters a, b, c (aliased to k), d (Default starting values 1, 1, 1, 0)
+    const params = { a: 1.0, b: 1.0, c: 1.0, d: 0.0 };
+
+    // Resolution & Display settings
+    let baseGridIntervals = 20;
+    let segLengthFactor = 1.0;
+    let axisFontSize = 12;
+
+    // Exam Theme Toggle State
+    let isExamMode = false;
+    let savedColorScheme = null;
+
+    // Compiled differential equation
+    let diffEq = null;
+
+    // Interaction tracking
+    let isRightDragging = false;
+    let isLeftDraggingPoint = false;
+    let isDraggingXAxis = false;
+    let isDraggingYAxis = false;
+
+    let hoverAxis = null; // 'x' | 'y' | null
+    let lastMousePos = { x: 0, y: 0 };
+    let dragStartPos = { x: 0, y: 0 };
+    let initialDragView = null;
+    let hoverWorldPos = { x: 0, y: 0 };
+
+    /* ==========================================================================
+       Helper: Color Conversion (Hex to RGBA for Grid Lines)
+       ========================================================================== */
+    function hexToRgba(hex, alpha) {
+      let c = hex.replace('#', '');
+      if (c.length === 3) {
+        c = c.split('').map(x => x + x).join('');
+      }
+      const num = parseInt(c, 16);
+      const r = (num >> 16) & 255;
+      const g = (num >> 8) & 255;
+      const b = num & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    /* ==========================================================================
+       Mathematical Expression Parser & Compiler
+       ========================================================================== */
+    function compileMathExpression(exprStr) {
+      let str = exprStr.trim();
+      if (!str) return null;
+
+      str = str.replace(/\bln\b/g, 'log');
+      // Implicit multiplication: number followed by letter or (
+      str = str.replace(/(\d+)\s*([a-zA-Z(])/g, '$1*$2');
+      // Shorthand: variable followed by another variable (ay -> a*y, yx -> y*x)
+      str = str.replace(/\b([abcdkABCDKxyXY])\s*([abcdkABCDKxyXY])\b/g, '$1*$2');
+      // Variable followed by parenthesis: y( -> y*(
+      str = str.replace(/\b([abcdkABCDKxyXY])\s*\(/g, '$1*(');
+      // Adjacent parentheses: )( -> )*(
+      str = str.replace(/\)\s*\(/g, ')*(');
+      str = str.replace(/\)\s*([a-zA-Z0-9])/g, ')*$1');
+      // Power operator ^ to **
+      str = str.replace(/\^/g, '**');
+
+      // Math functions and constants
+      const mathTokens = ['sin', 'cos', 'tan', 'exp', 'log', 'sqrt', 'abs', 'asin', 'acos', 'atan', 'PI', 'E'];
+      mathTokens.forEach(token => {
+        const regex = new RegExp(`\\b${token}\\b`, 'gi');
+        str = str.replace(regex, `Math.${token.toUpperCase() === 'PI' || token.toUpperCase() === 'E' ? token.toUpperCase() : token.toLowerCase()}`);
+      });
+      str = str.replace(/\bpi\b/gi, 'Math.PI');
+
+      try {
+        const fn = new Function('x', 'y', 'a', 'b', 'c', 'd', 'k', `
+          try {
+            const A = a, B = b, C = c, D = d, K = k;
+            const res = (${str});
+            return isFinite(res) ? res : (isNaN(res) ? NaN : (res > 0 ? 1e8 : -1e8));
+          } catch(e) {
+            return NaN;
+          }
+        `);
+        // Test evaluate
+        fn(1, 1, 1, 1, 1, 0, 1);
+        return fn;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    /* ==========================================================================
+       Coordinate Conversions (World <-> Screen)
+       ========================================================================== */
+    function worldToScreen(wx, wy) {
+      const sx = (wx - view.xMin) / (view.xMax - view.xMin) * canvas.clientWidth;
+      const sy = canvas.clientHeight - (wy - view.yMin) / (view.yMax - view.yMin) * canvas.clientHeight;
+      return { x: sx, y: sy };
+    }
+
+    function screenToWorld(sx, sy) {
+      const wx = view.xMin + (sx / canvas.clientWidth) * (view.xMax - view.xMin);
+      const wy = view.yMin + ((canvas.clientHeight - sy) / canvas.clientHeight) * (view.yMax - view.yMin);
+      return { x: wx, y: wy };
+    }
+
+    /* ==========================================================================
+       Numerical Integrators (RK4 & Euler's Method)
+       ========================================================================== */
+    function integrateRK4(x0, y0, forward = true, maxSteps = 1600) {
+      const points = [];
+      let x = x0;
+      let y = y0;
+      const dir = forward ? 1.0 : -1.0;
+      
+      const worldWidth = view.xMax - view.xMin;
+      const ds = (worldWidth / 700) * dir;
+      points.push({ x, y });
+
+      const fVec = (px, py) => {
+        const m = diffEq(px, py, params.a, params.b, params.c, params.d, params.c);
+        if (isNaN(m)) return null;
+        const denom = Math.sqrt(1 + m * m);
+        return { dx: 1 / denom, dy: m / denom };
+      };
+
+      for (let i = 0; i < maxSteps; i++) {
+        if (x < view.xMin - worldWidth * 0.6 || x > view.xMax + worldWidth * 0.6 ||
+            y < view.yMin - (view.yMax - view.yMin) * 0.6 || y > view.yMax + (view.yMax - view.yMin) * 0.6) {
+          break;
+        }
+
+        const k1 = fVec(x, y);
+        if (!k1) break;
+
+        const k2 = fVec(x + 0.5 * ds * k1.dx, y + 0.5 * ds * k1.dy);
+        if (!k2) break;
+
+        const k3 = fVec(x + 0.5 * ds * k2.dx, y + 0.5 * ds * k2.dy);
+        if (!k3) break;
+
+        const k4 = fVec(x + ds * k3.dx, y + ds * k3.dy);
+        if (!k4) break;
+
+        x += (ds / 6) * (k1.dx + 2 * k2.dx + 2 * k3.dx + k4.dx);
+        y += (ds / 6) * (k1.dy + 2 * k2.dy + 2 * k3.dy + k4.dy);
+
+        if (isNaN(x) || isNaN(y)) break;
+        points.push({ x, y });
+      }
+
+      return points;
+    }
+
+    function calculateEuler(x0, y0, h, numSteps, forward = true) {
+      const points = [{ x: x0, y: y0 }];
+      let x = x0;
+      let y = y0;
+      const stepH = forward ? h : -h;
+
+      for (let i = 0; i < numSteps; i++) {
+        const slope = diffEq(x, y, params.a, params.b, params.c, params.d, params.c);
+        if (isNaN(slope) || !isFinite(slope)) break;
+        
+        y += stepH * slope;
+        x += stepH;
+        points.push({ x, y });
+
+        if (x < view.xMin - 20 || x > view.xMax + 20 || y < view.yMin - 20 || y > view.yMax + 20) {
+          break;
+        }
+      }
+      return points;
+    }
+
+    /* ==========================================================================
+       Rendering Engine
+       ========================================================================== */
+    function draw() {
+      if (!ctx) return;
+
+      // 1. Screen Background
+      const bgColor = document.getElementById('bgColor').value;
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+      // 2. Grid & Axes
+      drawGridAndAxes();
+
+      // 3. Slope Field
+      if (diffEq) {
+        drawSlopeField();
+      }
+
+      // 4. Euler's Method Overlay (if toggled)
+      if (diffEq && document.getElementById('eulerToggle').checked) {
+        drawEulerApproximation();
+      }
+
+      // 5. Particular Solution Curve (RK4)
+      if (diffEq) {
+        drawParticularSolution();
+      }
+
+      // 6. Initial Condition Marker & Coordinate Label
+      drawInitialPointMarker();
+    }
+
+    function drawGridAndAxes() {
+      const origin = worldToScreen(0, 0);
+      const axesColor = document.getElementById('axesColor').value;
+      const gridColor = hexToRgba(axesColor, 0.16);
+
+      function getNiceStep(span) {
+        const rough = span / 9;
+        const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+        const norm = rough / mag;
+        if (norm < 1.5) return 1 * mag;
+        if (norm < 3.5) return 2 * mag;
+        if (norm < 7.5) return 5 * mag;
+        return 10 * mag;
+      }
+
+      const stepX = getNiceStep(view.xMax - view.xMin);
+      const stepY = getNiceStep(view.yMax - view.yMin);
+
+      ctx.lineWidth = 1;
+
+      // Vertical Grid Lines
+      const startX = Math.floor(view.xMin / stepX) * stepX;
+      for (let wx = startX; wx <= view.xMax; wx += stepX) {
+        const sx = worldToScreen(wx, 0).x;
+        ctx.strokeStyle = Math.abs(wx) < 1e-7 ? axesColor : gridColor;
+        ctx.beginPath();
+        ctx.moveTo(sx, 0);
+        ctx.lineTo(sx, canvas.clientHeight);
+        ctx.stroke();
+
+        // X-axis tick labels
+        if (Math.abs(wx) > 1e-7) {
+          ctx.fillStyle = axesColor;
+          ctx.font = `${axisFontSize}px sans-serif`;
+          ctx.textAlign = 'center';
+          const yPos = Math.min(Math.max(origin.y + axisFontSize + 5, axisFontSize + 4), canvas.clientHeight - 6);
+          ctx.fillText(Number(wx.toFixed(3)), sx, yPos);
+        }
+      }
+
+      // Horizontal Grid Lines
+      const startY = Math.floor(view.yMin / stepY) * stepY;
+      for (let wy = startY; wy <= view.yMax; wy += stepY) {
+        const sy = worldToScreen(0, wy).y;
+        ctx.strokeStyle = Math.abs(wy) < 1e-7 ? axesColor : gridColor;
+        ctx.beginPath();
+        ctx.moveTo(0, sy);
+        ctx.lineTo(canvas.clientWidth, sy);
+        ctx.stroke();
+
+        // Y-axis tick labels
+        if (Math.abs(wy) > 1e-7) {
+          ctx.fillStyle = axesColor;
+          ctx.font = `${axisFontSize}px sans-serif`;
+          ctx.textAlign = 'right';
+          const xPos = Math.min(Math.max(origin.x - 7, axisFontSize * 2.8), canvas.clientWidth - 6);
+          ctx.fillText(Number(wy.toFixed(3)), xPos, sy + (axisFontSize * 0.35));
+        }
+      }
+
+      // Main X Axis Line (Thicker and more prominent)
+      const isXActive = (hoverAxis === 'x' || isDraggingXAxis);
+      ctx.lineWidth = isXActive ? 4.0 : 2.6;
+      ctx.strokeStyle = isXActive ? 'var(--axis-highlight)' : axesColor;
+      ctx.beginPath();
+      ctx.moveTo(0, origin.y);
+      ctx.lineTo(canvas.clientWidth, origin.y);
+      ctx.stroke();
+
+      // Main Y Axis Line (Thicker and more prominent)
+      const isYActive = (hoverAxis === 'y' || isDraggingYAxis);
+      ctx.lineWidth = isYActive ? 4.0 : 2.6;
+      ctx.strokeStyle = isYActive ? 'var(--axis-highlight)' : axesColor;
+      ctx.beginPath();
+      ctx.moveTo(origin.x, 0);
+      ctx.lineTo(origin.x, canvas.clientHeight);
+      ctx.stroke();
+
+      // Axis Titles ('x' and 'y')
+      const titleFont = `bold ${Math.round(axisFontSize * 1.25)}px sans-serif`;
+      ctx.font = titleFont;
+      ctx.fillStyle = isXActive ? 'var(--axis-highlight)' : axesColor;
+      ctx.textAlign = 'right';
+      ctx.fillText('x', canvas.clientWidth - 8, Math.min(Math.max(origin.y - 7, axisFontSize + 4), canvas.clientHeight - 6));
+
+      ctx.fillStyle = isYActive ? 'var(--axis-highlight)' : axesColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('y', Math.min(Math.max(origin.x + 8, 8), canvas.clientWidth - 20), Math.max(axisFontSize + 4, 18));
+
+      // Origin zero label
+      ctx.font = `${axisFontSize}px sans-serif`;
+      ctx.fillStyle = axesColor;
+      ctx.textAlign = 'right';
+      ctx.fillText('0', origin.x - 6, origin.y + axisFontSize + 3);
+    }
+
+    function drawSlopeField() {
+      const fieldColor = document.getElementById('fieldColor').value;
+      ctx.strokeStyle = fieldColor;
+      ctx.lineWidth = 1.6;
+      ctx.lineCap = 'round';
+
+      // Dynamic intervals to fill entire visible viewport
+      const targetSpacingPx = Math.max(22, 50 * (20 / baseGridIntervals));
+      const intervalsX = Math.max(6, Math.round(canvas.clientWidth / targetSpacingPx));
+      const intervalsY = Math.max(6, Math.round(canvas.clientHeight / targetSpacingPx));
+
+      const dxWorld = (view.xMax - view.xMin) / intervalsX;
+      const dyWorld = (view.yMax - view.yMin) / intervalsY;
+
+      const segLenPx = targetSpacingPx * 0.58 * segLengthFactor;
+      const halfLen = segLenPx / 2;
+
+      ctx.beginPath();
+
+      for (let i = 0; i <= intervalsX; i++) {
+        const wx = view.xMin + i * dxWorld;
+        for (let j = 0; j <= intervalsY; j++) {
+          const wy = view.yMin + j * dyWorld;
+
+          const slope = diffEq(wx, wy, params.a, params.b, params.c, params.d, params.c);
+          if (isNaN(slope)) continue;
+
+          const screenPt = worldToScreen(wx, wy);
+
+          let dirX, dirY;
+          if (!isFinite(slope) || Math.abs(slope) > 1e6) {
+            dirX = 0;
+            dirY = 1;
+          } else {
+            dirX = 1;
+            dirY = -slope;
+            const len = Math.hypot(dirX, dirY);
+            dirX /= len;
+            dirY /= len;
+          }
+
+          ctx.moveTo(screenPt.x - dirX * halfLen, screenPt.y - dirY * halfLen);
+          ctx.lineTo(screenPt.x + dirX * halfLen, screenPt.y + dirY * halfLen);
+        }
+      }
+      ctx.stroke();
+    }
+
+    function drawParticularSolution() {
+      const solColor = document.getElementById('solColor').value;
+      const ptsForward = integrateRK4(initialPoint.x, initialPoint.y, true);
+      const ptsBackward = integrateRK4(initialPoint.x, initialPoint.y, false);
+
+      ctx.strokeStyle = solColor;
+      ctx.lineWidth = 2.8;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+
+      // Forward segment
+      ctx.beginPath();
+      let started = false;
+      for (const p of ptsForward) {
+        const s = worldToScreen(p.x, p.y);
+        if (!started) { ctx.moveTo(s.x, s.y); started = true; }
+        else { ctx.lineTo(s.x, s.y); }
+      }
+      ctx.stroke();
+
+      // Backward segment
+      ctx.beginPath();
+      started = false;
+      for (const p of ptsBackward) {
+        const s = worldToScreen(p.x, p.y);
+        if (!started) { ctx.moveTo(s.x, s.y); started = true; }
+        else { ctx.lineTo(s.x, s.y); }
+      }
+      ctx.stroke();
+    }
+
+    function drawEulerApproximation() {
+      const eulerColor = document.getElementById('eulerColor').value;
+      const h = parseFloat(document.getElementById('eulerH').value);
+      const steps = parseInt(document.getElementById('eulerSteps').value);
+
+      const fwd = calculateEuler(initialPoint.x, initialPoint.y, h, steps, true);
+      const bwd = calculateEuler(initialPoint.x, initialPoint.y, h, steps, false);
+
+      ctx.strokeStyle = eulerColor;
+      ctx.lineWidth = 2.0;
+      ctx.setLineDash([5, 4]);
+
+      [fwd, bwd].forEach(pts => {
+        ctx.beginPath();
+        pts.forEach((p, idx) => {
+          const s = worldToScreen(p.x, p.y);
+          if (idx === 0) ctx.moveTo(s.x, s.y);
+          else ctx.lineTo(s.x, s.y);
+        });
+        ctx.stroke();
+      });
+
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = eulerColor;
+      [...fwd, ...bwd].forEach(p => {
+        const s = worldToScreen(p.x, p.y);
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function drawInitialPointMarker() {
+      const s = worldToScreen(initialPoint.x, initialPoint.y);
+      const solColor = document.getElementById('solColor').value;
+      const bgColor = document.getElementById('bgColor').value;
+
+      // Outer glow
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 11, 0, Math.PI * 2);
+      ctx.fillStyle = hexToRgba(solColor, 0.25);
+      ctx.fill();
+
+      // Outer border ring
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 6.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      // Core point
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = solColor;
+      ctx.fill();
+
+      // On-Canvas Coordinates Label Pill
+      if (document.getElementById('togglePointLabel').checked) {
+        const labelText = `(${initialPoint.x.toFixed(2)}, ${initialPoint.y.toFixed(2)})`;
+        ctx.font = `bold ${axisFontSize}px -apple-system, sans-serif`;
+        const textWidth = ctx.measureText(labelText).width;
+        const paddingX = 6;
+        const pillHeight = axisFontSize + 8;
+        const pillWidth = textWidth + paddingX * 2;
+        const pillX = s.x + 12;
+        const pillY = s.y - pillHeight / 2;
+
+        // Background box
+        ctx.fillStyle = bgColor === '#ffffff' ? 'rgba(240, 243, 246, 0.92)' : 'rgba(25, 30, 42, 0.88)';
+        ctx.strokeStyle = solColor;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.roundRect(pillX, pillY, pillWidth, pillHeight, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        // Label text
+        ctx.fillStyle = bgColor === '#ffffff' ? '#111827' : '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.fillText(labelText, pillX + paddingX, pillY + pillHeight - 5);
+      }
+    }
+
+    /* ==========================================================================
+       Interaction & Events
+       ========================================================================== */
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    function detectAxisHover(mouseX, mouseY) {
+      const origin = worldToScreen(0, 0);
+      const distToOrigin = Math.hypot(mouseX - origin.x, mouseY - origin.y);
+      if (distToOrigin < 24) return null;
+
+      const distToXAxis = Math.abs(mouseY - origin.y);
+      const distToYAxis = Math.abs(mouseX - origin.x);
+
+      if (distToXAxis <= 15 && origin.y >= -20 && origin.y <= canvas.clientHeight + 20) {
+        return 'x';
+      }
+      if (distToYAxis <= 15 && origin.x >= -20 && origin.x <= canvas.clientWidth + 20) {
+        return 'y';
+      }
+      return null;
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      lastMousePos = { x: mouseX, y: mouseY };
+      dragStartPos = { x: mouseX, y: mouseY };
+      initialDragView = { ...view };
+
+      if (e.button === 2) {
+        // Right click: Pan
+        isRightDragging = true;
+        canvas.style.cursor = 'grabbing';
+      } else if (e.button === 0) {
+        // Left click: Check Axis Rescaling first
+        const axis = detectAxisHover(mouseX, mouseY);
+        if (axis === 'x') {
+          isDraggingXAxis = true;
+          canvas.style.cursor = 'ew-resize';
+        } else if (axis === 'y') {
+          isDraggingYAxis = true;
+          canvas.style.cursor = 'ns-resize';
+        } else {
+          isLeftDraggingPoint = true;
+          updateInitialPointFromScreen(mouseX, mouseY);
+        }
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      hoverWorldPos = screenToWorld(mouseX, mouseY);
+
+      // HUD Coordinate Readout
+      document.getElementById('hudCoords').textContent = 
+        `x: ${hoverWorldPos.x.toFixed(2)}, y: ${hoverWorldPos.y.toFixed(2)}`;
+      
+      if (diffEq) {
+        const slope = diffEq(hoverWorldPos.x, hoverWorldPos.y, params.a, params.b, params.c, params.d, params.c);
+        document.getElementById('hudSlope').textContent = 
+          isNaN(slope) ? 'Undefined' : (!isFinite(slope) ? '±∞ (Vertical)' : slope.toFixed(4));
+      }
+
+      // Pan
+      if (isRightDragging) {
+        const dx = mouseX - lastMousePos.x;
+        const dy = mouseY - lastMousePos.y;
+
+        const worldW = view.xMax - view.xMin;
+        const worldH = view.yMax - view.yMin;
+
+        view.xMin -= (dx / canvas.clientWidth) * worldW;
+        view.xMax -= (dx / canvas.clientWidth) * worldW;
+        view.yMin += (dy / canvas.clientHeight) * worldH;
+        view.yMax += (dy / canvas.clientHeight) * worldH;
+
+        lastMousePos = { x: mouseX, y: mouseY };
+        draw();
+        return;
+      }
+
+      // Rescale X Axis
+      if (isDraggingXAxis) {
+        const origin = worldToScreen(0, 0);
+        const startDist = dragStartPos.x - origin.x;
+        const curDist = mouseX - origin.x;
+
+        if (Math.abs(startDist) > 15 && (startDist * curDist > 0)) {
+          const ratio = Math.max(0.05, Math.min(20, curDist / startDist));
+          const initialSpan = initialDragView.xMax - initialDragView.xMin;
+          const newSpan = initialSpan / ratio;
+          view.xMin = 0 - (origin.x / canvas.clientWidth) * newSpan;
+          view.xMax = view.xMin + newSpan;
+        } else {
+          const dx = mouseX - lastMousePos.x;
+          const factor = Math.exp(-dx * 0.006);
+          const center = (view.xMin + view.xMax) / 2;
+          const half = ((view.xMax - view.xMin) / 2) * factor;
+          view.xMin = center - half;
+          view.xMax = center + half;
+          lastMousePos = { x: mouseX, y: mouseY };
+        }
+        draw();
+        return;
+      }
+
+      // Rescale Y Axis
+      if (isDraggingYAxis) {
+        const origin = worldToScreen(0, 0);
+        const startDist = origin.y - dragStartPos.y;
+        const curDist = origin.y - mouseY;
+
+        if (Math.abs(startDist) > 15 && (startDist * curDist > 0)) {
+          const ratio = Math.max(0.05, Math.min(20, curDist / startDist));
+          const initialSpan = initialDragView.yMax - initialDragView.yMin;
+          const newSpan = initialSpan / ratio;
+          view.yMin = 0 - ((canvas.clientHeight - origin.y) / canvas.clientHeight) * newSpan;
+          view.yMax = view.yMin + newSpan;
+        } else {
+          const dy = mouseY - lastMousePos.y;
+          const factor = Math.exp(dy * 0.006);
+          const center = (view.yMin + view.yMax) / 2;
+          const half = ((view.yMax - view.yMin) / 2) * factor;
+          view.yMin = center - half;
+          view.yMax = center + half;
+          lastMousePos = { x: mouseX, y: mouseY };
+        }
+        draw();
+        return;
+      }
+
+      // Drag Point
+      if (isLeftDraggingPoint) {
+        updateInitialPointFromScreen(mouseX, mouseY);
+        return;
+      }
+
+      // Hover Detection
+      const axis = detectAxisHover(mouseX, mouseY);
+      if (axis !== hoverAxis) {
+        hoverAxis = axis;
+        draw();
+      }
+
+      if (hoverAxis === 'x') {
+        canvas.style.cursor = 'ew-resize';
+      } else if (hoverAxis === 'y') {
+        canvas.style.cursor = 'ns-resize';
+      } else {
+        canvas.style.cursor = 'crosshair';
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      isRightDragging = false;
+      isLeftDraggingPoint = false;
+      isDraggingXAxis = false;
+      isDraggingYAxis = false;
+      hoverAxis = null;
+      canvas.style.cursor = 'crosshair';
+      draw();
+    });
+
+    // Zooming around cursor
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const cursorWorld = screenToWorld(mouseX, mouseY);
+      const zoomFactor = e.deltaY < 0 ? 0.90 : 1.11;
+
+      view.xMin = cursorWorld.x + (view.xMin - cursorWorld.x) * zoomFactor;
+      view.xMax = cursorWorld.x + (view.xMax - cursorWorld.x) * zoomFactor;
+      view.yMin = cursorWorld.y + (view.yMin - cursorWorld.y) * zoomFactor;
+      view.yMax = cursorWorld.y + (view.yMax - cursorWorld.y) * zoomFactor;
+
+      draw();
+    }, { passive: false });
+
+    function updateInitialPointFromScreen(sx, sy) {
+      const worldPos = screenToWorld(sx, sy);
+      initialPoint.x = worldPos.x;
+      initialPoint.y = worldPos.y;
+
+      document.getElementById('paramX0').value = initialPoint.x;
+      document.getElementById('valX0').textContent = initialPoint.x.toFixed(2);
+      document.getElementById('paramY0').value = initialPoint.y;
+      document.getElementById('valY0').textContent = initialPoint.y.toFixed(2);
+
+      document.getElementById('hudInit').textContent = 
+        `(${initialPoint.x.toFixed(2)}, ${initialPoint.y.toFixed(2)})`;
+
+      draw();
+    }
+
+    /* ==========================================================================
+       Sidebar UI Controls & Bindings
+       ========================================================================== */
+    const eqInput = document.getElementById('eqInput');
+    const errorText = document.getElementById('errorText');
+
+    function updateEquation() {
+      const compiled = compileMathExpression(eqInput.value);
+      if (compiled) {
+        diffEq = compiled;
+        errorText.style.display = 'none';
+        draw();
+      } else {
+        errorText.style.display = 'block';
+      }
+    }
+
+    eqInput.addEventListener('input', updateEquation);
+
+    document.getElementById('presetSelect').addEventListener('change', (e) => {
+      eqInput.value = e.target.value;
+      updateEquation();
+    });
+
+    // Parameters a, b, c / k, d
+    ['a', 'b', 'c', 'd'].forEach(p => {
+      const slider = document.getElementById(`param${p.toUpperCase()}`);
+      const valLabel = document.getElementById(`val${p.toUpperCase()}`);
+      slider.addEventListener('input', (e) => {
+        params[p] = parseFloat(e.target.value);
+        valLabel.textContent = params[p].toFixed(1);
+        draw();
+      });
+    });
+
+    // Initial Point Sliders
+    document.getElementById('paramX0').addEventListener('input', (e) => {
+      initialPoint.x = parseFloat(e.target.value);
+      document.getElementById('valX0').textContent = initialPoint.x.toFixed(2);
+      document.getElementById('hudInit').textContent = `(${initialPoint.x.toFixed(2)}, ${initialPoint.y.toFixed(2)})`;
+      draw();
+    });
+
+    document.getElementById('paramY0').addEventListener('input', (e) => {
+      initialPoint.y = parseFloat(e.target.value);
+      document.getElementById('valY0').textContent = initialPoint.y.toFixed(2);
+      document.getElementById('hudInit').textContent = `(${initialPoint.x.toFixed(2)}, ${initialPoint.y.toFixed(2)})`;
+      draw();
+    });
+
+    // Font Size Slider
+    document.getElementById('fontSizeSlider').addEventListener('input', (e) => {
+      axisFontSize = parseInt(e.target.value);
+      document.getElementById('valFontSize').textContent = `${axisFontSize}px`;
+      draw();
+    });
+
+    document.getElementById('togglePointLabel').addEventListener('change', draw);
+
+    // Resolution & Segment Length
+    document.getElementById('gridRes').addEventListener('input', (e) => {
+      baseGridIntervals = parseInt(e.target.value);
+      document.getElementById('valRes').textContent = baseGridIntervals;
+      draw();
+    });
+
+    document.getElementById('segLen').addEventListener('input', (e) => {
+      segLengthFactor = parseFloat(e.target.value);
+      document.getElementById('valLen').textContent = segLengthFactor.toFixed(1);
+      draw();
+    });
+
+    // Euler Method Controls
+    const eulerToggle = document.getElementById('eulerToggle');
+    const eulerSettings = document.getElementById('eulerSettings');
+    eulerToggle.addEventListener('change', (e) => {
+      eulerSettings.style.display = e.target.checked ? 'flex' : 'none';
+      draw();
+    });
+
+    document.getElementById('eulerH').addEventListener('input', (e) => {
+      document.getElementById('valEulerH').textContent = parseFloat(e.target.value).toFixed(2);
+      draw();
+    });
+
+    document.getElementById('eulerSteps').addEventListener('input', (e) => {
+      document.getElementById('valEulerSteps').textContent = e.target.value;
+      draw();
+    });
+
+    // Color Pickers
+    ['bgColor', 'axesColor', 'fieldColor', 'solColor', 'eulerColor'].forEach(id => {
+      document.getElementById(id).addEventListener('input', draw);
+    });
+
+    // Two-Way Toggle: "Exam Paper Mode" <-> "Restore Previous Theme"
+    const btnExamTheme = document.getElementById('btnExamTheme');
+    btnExamTheme.addEventListener('click', () => {
+      if (!isExamMode) {
+        // Save current color scheme prior to switching
+        savedColorScheme = {
+          bg: document.getElementById('bgColor').value,
+          axes: document.getElementById('axesColor').value,
+          field: document.getElementById('fieldColor').value,
+          sol: document.getElementById('solColor').value,
+          euler: document.getElementById('eulerColor').value
+        };
+
+        // Apply exam paper high-contrast light scheme
+        document.getElementById('bgColor').value = '#ffffff';
+        document.getElementById('axesColor').value = '#111827';
+        document.getElementById('fieldColor').value = '#475569';
+        document.getElementById('solColor').value = '#0284c7';
+        document.getElementById('eulerColor').value = '#d97706';
+
+        isExamMode = true;
+        btnExamTheme.textContent = 'Restore Previous Theme';
+        btnExamTheme.classList.add('btn-exam-active');
+        draw();
+        showToast('Switched to Exam Paper Mode (Light)!');
+      } else {
+        // Restore original colors
+        if (savedColorScheme) {
+          document.getElementById('bgColor').value = savedColorScheme.bg;
+          document.getElementById('axesColor').value = savedColorScheme.axes;
+          document.getElementById('fieldColor').value = savedColorScheme.field;
+          document.getElementById('solColor').value = savedColorScheme.sol;
+          document.getElementById('eulerColor').value = savedColorScheme.euler;
+        } else {
+          // Default dark theme fallback
+          document.getElementById('bgColor').value = '#131722';
+          document.getElementById('axesColor').value = '#ffffff';
+          document.getElementById('fieldColor').value = '#526075';
+          document.getElementById('solColor').value = '#00e676';
+          document.getElementById('eulerColor').value = '#ffab00';
+        }
+
+        isExamMode = false;
+        btnExamTheme.textContent = 'Exam Paper Mode (White)';
+        btnExamTheme.classList.remove('btn-exam-active');
+        draw();
+        showToast('Restored previous color scheme!');
+      }
+    });
+
+    // Reset View Button
+    document.getElementById('btnResetView').addEventListener('click', () => {
+      view = { xMin: -5.0, xMax: 5.0, yMin: -5.0, yMax: 5.0 };
+      draw();
+    });
+
+    // Fullscreen Toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
+    document.getElementById('btnFullscreenTop').addEventListener('click', toggleFullscreen);
+
+    document.addEventListener('fullscreenchange', () => {
+      const isFS = !!document.fullscreenElement;
+      document.getElementById('btnFullscreen').innerHTML = isFS ? '🗗 Restore View' : '⛶ Fullscreen';
+      document.getElementById('fsIcon').textContent = isFS ? '🗗' : '⛶';
+      setTimeout(resizeCanvas, 50);
+    });
+
+    /* ==========================================================================
+       Screen Capture & Clipboard Export
+       ========================================================================== */
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Direct Copy to Clipboard
+    document.getElementById('btnCopyClipboard').addEventListener('click', async () => {
+      try {
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({ 'image/png': blob })
+            ]);
+            showToast('✔ Image copied to clipboard! Ready to paste (Ctrl+V)');
+          } catch (clipErr) {
+            // Fallback for browsers with restricted clipboard permissions
+            downloadCanvasImage();
+            showToast('✔ Snapshot saved as PNG image file.');
+          }
+        }, 'image/png');
+      } catch (err) {
+        downloadCanvasImage();
+      }
+    });
+
+    // Download PNG File
+    function downloadCanvasImage() {
+      const link = document.createElement('a');
+      link.download = `slope_field_${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('✔ Graph downloaded as PNG file.');
+    }
+
+    document.getElementById('btnDownloadPng').addEventListener('click', downloadCanvasImage);
+
+    /* ==========================================================================
+       Initialization
+       ========================================================================== */
+    updateEquation();
+    resizeCanvas();
+  </script>
+</body>
+</html>
