@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
     rel="stylesheet"
   />
   <style>
@@ -42,7 +42,7 @@
     }
 
     .topbar-inner {
-      max-width: 1152px;
+      max-width: 1280px;
       margin: 0 auto;
       padding: 16px 24px;
       display: flex;
@@ -62,30 +62,37 @@
     }
 
     .container {
-      max-width: 1152px;
+      max-width: 1280px;
       margin: 0 auto;
       padding: 40px 24px 64px;
     }
 
     .hero {
-      margin-bottom: 28px;
+      margin-bottom: 36px;
+      text-align: center;
     }
 
     .hero h1 {
-      margin: 0 0 10px;
+      margin: 0 auto 12px;
       font-family: "Plus Jakarta Sans", sans-serif;
-      font-size: clamp(1.75rem, 3vw, 2.5rem);
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      line-height: 1.15;
+      font-size: clamp(1.6rem, 2.9vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
       color: var(--text-primary);
     }
 
     .hero p {
-      margin: 0;
+      margin: 0 auto;
       color: var(--text-secondary);
       font-size: 1rem;
-      max-width: 62ch;
+    }
+
+    @media (min-width: 1024px) {
+      .hero h1,
+      .hero p {
+        white-space: nowrap;
+      }
     }
 
     .toolbar {
@@ -150,8 +157,20 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(1, minmax(0, 1fr));
       gap: 20px;
+    }
+
+    @media (min-width: 640px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
     }
 
     .tile {
@@ -242,7 +261,7 @@
     }
 
     .footer-inner {
-      max-width: 1152px;
+      max-width: 1280px;
       margin: 0 auto;
       padding: 20px 24px;
       font-size: 0.8125rem;
@@ -266,8 +285,8 @@
 
   <main class="container">
     <section class="hero">
-      <h1>Interactive Math and Physics Simulators</h1>
-      <p>Select any simulator tile below to launch the interactive application live.</p>
+      <h1>Interactive Maths and Physics Simulators</h1>
+      <p>Select a simulator tile below to launch the interactive application live on your browser.</p>
     </section>
 
     <div class="toolbar">
@@ -450,6 +469,22 @@
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
     "color": "indigo"
+  },
+  {
+    "name": "Placeholder 9",
+    "file": "Placeholder 9.html",
+    "category": "Placeholders",
+    "summary": "Reserved tile for a future interactive math or physics simulator.",
+    "motif": "placeholder",
+    "color": "cyan"
+  },
+  {
+    "name": "Placeholder 10",
+    "file": "Placeholder 10.html",
+    "category": "Placeholders",
+    "summary": "Reserved tile for a future interactive math or physics simulator.",
+    "motif": "placeholder",
+    "color": "pink"
   }
 ];
 
