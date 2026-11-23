@@ -208,7 +208,7 @@
       box-shadow: 0 0 6px var(--parabola-color);
     }
 
-    /* Calculus: Tangent & Normal Feature Card */
+    /* Feature Cards */
     .feature-card {
       background: var(--bg-card);
       border-radius: 8px;
@@ -543,7 +543,7 @@
         </div>
       </div>
 
-      <!-- Calculus Feature: Tangent & Normal with Synchronous Draggable Point -->
+      <!-- Calculus Feature: Tangent & Normal with Draggable Point P -->
       <div class="feature-card tangent-card">
         <button id="btnToggleTangent" class="toggle-feature-btn tangent-btn" onclick="toggleTangentFeature()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20L20 4"/><path d="M4 4l16 16"/></svg>
@@ -687,7 +687,6 @@
   <!-- Interactive Canvas Viewport -->
   <main id="canvas-container">
     <div class="canvas-hud">
-      <!-- 1:1 Square Scale Restore Button -->
       <button class="hud-btn active-square" id="btnSquareScale" onclick="setSquareScale()" title="Restore scale to 1:1 so tangent and normal lines form an undistorted 90° right angle">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h6v6"/></svg>
         Restore 1:1 Scale (True 90°)
@@ -721,6 +720,10 @@
     let x0 = 3.0;
     let isDraggingP = false;
     let isHoveringP = false;
+    let dragPStartClientX = 0;
+    let dragPStartClientY = 0;
+    let dragPStartX0 = 3.0;
+    let dragHasMoved = false;
 
     // Second Graph: Straight line state
     let lineSecEnabled = false;
@@ -892,11 +895,12 @@
       return 2 * a * (x - h);
     }
 
-    function screenToMath(px, py) {
+    // Canvas-relative coordinate transforms
+    function screenToMath(canvasX, canvasY) {
       const rect = canvas.getBoundingClientRect();
       return {
-        x: viewXMin + ((px - rect.left) / rect.width) * (viewXMax - viewXMin),
-        y: viewYMax - ((py - rect.top) / rect.height) * (viewYMax - viewYMin)
+        x: viewXMin + (canvasX / rect.width) * (viewXMax - viewXMin),
+        y: viewYMax - (canvasY / rect.height) * (viewYMax - viewYMin)
       };
     }
 
@@ -991,7 +995,14 @@
 
     function updateCalculusData() {
       if (!tangentEnabled) return;
-      document.getElementById('sliderX0').value = x0;
+      const sliderX0 = document.getElementById('sliderX0');
+      if (sliderX0) {
+        sliderX0.min = Math.min(-10, Math.floor(viewXMin));
+        sliderX0.max = Math.max(10, Math.ceil(viewXMax));
+        if (document.activeElement !== sliderX0) {
+          sliderX0.value = x0;
+        }
+      }
       document.getElementById('valX0').innerText = `x₀ = ${x0.toFixed(2)}`;
 
       const y0 = evaluateY(x0);
@@ -1015,7 +1026,7 @@
       }
     }
 
-    // Straight Line (Secant / Linear Intersect) Feature
+    // Straight Line Feature
     function toggleLineSecFeature() {
       lineSecEnabled = !lineSecEnabled;
       const btn = document.getElementById('btnToggleLineSec');
@@ -1037,7 +1048,6 @@
       document.getElementById('valLineC').innerText = cSec.toFixed(2);
       document.getElementById('dispLineSecEq').innerText = formatLinearEq(mSec, cSec);
 
-      // Solve ax^2 + (b - mSec)x + (c - cSec) = 0
       const A = a;
       const B = b - mSec;
       const C = c - cSec;
@@ -1347,7 +1357,6 @@
       const pTR = mathToScreen(xR, yTR);
       ctx.beginPath();
       ctx.moveTo(pTL.x, pTL.y);
-      ctx.lineTo(pTL.x, pTL.y);
       ctx.lineTo(pTR.x, pTR.y);
       ctx.stroke();
 
@@ -1386,12 +1395,14 @@
         ctx.arc(ptP.x, ptP.y, radius * 2.2, 0, 2 * Math.PI);
         ctx.fillStyle = 'rgba(16, 185, 129, 0.35)';
         ctx.shadowColor = activeTheme.tangent;
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 16;
         ctx.fill();
 
         ctx.strokeStyle = activeTheme.tangent;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
         ctx.stroke();
+        ctx.setLineDash([]);
       } else {
         ctx.beginPath();
         ctx.arc(ptP.x, ptP.y, radius * 1.6, 0, 2 * Math.PI);
@@ -1424,7 +1435,7 @@
       ctx.fillText(pLabel, lx, ly);
 
       if (isHoveringP && !isDraggingP) {
-        const hintText = 'Drag Point';
+        const hintText = 'Drag Point P';
         ctx.font = `bold 10px sans-serif`;
         const hintW = ctx.measureText(hintText).width;
         ctx.fillStyle = activeTheme.textMain;
@@ -1666,7 +1677,7 @@
       if (!tangentEnabled) return false;
       const y0 = evaluateY(x0);
       const ptP = mathToScreen(x0, y0);
-      return Math.hypot(mouseX - ptP.x, mouseY - ptP.y) <= 22; // Comfortable hit area
+      return Math.hypot(mouseX - ptP.x, mouseY - ptP.y) <= 24;
     }
 
     canvas.addEventListener('mousedown', (e) => {
@@ -1674,9 +1685,13 @@
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // 1. Left-click on draggable point P
+      // 1. Left-click on point P (Store origin position; do not displace on mere click)
       if (e.button === 0 && isNearPointP(mouseX, mouseY)) {
         isDraggingP = true;
+        dragPStartClientX = e.clientX;
+        dragPStartClientY = e.clientY;
+        dragPStartX0 = x0;
+        dragHasMoved = false;
         canvas.style.cursor = 'grabbing';
         e.preventDefault();
         draw();
@@ -1718,9 +1733,20 @@
       mouseMathX = m.x;
       mouseMathY = m.y;
 
-      // Point P Dragging with slider synchronisation
+      // Point P Dragging with relative displacement and synchronisation
       if (isDraggingP) {
-        x0 = Math.max(-25, Math.min(25, mouseMathX));
+        const distMoved = Math.hypot(e.clientX - dragPStartClientX, e.clientY - dragPStartClientY);
+        if (!dragHasMoved && distMoved < 3) {
+          return;
+        }
+        dragHasMoved = true;
+        canvas.style.cursor = 'grabbing';
+
+        const dxPx = e.clientX - dragPStartClientX;
+        const xSpan = viewXMax - viewXMin;
+        const dxMath = (dxPx / rect.width) * xSpan;
+
+        x0 = Math.max(viewXMin, Math.min(viewXMax, dragPStartX0 + dxMath));
         updateCalculusData();
         draw();
         return;
@@ -1751,7 +1777,7 @@
         return;
       }
 
-      // Pan
+      // Viewport Pan
       if (isRightDragging) {
         const dxPx = e.clientX - dragStartX;
         const dyPx = e.clientY - dragStartY;
