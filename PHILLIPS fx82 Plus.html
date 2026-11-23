@@ -432,6 +432,7 @@
     .dpad-left { left: 4px; top: 20px; width: 28px; height: 32px; }
     .dpad-right { right: 4px; top: 20px; width: 28px; height: 32px; }
 
+    /* Uniform Key Cells for Perfect Grid Alignment */
     .key-cell {
       display: flex;
       flex-direction: column;
@@ -795,11 +796,21 @@
         </div>
       </div>
 
-      <!-- Main Grid (4 Rows x 5 Columns) -->
+      <!-- Main Grid (4 Rows x 5 Columns) - Every cell uniformly aligned -->
       <div class="main-grid">
-        <div class="key-cell"><button class="calc-btn btn-num" id="k-7">7</button></div>
-        <div class="key-cell"><button class="calc-btn btn-num" id="k-8">8</button></div>
-        <div class="key-cell"><button class="calc-btn btn-num" id="k-9">9</button></div>
+        <!-- Row 1: 7, 8, 9, DEL, AC -->
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-7">7</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-8">8</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-9">9</button>
+        </div>
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">INS</span><span></span></div>
           <button class="calc-btn btn-del" id="k-del">DEL</button>
@@ -809,9 +820,19 @@
           <button class="calc-btn btn-del" id="k-ac">AC</button>
         </div>
 
-        <div class="key-cell"><button class="calc-btn btn-num" id="k-4">4</button></div>
-        <div class="key-cell"><button class="calc-btn btn-num" id="k-5">5</button></div>
-        <div class="key-cell"><button class="calc-btn btn-num" id="k-6">6</button></div>
+        <!-- Row 2: 4, 5, 6, *, / -->
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-4">4</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-5">5</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-6">6</button>
+        </div>
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">nPr</span><span class="label-alpha">GCD</span></div>
           <button class="calc-btn btn-fun" id="k-mul">×</button>
@@ -821,12 +842,19 @@
           <button class="calc-btn btn-fun" id="k-div">÷</button>
         </div>
 
+        <!-- Row 3: 1, 2, 3, +, - (Fixed Alignment with Universal Spacers) -->
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">STAT</span><span></span></div>
           <button class="calc-btn btn-num" id="k-1">1</button>
         </div>
-        <div class="key-cell"><button class="calc-btn btn-num" id="k-2">2</button></div>
-        <div class="key-cell"><button class="calc-btn btn-num" id="k-3">3</button></div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-2">2</button>
+        </div>
+        <div class="key-cell">
+          <div class="key-labels"><span></span><span></span></div>
+          <button class="calc-btn btn-num" id="k-3">3</button>
+        </div>
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">Pol</span><span></span></div>
           <button class="calc-btn btn-fun" id="k-add">+</button>
@@ -836,6 +864,7 @@
           <button class="calc-btn btn-fun" id="k-sub">-</button>
         </div>
 
+        <!-- Row 4: 0, ., x10^x, Ans, = -->
         <div class="key-cell">
           <div class="key-labels"><span class="label-shift">Rnd</span><span></span></div>
           <button class="calc-btn btn-num" id="k-0">0</button>
@@ -1272,7 +1301,6 @@
       }
     }
 
-    // Trailing cursor if target list is empty
     if (treeList.length === 0 && isInsideActive && targetPath.length === currentPath.length) {
       html += `<span class="cursor"></span>`;
     }
@@ -1339,20 +1367,17 @@
     return s;
   }
 
-  // Insert character or stacked fraction into current active box
   function insertTokenAtCursor(token) {
     const list = getActiveContext(state.tree, state.cursorPath);
     if (!list) return;
 
     if (token === 'FRAC') {
-      // Create nested fraction
       const newFrac = { type: 'frac', num: [], den: [] };
       let insertIdx = list.length;
       list.push(newFrac);
       state.cursorPath.push({ idx: insertIdx, part: 'num' });
       state.cursorCharPos = 0;
     } else {
-      // String token
       if (list.length === 0 || typeof list[list.length - 1] !== 'string') {
         list.push(token);
         state.cursorCharPos = token.length;
@@ -1405,7 +1430,6 @@
       let res = Function(`return (${code})`)();
       state.lastResult = res;
 
-      // Add full visual representation to history tape
       const renderedHistoryHtml = renderTreeToHTML(state.tree, [], [], false);
       state.calcHistory.push({
         tree: JSON.parse(JSON.stringify(state.tree)),
@@ -1422,7 +1446,7 @@
 
   function renderHistoryTape() {
     historyTape.innerHTML = '';
-    state.calcHistory.forEach((item, idx) => {
+    state.calcHistory.forEach((item) => {
       const el = document.createElement('div');
       el.className = 'hist-item';
       el.title = 'Click to replay calculation';
@@ -1441,9 +1465,7 @@
     historyTape.scrollTop = historyTape.scrollHeight;
   }
 
-  // ==========================================
-  // SINGLE CENTRAL COMMAND ROUTER (DEBOUNCE PROTECTED)
-  // ==========================================
+  // Central Router with Debounce Lock
   let isExecutingCommand = false;
 
   function routeCommand(cmd) {
@@ -1512,7 +1534,6 @@
     }
   }
 
-  // Key mappings table
   const keyActionMap = {
     'k-0': () => routeCommand('CHAR:0'),
     'k-1': () => routeCommand('CHAR:1'),
@@ -1553,7 +1574,6 @@
     'k-neg': () => routeCommand('CHAR:(-)')
   };
 
-  // Direct Button Click Delegation (Only runs once per click)
   function attachKeyListeners(rootElem) {
     for (let id in keyActionMap) {
       const btn = rootElem.querySelector('#' + id);
@@ -1568,7 +1588,7 @@
   }
   attachKeyListeners(document);
 
-  // Global Physical Keyboard Support (Scoped only to Main Window)
+  // Global Physical Keyboard Support
   window.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     if (e.key >= '0' && e.key <= '9') { e.preventDefault(); routeCommand('CHAR:' + e.key); }
@@ -1585,9 +1605,7 @@
     else if (e.key === 'ArrowRight') { e.preventDefault(); routeCommand('NAV_RIGHT'); }
   });
 
-  // ==========================================
   // POP-OUT SCREEN WINDOW
-  // ==========================================
   document.getElementById('btnPopScreen').addEventListener('click', () => {
     if (popoutScreenWin && !popoutScreenWin.closed) {
       popoutScreenWin.focus();
@@ -1641,9 +1659,7 @@
     });
   });
 
-  // ==========================================
-  // POP-OUT KEYBOARD WINDOW (DOUBLE-REGISTRATION PREVENTED)
-  // ==========================================
+  // POP-OUT KEYBOARD WINDOW
   document.getElementById('btnPopKeypad').addEventListener('click', () => {
     if (popoutKeypadWin && !popoutKeypadWin.closed) {
       popoutKeypadWin.focus();
@@ -1698,10 +1714,8 @@
       popoutKeypadWin.addEventListener('resize', scalePopoutKeypad);
       scalePopoutKeypad();
 
-      // Attach clicks exclusively to popout doc without bubbling to main window
       attachKeyListeners(popDoc);
 
-      // Chassis & Key color palettes in pop-out window
       popDoc.addEventListener('contextmenu', (e) => {
         const isButton = e.target.closest('.calc-btn, .dpad-btn');
         if (isButton) {
