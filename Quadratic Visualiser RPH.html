@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VCE Math Methods — Quadratic Function, Tangent & Normal Explorer</title>
+  <title>VCE Math Methods — Quadratic Calculus, Tangents & Intersections</title>
   <style>
     :root {
       --bg-main: #0b1120;
@@ -16,6 +16,8 @@
       --parabola-color: #38bdf8;
       --tangent-color: #10b981;
       --normal-color: #f43f5e;
+      --line2-color: #fbbf24;
+      --intersect-color: #a855f7;
       --axis-color: rgba(255, 255, 255, 0.65);
       --axis-glow: #38bdf8;
       --grid-color: rgba(255, 255, 255, 0.06);
@@ -207,10 +209,8 @@
     }
 
     /* Calculus: Tangent & Normal Feature Card */
-    .tangent-card {
+    .feature-card {
       background: var(--bg-card);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      border-left: 4px solid var(--tangent-color);
       border-radius: 8px;
       padding: 12px 14px;
       display: flex;
@@ -218,12 +218,19 @@
       gap: 8px;
     }
 
-    .toggle-tangent-btn {
+    .feature-card.tangent-card {
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-left: 4px solid var(--tangent-color);
+    }
+
+    .feature-card.line-card {
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-left: 4px solid var(--line2-color);
+    }
+
+    .toggle-feature-btn {
       width: 100%;
       padding: 8px 12px;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid var(--tangent-color);
-      color: var(--tangent-color);
       border-radius: 6px;
       font-size: 0.82rem;
       font-weight: 700;
@@ -235,13 +242,29 @@
       transition: all 0.2s;
     }
 
-    .toggle-tangent-btn.active {
+    .tangent-btn {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--tangent-color);
+      color: var(--tangent-color);
+    }
+    .tangent-btn.active {
       background: var(--tangent-color);
       color: #ffffff;
       box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
     }
 
-    .tangent-data {
+    .line-btn {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid var(--line2-color);
+      color: var(--line2-color);
+    }
+    .line-btn.active {
+      background: var(--line2-color);
+      color: #0b1120;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+    }
+
+    .feature-data {
       display: grid;
       grid-template-columns: auto 1fr;
       row-gap: 5px;
@@ -252,7 +275,7 @@
       padding-top: 8px;
     }
 
-    .tangent-data strong {
+    .feature-data strong {
       color: var(--text-main);
       font-family: monospace;
     }
@@ -520,21 +543,21 @@
         </div>
       </div>
 
-      <!-- Calculus Feature: Tangent & Normal with Draggable Point -->
-      <div class="tangent-card">
-        <button id="btnToggleTangent" class="toggle-tangent-btn" onclick="toggleTangentFeature()">
+      <!-- Calculus Feature: Tangent & Normal with Synchronous Draggable Point -->
+      <div class="feature-card tangent-card">
+        <button id="btnToggleTangent" class="toggle-feature-btn tangent-btn" onclick="toggleTangentFeature()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20L20 4"/><path d="M4 4l16 16"/></svg>
           Enable Tangent &amp; Normal Point
         </button>
         <div id="tangentPanel" style="display: none; flex-direction: column; gap: 6px;">
           <div class="slider-row">
             <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px;">
-              <span>Drag point along curve (x₀)</span>
+              <span>Drag point P on curve or use slider</span>
               <strong id="valX0" style="color: var(--tangent-color); font-family: monospace;">x₀ = 3.00</strong>
             </div>
-            <input type="range" id="sliderX0" min="-10" max="10" step="0.1" value="3" oninput="updateX0FromSlider()">
+            <input type="range" id="sliderX0" min="-10" max="10" step="0.05" value="3" oninput="updateX0FromSlider()">
           </div>
-          <div class="tangent-data">
+          <div class="feature-data">
             <span>Contact Point P:</span>
             <strong id="dispPointP">(3.00, -3.00)</strong>
 
@@ -552,6 +575,43 @@
 
             <span>Orthogonal Check:</span>
             <strong id="dispOrthogonal">mₜ · mₙ = -1.00 (90°)</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Second Graph: Straight Line Intersection Feature -->
+      <div class="feature-card line-card">
+        <button id="btnToggleLineSec" class="toggle-feature-btn line-btn" onclick="toggleLineSecFeature()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="21" x2="21" y2="3"/></svg>
+          Enable Straight Line (y = mx + c)
+        </button>
+        <div id="lineSecPanel" style="display: none; flex-direction: column; gap: 8px;">
+          <div style="font-family: 'Cambria Math', serif; font-size: 1.05rem; font-style: italic; text-align: center; color: var(--line2-color);" id="dispLineSecEq">
+            y = 1.00x + 2.00
+          </div>
+          <div class="slider-row">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+              <span>Gradient (m)</span>
+              <strong id="valLineM" style="color: var(--line2-color); font-family: monospace;">1.00</strong>
+            </div>
+            <input type="range" id="sliderLineM" min="-6" max="6" step="0.1" value="1" oninput="updateLineSecParams()">
+          </div>
+          <div class="slider-row">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+              <span>y-intercept (c)</span>
+              <strong id="valLineC" style="color: var(--line2-color); font-family: monospace;">2.00</strong>
+            </div>
+            <input type="range" id="sliderLineC" min="-15" max="15" step="0.25" value="2" oninput="updateLineSecParams()">
+          </div>
+          <div class="feature-data">
+            <span>Discriminant (Δ):</span>
+            <strong id="dispLineDelta">25.00</strong>
+
+            <span>Intersection Status:</span>
+            <strong id="dispLineStatus" style="color: var(--intersect-color);">2 Intersections</strong>
+
+            <span>Intersection Coordinates:</span>
+            <strong id="dispLineCoords" style="color: var(--intersect-color); font-size: 0.72rem;">(-1.00, 1.00), (6.00, 8.00)</strong>
           </div>
         </div>
       </div>
@@ -643,23 +703,29 @@
 
     <div class="instructions-hint">
       <span>📐 Scale: <b id="aspectBadge" class="aspect-indicator aspect-true">1:1 (True 90°)</b></span>
+      <span>🖱️ Click &amp; drag point P along curve</span>
       <span>↔ / ↕ Hover &amp; drag axis to rescale</span>
-      <span>🖱️ Right-click drag: Pan</span>
       <span>⚙️ Scroll: Zoom</span>
     </div>
   </main>
 
   <script>
-    // State variables
+    // Parabola state
     let mode = 'turningPoint';
-    let a = 1, h = 2, k = -4; // Parabola parameters
+    let a = 1, h = 2, k = -4;
     let b = -4, c = 0;
     let fontScale = 1.0;
 
-    // Tangent & Normal state
+    // Tangent & Normal point P state
     let tangentEnabled = false;
-    let x0 = 3.0; // Contact point x-coordinate
-    let isDraggingP = false; // Dragging point P
+    let x0 = 3.0;
+    let isDraggingP = false;
+    let isHoveringP = false;
+
+    // Second Graph: Straight line state
+    let lineSecEnabled = false;
+    let mSec = 1.0;
+    let cSec = 2.0;
 
     // View boundaries
     let viewXMin = -10;
@@ -668,7 +734,7 @@
     let viewYMax = 10;
 
     // Axis dragging & Panning states
-    let hoveredAxis = null; // 'x', 'y', or null
+    let hoveredAxis = null;
     let isAxisDragging = false;
     let draggedAxis = null;
     let isRightDragging = false;
@@ -679,84 +745,84 @@
     const canvas = document.getElementById('graphCanvas');
     const ctx = canvas.getContext('2d');
 
-    // 11 Comprehensive Color Schemes (including Exam Mode)
+    // 11 Themes
     const THEMES = {
       midnight: {
         bgMain: '#0b1120', bgPanel: 'rgba(17, 24, 39, 0.88)', bgCard: 'rgba(30, 41, 59, 0.75)',
         border: 'rgba(255, 255, 255, 0.1)', textMain: '#f8fafc', textMuted: '#94a3b8',
         canvasBg: 'radial-gradient(circle at 50% 50%, #172554 0%, #0b1120 85%)',
-        parabola: '#38bdf8', tangent: '#10b981', normal: '#f43f5e', axis: 'rgba(255, 255, 255, 0.65)',
-        axisGlow: '#38bdf8', grid: 'rgba(255, 255, 255, 0.06)', pillBg: 'rgba(15, 23, 42, 0.92)'
+        parabola: '#38bdf8', tangent: '#10b981', normal: '#f43f5e', lineSec: '#fbbf24', intersect: '#c084fc',
+        axis: 'rgba(255, 255, 255, 0.65)', axisGlow: '#38bdf8', grid: 'rgba(255, 255, 255, 0.06)', pillBg: 'rgba(15, 23, 42, 0.92)'
       },
       exam: {
         bgMain: '#f1f5f9', bgPanel: '#ffffff', bgCard: '#f8fafc',
         border: '#cbd5e1', textMain: '#0f172a', textMuted: '#475569',
         canvasBg: '#ffffff',
-        parabola: '#000000', tangent: '#2563eb', normal: '#dc2626', axis: '#000000',
-        axisGlow: '#64748b', grid: '#e2e8f0', pillBg: '#ffffff'
+        parabola: '#000000', tangent: '#2563eb', normal: '#dc2626', lineSec: '#4b5563', intersect: '#000000',
+        axis: '#000000', axisGlow: '#64748b', grid: '#e2e8f0', pillBg: '#ffffff'
       },
       blueprint: {
         bgMain: '#071626', bgPanel: 'rgba(10, 37, 64, 0.9)', bgCard: 'rgba(15, 52, 90, 0.75)',
         border: 'rgba(56, 189, 248, 0.25)', textMain: '#e0f2fe', textMuted: '#7dd3fc',
         canvasBg: '#09233b',
-        parabola: '#ffffff', tangent: '#facc15', normal: '#fb923c', axis: '#38bdf8',
-        axisGlow: '#38bdf8', grid: 'rgba(56, 189, 248, 0.15)', pillBg: '#0b2e4f'
+        parabola: '#ffffff', tangent: '#facc15', normal: '#fb923c', lineSec: '#38bdf8', intersect: '#ec4899',
+        axis: '#38bdf8', axisGlow: '#38bdf8', grid: 'rgba(56, 189, 248, 0.15)', pillBg: '#0b2e4f'
       },
       solarizedDark: {
         bgMain: '#00212b', bgPanel: 'rgba(7, 54, 66, 0.9)', bgCard: 'rgba(0, 43, 54, 0.75)',
         border: 'rgba(147, 161, 161, 0.2)', textMain: '#93a1a1', textMuted: '#586e75',
         canvasBg: '#002b36',
-        parabola: '#2aa198', tangent: '#859900', normal: '#cb4b16', axis: '#839496',
-        axisGlow: '#2aa198', grid: 'rgba(88, 110, 117, 0.18)', pillBg: '#073642'
+        parabola: '#2aa198', tangent: '#859900', normal: '#cb4b16', lineSec: '#b58900', intersect: '#6c71c4',
+        axis: '#839496', axisGlow: '#2aa198', grid: 'rgba(88, 110, 117, 0.18)', pillBg: '#073642'
       },
       solarizedLight: {
         bgMain: '#eee8d5', bgPanel: '#fdf6e3', bgCard: '#efe9d7',
         border: '#d33682', textMain: '#073642', textMuted: '#657b83',
         canvasBg: '#fdf6e3',
-        parabola: '#268bd2', tangent: '#859900', normal: '#d33682', axis: '#586e75',
-        axisGlow: '#268bd2', grid: '#e4dcbe', pillBg: '#fdf6e3'
+        parabola: '#268bd2', tangent: '#859900', normal: '#d33682', lineSec: '#b58900', intersect: '#6c71c4',
+        axis: '#586e75', axisGlow: '#268bd2', grid: '#e4dcbe', pillBg: '#fdf6e3'
       },
       dracula: {
         bgMain: '#1e1f29', bgPanel: 'rgba(40, 42, 54, 0.92)', bgCard: 'rgba(68, 71, 90, 0.7)',
         border: 'rgba(189, 147, 249, 0.25)', textMain: '#f8f8f2', textMuted: '#6272a4',
         canvasBg: '#282a36',
-        parabola: '#ff79c6', tangent: '#50fa7b', normal: '#ffb86c', axis: '#bd93f9',
-        axisGlow: '#ff79c6', grid: 'rgba(98, 114, 164, 0.18)', pillBg: '#21222c'
+        parabola: '#ff79c6', tangent: '#50fa7b', normal: '#ffb86c', lineSec: '#f1fa8c', intersect: '#bd93f9',
+        axis: '#bd93f9', axisGlow: '#ff79c6', grid: 'rgba(98, 114, 164, 0.18)', pillBg: '#21222c'
       },
       nord: {
         bgMain: '#242933', bgPanel: 'rgba(46, 52, 64, 0.92)', bgCard: 'rgba(59, 66, 82, 0.75)',
         border: 'rgba(136, 192, 208, 0.25)', textMain: '#eceff4', textMuted: '#d8dee9',
         canvasBg: '#2e3440',
-        parabola: '#88c0d0', tangent: '#a3be8c', normal: '#bf616a', axis: '#e5e9f0',
-        axisGlow: '#88c0d0', grid: 'rgba(76, 86, 106, 0.25)', pillBg: '#3b4252'
+        parabola: '#88c0d0', tangent: '#a3be8c', normal: '#bf616a', lineSec: '#ebcb8b', intersect: '#b48ead',
+        axis: '#e5e9f0', axisGlow: '#88c0d0', grid: 'rgba(76, 86, 106, 0.25)', pillBg: '#3b4252'
       },
       monokai: {
         bgMain: '#1e1f1c', bgPanel: 'rgba(39, 40, 34, 0.92)', bgCard: 'rgba(62, 61, 50, 0.75)',
         border: 'rgba(166, 226, 46, 0.25)', textMain: '#f8f8f2', textMuted: '#75715e',
         canvasBg: '#272822',
-        parabola: '#a6e22e', tangent: '#66d9ef', normal: '#fd971f', axis: '#f8f8f2',
-        axisGlow: '#a6e22e', grid: 'rgba(117, 113, 94, 0.22)', pillBg: '#1e1f1c'
+        parabola: '#a6e22e', tangent: '#66d9ef', normal: '#fd971f', lineSec: '#e6db74', intersect: '#ae81ff',
+        axis: '#f8f8f2', axisGlow: '#a6e22e', grid: 'rgba(117, 113, 94, 0.22)', pillBg: '#1e1f1c'
       },
       botanical: {
         bgMain: '#041d16', bgPanel: 'rgba(6, 40, 30, 0.92)', bgCard: 'rgba(11, 61, 46, 0.75)',
         border: 'rgba(52, 211, 153, 0.25)', textMain: '#ecfdf5', textMuted: '#6ee7b7',
         canvasBg: '#06281e',
-        parabola: '#10b981', tangent: '#a3e635', normal: '#f59e0b', axis: '#34d399',
-        axisGlow: '#10b981', grid: 'rgba(52, 211, 153, 0.12)', pillBg: '#042118'
+        parabola: '#10b981', tangent: '#a3e635', normal: '#f59e0b', lineSec: '#38bdf8', intersect: '#e879f9',
+        axis: '#34d399', axisGlow: '#10b981', grid: 'rgba(52, 211, 153, 0.12)', pillBg: '#042118'
       },
       crimson: {
         bgMain: '#170617', bgPanel: 'rgba(35, 10, 35, 0.92)', bgCard: 'rgba(55, 18, 55, 0.75)',
         border: 'rgba(244, 63, 94, 0.25)', textMain: '#fff1f2', textMuted: '#fda4af',
         canvasBg: '#1f091f',
-        parabola: '#f97316', tangent: '#facc15', normal: '#ec4899', axis: '#fda4af',
-        axisGlow: '#f43f5e', grid: 'rgba(244, 63, 94, 0.12)', pillBg: '#2a0a2a'
+        parabola: '#f97316', tangent: '#facc15', normal: '#ec4899', lineSec: '#38bdf8', intersect: '#e11d48',
+        axis: '#fda4af', axisGlow: '#f43f5e', grid: 'rgba(244, 63, 94, 0.12)', pillBg: '#2a0a2a'
       },
       oceanic: {
         bgMain: '#02131d', bgPanel: 'rgba(3, 25, 38, 0.92)', bgCard: 'rgba(7, 44, 66, 0.75)',
         border: 'rgba(72, 202, 228, 0.25)', textMain: '#caf0f8', textMuted: '#90e0ef',
         canvasBg: '#031926',
-        parabola: '#48cae4', tangent: '#00f5d4', normal: '#f77f00', axis: '#90e0ef',
-        axisGlow: '#48cae4', grid: 'rgba(72, 202, 228, 0.12)', pillBg: '#052233'
+        parabola: '#48cae4', tangent: '#00f5d4', normal: '#f77f00', lineSec: '#ffd166', intersect: '#ef476f',
+        axis: '#90e0ef', axisGlow: '#48cae4', grid: 'rgba(72, 202, 228, 0.12)', pillBg: '#052233'
       }
     };
 
@@ -765,8 +831,9 @@
     function init() {
       resizeCanvas();
       syncTPtoEXP();
-      setSquareScale(); // Default to 1:1 scale
+      setSquareScale();
       updateUI();
+      updateLineSecParams();
       window.addEventListener('resize', () => {
         resizeCanvas();
         setSquareScale();
@@ -782,7 +849,6 @@
       ctx.scale(dpr, dpr);
     }
 
-    // Restore 1:1 Square Scale ensuring right angles are true 90°
     function setSquareScale() {
       const rect = canvas.getBoundingClientRect();
       const W = rect.width;
@@ -828,11 +894,9 @@
 
     function screenToMath(px, py) {
       const rect = canvas.getBoundingClientRect();
-      const xRatio = (px - rect.left) / rect.width;
-      const yRatio = (py - rect.top) / rect.height;
       return {
-        x: viewXMin + xRatio * (viewXMax - viewXMin),
-        y: viewYMax - yRatio * (viewYMax - viewYMin)
+        x: viewXMin + ((px - rect.left) / rect.width) * (viewXMax - viewXMin),
+        y: viewYMax - ((py - rect.top) / rect.height) * (viewYMax - viewYMin)
       };
     }
 
@@ -844,7 +908,6 @@
       };
     }
 
-    // Mode Switching
     function setMode(newMode) {
       mode = newMode;
       document.getElementById('btnModeTP').classList.toggle('active', mode === 'turningPoint');
@@ -885,6 +948,7 @@
       if (a === 0) a = 0.01;
       syncTPtoEXP();
       updateUI();
+      updateLineSecParams();
       draw();
     }
 
@@ -895,6 +959,7 @@
       if (a === 0) a = 0.01;
       syncEXPtoTP();
       updateUI();
+      updateLineSecParams();
       draw();
     }
 
@@ -904,7 +969,7 @@
       draw();
     }
 
-    // Toggle Tangent and Normal Feature
+    // Tangent & Normal Feature
     function toggleTangentFeature() {
       tangentEnabled = !tangentEnabled;
       const btn = document.getElementById('btnToggleTangent');
@@ -934,11 +999,9 @@
       document.getElementById('dispPointP').innerText = `(${x0.toFixed(2)}, ${y0.toFixed(2)})`;
       document.getElementById('dispGradT').innerText = mT.toFixed(2);
 
-      // Tangent: y - y0 = mT*(x - x0) -> y = mT*x + (y0 - mT*x0)
       const cT = y0 - mT * x0;
       document.getElementById('dispEqT').innerText = formatLinearEq(mT, cT);
 
-      // Normal: mN = -1 / mT
       if (Math.abs(mT) < 0.0001) {
         document.getElementById('dispGradN').innerText = 'Undefined (Vertical)';
         document.getElementById('dispEqN').innerText = `x = ${x0.toFixed(2)}`;
@@ -952,12 +1015,87 @@
       }
     }
 
-    function formatLinearEq(m, cVal) {
+    // Straight Line (Secant / Linear Intersect) Feature
+    function toggleLineSecFeature() {
+      lineSecEnabled = !lineSecEnabled;
+      const btn = document.getElementById('btnToggleLineSec');
+      const panel = document.getElementById('lineSecPanel');
+      btn.classList.toggle('active', lineSecEnabled);
+      panel.style.display = lineSecEnabled ? 'flex' : 'none';
+      btn.innerHTML = lineSecEnabled 
+        ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg> Straight Line Active`
+        : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="21" x2="21" y2="3"/></svg> Enable Straight Line (y = mx + c)`;
+      updateLineSecParams();
+      draw();
+    }
+
+    function updateLineSecParams() {
+      mSec = parseFloat(document.getElementById('sliderLineM').value);
+      cSec = parseFloat(document.getElementById('sliderLineC').value);
+
+      document.getElementById('valLineM').innerText = mSec.toFixed(2);
+      document.getElementById('valLineC').innerText = cSec.toFixed(2);
+      document.getElementById('dispLineSecEq').innerText = formatLinearEq(mSec, cSec);
+
+      // Solve ax^2 + (b - mSec)x + (c - cSec) = 0
+      const A = a;
+      const B = b - mSec;
+      const C = c - cSec;
+      const deltaSec = B * B - 4 * A * C;
+
+      document.getElementById('dispLineDelta').innerText = deltaSec.toFixed(2);
+      const statusElem = document.getElementById('dispLineStatus');
+      const coordsElem = document.getElementById('dispLineCoords');
+
+      if (deltaSec > 0.0001) {
+        statusElem.innerText = '2 Intersections (Secant)';
+        statusElem.style.color = activeTheme.intersect;
+        const x1 = (-B + Math.sqrt(deltaSec)) / (2 * A);
+        const x2 = (-B - Math.sqrt(deltaSec)) / (2 * A);
+        const y1 = mSec * x1 + cSec;
+        const y2 = mSec * x2 + cSec;
+        coordsElem.innerText = `(${Math.min(x1, x2).toFixed(2)}, ${(Math.min(x1, x2) === x1 ? y1 : y2).toFixed(2)}), (${Math.max(x1, x2).toFixed(2)}, ${(Math.max(x1, x2) === x1 ? y1 : y2).toFixed(2)})`;
+      } else if (Math.abs(deltaSec) <= 0.0001) {
+        statusElem.innerText = '1 Tangent Intersection';
+        statusElem.style.color = '#34d399';
+        const xTan = -B / (2 * A);
+        const yTan = mSec * xTan + cSec;
+        coordsElem.innerText = `Tangent: (${xTan.toFixed(2)}, ${yTan.toFixed(2)})`;
+      } else {
+        statusElem.innerText = 'No Real Intersections';
+        statusElem.style.color = '#f43f5e';
+        coordsElem.innerText = 'None in ℝ (Line does not intersect parabola)';
+      }
+
+      draw();
+    }
+
+    function calculateLineIntersections() {
+      const A = a;
+      const B = b - mSec;
+      const C = c - cSec;
+      const deltaSec = B * B - 4 * A * C;
+
+      if (deltaSec > 0.0001) {
+        const x1 = (-B + Math.sqrt(deltaSec)) / (2 * A);
+        const x2 = (-B - Math.sqrt(deltaSec)) / (2 * A);
+        return [
+          { x: x1, y: mSec * x1 + cSec },
+          { x: x2, y: mSec * x2 + cSec }
+        ];
+      } else if (Math.abs(deltaSec) <= 0.0001) {
+        const xTan = -B / (2 * A);
+        return [{ x: xTan, y: mSec * xTan + cSec }];
+      }
+      return [];
+    }
+
+    function formatLinearEq(mVal, cVal) {
       let str = "y = ";
-      if (Math.abs(m) < 0.001) return `y = ${cVal.toFixed(2)}`;
-      if (m === 1) str += "x";
-      else if (m === -1) str += "-x";
-      else str += `${m.toFixed(2)}x`;
+      if (Math.abs(mVal) < 0.001) return `y = ${cVal.toFixed(2)}`;
+      if (mVal === 1) str += "x";
+      else if (mVal === -1) str += "-x";
+      else str += `${mVal.toFixed(2)}x`;
 
       if (Math.abs(cVal) > 0.001) {
         str += (cVal > 0 ? " + " : " - ") + Math.abs(cVal).toFixed(2);
@@ -965,7 +1103,6 @@
       return str;
     }
 
-    // Theme Switcher Engine
     function changeTheme(themeKey) {
       activeTheme = THEMES[themeKey] || THEMES.midnight;
       const root = document.documentElement;
@@ -980,6 +1117,8 @@
       root.style.setProperty('--parabola-color', activeTheme.parabola);
       root.style.setProperty('--tangent-color', activeTheme.tangent);
       root.style.setProperty('--normal-color', activeTheme.normal);
+      root.style.setProperty('--line2-color', activeTheme.lineSec);
+      root.style.setProperty('--intersect-color', activeTheme.intersect);
       root.style.setProperty('--axis-color', activeTheme.axis);
       root.style.setProperty('--axis-glow', activeTheme.axisGlow);
       root.style.setProperty('--grid-color', activeTheme.grid);
@@ -1080,7 +1219,7 @@
       updateCalculusData();
     }
 
-    // --- Rendering Engine ---
+    // --- Canvas Rendering ---
     function draw() {
       const rect = canvas.getBoundingClientRect();
       const width = rect.width;
@@ -1134,6 +1273,12 @@
       ctx.stroke();
       ctx.restore();
 
+      // Second Graph: Straight Line & Intersections
+      if (lineSecEnabled) {
+        drawStraightLine(width, height);
+        drawLineIntersections();
+      }
+
       // Tangent and Normal Lines & Draggable Point P
       if (tangentEnabled) {
         drawTangentAndNormal(width, height);
@@ -1161,13 +1306,37 @@
       }
     }
 
-    // Draw Tangent, Normal, Perpendicular Box, and Contact Handle P
+    function drawStraightLine(width, height) {
+      const xL = viewXMin, xR = viewXMax;
+      const yL = mSec * xL + cSec;
+      const yR = mSec * xR + cSec;
+      const pL = mathToScreen(xL, yL);
+      const pR = mathToScreen(xR, yR);
+
+      ctx.save();
+      ctx.strokeStyle = activeTheme.lineSec;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(pL.x, pL.y);
+      ctx.lineTo(pR.x, pR.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawLineIntersections() {
+      const pts = calculateLineIntersections();
+      pts.forEach((pt, index) => {
+        const label = `Int ${pts.length > 1 ? index + 1 : ''}: (${pt.x.toFixed(2)}, ${pt.y.toFixed(2)})`;
+        drawKeyPoint(pt.x, pt.y, activeTheme.intersect, label, true);
+      });
+    }
+
     function drawTangentAndNormal(width, height) {
       const y0 = evaluateY(x0);
       const mT = evaluateDerivative(x0);
       const ptP = mathToScreen(x0, y0);
 
-      // 1. Draw Tangent Line
+      // Tangent Line
       ctx.save();
       ctx.strokeStyle = activeTheme.tangent;
       ctx.lineWidth = 2.4;
@@ -1178,16 +1347,16 @@
       const pTR = mathToScreen(xR, yTR);
       ctx.beginPath();
       ctx.moveTo(pTL.x, pTL.y);
+      ctx.lineTo(pTL.x, pTL.y);
       ctx.lineTo(pTR.x, pTR.y);
       ctx.stroke();
 
-      // 2. Draw Normal Line
+      // Normal Line
       ctx.strokeStyle = activeTheme.normal;
       ctx.lineWidth = 2.2;
       ctx.setLineDash([7, 5]);
 
       if (Math.abs(mT) < 0.0001) {
-        // Vertical normal
         ctx.beginPath();
         ctx.moveTo(ptP.x, 0);
         ctx.lineTo(ptP.x, height);
@@ -1205,26 +1374,40 @@
       }
       ctx.restore();
 
-      // 3. Draw Perpendicular 90° Box at P
       drawRightAngleBox(ptP, mT);
 
-      // 4. Draggable Point P(x0, y0)
-      const radius = 8 * Math.min(fontScale, 2.0);
+      // Draggable Point P(x0, y0) with Hover & Drag Halo
+      const baseRadius = 8 * Math.min(fontScale, 2.0);
+      const radius = (isHoveringP || isDraggingP) ? baseRadius * 1.3 : baseRadius;
+
       ctx.save();
-      ctx.beginPath();
-      ctx.arc(ptP.x, ptP.y, radius * 1.6, 0, 2 * Math.PI);
-      ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
-      ctx.fill();
+      if (isHoveringP || isDraggingP) {
+        ctx.beginPath();
+        ctx.arc(ptP.x, ptP.y, radius * 2.2, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.35)';
+        ctx.shadowColor = activeTheme.tangent;
+        ctx.shadowBlur = 14;
+        ctx.fill();
+
+        ctx.strokeStyle = activeTheme.tangent;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(ptP.x, ptP.y, radius * 1.6, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+        ctx.fill();
+      }
 
       ctx.beginPath();
       ctx.arc(ptP.x, ptP.y, radius, 0, 2 * Math.PI);
       ctx.fillStyle = activeTheme.tangent;
       ctx.fill();
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = (isHoveringP || isDraggingP) ? 3 : 2;
       ctx.stroke();
 
-      // Label on P
+      // Point label
       const pLabel = `P (${x0.toFixed(2)}, ${y0.toFixed(2)})`;
       const fs = Math.round(11 * fontScale);
       ctx.font = `bold ${fs}px monospace`;
@@ -1239,18 +1422,25 @@
       ctx.strokeRect(lx - 4, ly - fs, tw + 8, fs + 6);
       ctx.fillStyle = activeTheme.tangent;
       ctx.fillText(pLabel, lx, ly);
+
+      if (isHoveringP && !isDraggingP) {
+        const hintText = 'Drag Point';
+        ctx.font = `bold 10px sans-serif`;
+        const hintW = ctx.measureText(hintText).width;
+        ctx.fillStyle = activeTheme.textMain;
+        ctx.fillText(hintText, ptP.x - hintW / 2, ptP.y + radius + 15);
+      }
       ctx.restore();
     }
 
     function drawRightAngleBox(ptP, mT) {
       const boxSize = 18;
-      let dirTx = 1, dirTy = -mT; // Screen Y is inverted
+      let dirTx = 1, dirTy = -mT;
       if (Math.abs(mT) < 0.0001) { dirTx = 1; dirTy = 0; }
       const lenT = Math.hypot(dirTx, dirTy);
       dirTx = (dirTx / lenT) * boxSize;
       dirTy = (dirTy / lenT) * boxSize;
 
-      // Normal is perpendicular in screen space: (-dirTy, dirTx)
       const dirNx = -dirTy;
       const dirNy = dirTx;
 
@@ -1278,7 +1468,6 @@
       ctx.font = `${tickSize}px monospace`;
       ctx.lineWidth = 1;
 
-      // Vertical Grid Lines
       const firstX = Math.floor(viewXMin / xStep) * xStep;
       for (let mx = firstX; mx <= viewXMax; mx += xStep) {
         if (Math.abs(mx) < 0.0001) continue;
@@ -1292,7 +1481,6 @@
         ctx.fillText(formatNum(mx), p.x - (tickSize * 0.7), labelY);
       }
 
-      // Horizontal Grid Lines
       const firstY = Math.floor(viewYMin / yStep) * yStep;
       for (let my = firstY; my <= viewYMax; my += yStep) {
         if (Math.abs(my) < 0.0001) continue;
@@ -1308,14 +1496,12 @@
       ctx.restore();
     }
 
-    // Main Axes with Hover & Drag Visual Highlights
     function drawMainAxes(width, height) {
       const origin = mathToScreen(0, 0);
       const isXActive = (hoveredAxis === 'x' || (isAxisDragging && draggedAxis === 'x'));
       const isYActive = (hoveredAxis === 'y' || (isAxisDragging && draggedAxis === 'y'));
 
       ctx.save();
-      // X-Axis
       ctx.lineWidth = isXActive ? 4.5 : 2;
       ctx.strokeStyle = isXActive ? activeTheme.axisGlow : activeTheme.axis;
       if (isXActive) {
@@ -1327,10 +1513,7 @@
       ctx.lineTo(width, origin.y);
       ctx.stroke();
 
-      // Reset shadow for Y-axis
       ctx.shadowBlur = 0;
-
-      // Y-Axis
       ctx.lineWidth = isYActive ? 4.5 : 2;
       ctx.strokeStyle = isYActive ? activeTheme.axisGlow : activeTheme.axis;
       if (isYActive) {
@@ -1343,14 +1526,12 @@
       ctx.stroke();
       ctx.restore();
 
-      // Axis Titles
       const axisTitleSize = Math.max(12, Math.round(12 * Math.sqrt(fontScale)));
       ctx.fillStyle = activeTheme.textMain;
       ctx.font = `bold ${axisTitleSize}px sans-serif`;
       ctx.fillText('x', width - 22, origin.y - 8);
       ctx.fillText('y', origin.x + 8, axisTitleSize + 8);
 
-      // Visual hints on hover
       if (isXActive && !isAxisDragging) {
         drawAxisHint(width / 2, origin.y - 14, '↔ Drag to rescale X-axis');
       } else if (isYActive && !isAxisDragging) {
@@ -1372,13 +1553,20 @@
       ctx.restore();
     }
 
-    function drawKeyPoint(mx, my, color, label) {
+    function drawKeyPoint(mx, my, color, label, isHighlight = false) {
       const pt = mathToScreen(mx, my);
       const rect = canvas.getBoundingClientRect();
-      if (pt.x < -40 || pt.x > rect.width + 40 || pt.y < -40 || pt.y > rect.height + 40) return;
+      if (pt.x < -60 || pt.x > rect.width + 60 || pt.y < -60 || pt.y > rect.height + 60) return;
 
-      const markerRadius = 5 * Math.min(fontScale, 2.2);
+      const markerRadius = (isHighlight ? 6.5 : 5) * Math.min(fontScale, 2.2);
       ctx.save();
+      if (isHighlight) {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, markerRadius * 1.8, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.25)';
+        ctx.fill();
+      }
+
       ctx.beginPath();
       ctx.arc(pt.x, pt.y, markerRadius, 0, 2 * Math.PI);
       ctx.fillStyle = color;
@@ -1460,7 +1648,7 @@
       return 5 * magnitude;
     }
 
-    // --- Interaction Engine: Draggable Point, Axis Rescaling & Panning ---
+    // --- Interaction Handlers: Hover, Left-Click Drag, Axis Scaling & Pan ---
     const AXIS_HOVER_THRESHOLD = 14;
 
     function checkAxisHover(mouseX, mouseY) {
@@ -1478,7 +1666,7 @@
       if (!tangentEnabled) return false;
       const y0 = evaluateY(x0);
       const ptP = mathToScreen(x0, y0);
-      return Math.hypot(mouseX - ptP.x, mouseY - ptP.y) <= 16;
+      return Math.hypot(mouseX - ptP.x, mouseY - ptP.y) <= 22; // Comfortable hit area
     }
 
     canvas.addEventListener('mousedown', (e) => {
@@ -1486,15 +1674,16 @@
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // 1. Check if clicking on draggable Point P
+      // 1. Left-click on draggable point P
       if (e.button === 0 && isNearPointP(mouseX, mouseY)) {
         isDraggingP = true;
         canvas.style.cursor = 'grabbing';
         e.preventDefault();
+        draw();
         return;
       }
 
-      // 2. Check if clicking on hovered axis to rescale
+      // 2. Left-click on axis to rescale
       if (e.button === 0 && hoveredAxis !== null) {
         isAxisDragging = true;
         draggedAxis = hoveredAxis;
@@ -1508,7 +1697,7 @@
         return;
       }
 
-      // 3. Right-click or middle-click: 2D Panning
+      // 3. Right-click or middle-click: Pan
       if (e.button === 2 || e.button === 1) {
         isRightDragging = true;
         dragStartX = e.clientX;
@@ -1525,11 +1714,11 @@
       const rect = canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
-      const m = screenToMath(e.clientX - rect.left, e.clientY - rect.top);
+      const m = screenToMath(mouseX, mouseY);
       mouseMathX = m.x;
       mouseMathY = m.y;
 
-      // Dragging Point P along the quadratic curve
+      // Point P Dragging with slider synchronisation
       if (isDraggingP) {
         x0 = Math.max(-25, Math.min(25, mouseMathX));
         updateCalculusData();
@@ -1537,7 +1726,7 @@
         return;
       }
 
-      // Dragging an axis to rescale it
+      // Axis Scaling
       if (isAxisDragging) {
         const origin = mathToScreen(0, 0);
         if (draggedAxis === 'x') {
@@ -1562,7 +1751,7 @@
         return;
       }
 
-      // Viewport Pan
+      // Pan
       if (isRightDragging) {
         const dxPx = e.clientX - dragStartX;
         const dyPx = e.clientY - dragStartY;
@@ -1577,24 +1766,31 @@
         return;
       }
 
-      // Cursor & Hover update
-      if (isNearPointP(mouseX, mouseY)) {
-        canvas.style.cursor = 'grab';
-      } else {
-        const prevHover = hoveredAxis;
-        hoveredAxis = checkAxisHover(mouseX, mouseY);
-        if (hoveredAxis === 'x') canvas.style.cursor = 'ew-resize';
-        else if (hoveredAxis === 'y') canvas.style.cursor = 'ns-resize';
-        else canvas.style.cursor = 'crosshair';
+      // Hover Point P detection
+      const prevHoverP = isHoveringP;
+      isHoveringP = isNearPointP(mouseX, mouseY);
 
-        if (prevHover !== hoveredAxis) draw();
+      if (isHoveringP) {
+        canvas.style.cursor = 'grab';
+        hoveredAxis = null;
+        if (!prevHoverP) draw();
+        return;
       }
+
+      // Axis hover detection
+      const prevHover = hoveredAxis;
+      hoveredAxis = checkAxisHover(mouseX, mouseY);
+      if (hoveredAxis === 'x') canvas.style.cursor = 'ew-resize';
+      else if (hoveredAxis === 'y') canvas.style.cursor = 'ns-resize';
+      else canvas.style.cursor = 'crosshair';
+
+      if (prevHover !== hoveredAxis || prevHoverP !== isHoveringP) draw();
     });
 
     window.addEventListener('mouseup', (e) => {
       if (isDraggingP) {
         isDraggingP = false;
-        canvas.style.cursor = 'crosshair';
+        canvas.style.cursor = isHoveringP ? 'grab' : 'crosshair';
         draw();
       }
       if (isAxisDragging) {
@@ -1634,7 +1830,6 @@
       }
     }
 
-    // Launch
     window.onload = init;
   </script>
 </body>
