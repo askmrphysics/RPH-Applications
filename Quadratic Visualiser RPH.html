@@ -543,7 +543,7 @@
         </div>
       </div>
 
-      <!-- Calculus Feature: Tangent & Normal with Draggable Point P -->
+      <!-- Calculus Feature: Tangent & Normal with Dual (x, y) Draggable Point P -->
       <div class="feature-card tangent-card">
         <button id="btnToggleTangent" class="toggle-feature-btn tangent-btn" onclick="toggleTangentFeature()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20L20 4"/><path d="M4 4l16 16"/></svg>
@@ -575,6 +575,9 @@
 
             <span>Orthogonal Check:</span>
             <strong id="dispOrthogonal">mₜ · mₙ = -1.00 (90°)</strong>
+
+            <span>Drag Mode Tracking:</span>
+            <strong id="dispTrackingMode" style="color: var(--parabola-color);">Y-Preference (&gt; 45°)</strong>
           </div>
         </div>
       </div>
@@ -616,7 +619,7 @@
         </div>
       </div>
 
-      <!-- Color Scheme / Themes Dropdown (11 Schemes including Exam Mode) -->
+      <!-- Color Scheme Dropdown -->
       <div class="slider-card">
         <div class="slider-header">
           <span class="slider-title">Color Scheme</span>
@@ -636,7 +639,7 @@
         </select>
       </div>
 
-      <!-- Font Zoom Slider (Snaps 0.5 intervals from 1.0x to 4.0x) -->
+      <!-- Font Zoom Slider -->
       <div class="slider-card">
         <div class="slider-header">
           <span class="slider-title">Coordinate Font Scale</span>
@@ -702,8 +705,8 @@
 
     <div class="instructions-hint">
       <span>📐 Scale: <b id="aspectBadge" class="aspect-indicator aspect-true">1:1 (True 90°)</b></span>
-      <span>🖱️ Click &amp; drag point P along curve</span>
-      <span>↔ / ↕ Hover &amp; drag axis to rescale</span>
+      <span>🖱️ Drag point P (auto X/Y gradient tracking)</span>
+      <span>↔ / ↕ Drag axis to rescale</span>
       <span>⚙️ Scroll: Zoom</span>
     </div>
   </main>
@@ -722,7 +725,8 @@
     let isHoveringP = false;
     let dragPStartClientX = 0;
     let dragPStartClientY = 0;
-    let dragPStartX0 = 3.0;
+    let dragPOffsetX = 0;
+    let dragPOffsetY = 0;
     let dragHasMoved = false;
 
     // Second Graph: Straight line state
@@ -748,7 +752,7 @@
     const canvas = document.getElementById('graphCanvas');
     const ctx = canvas.getContext('2d');
 
-    // 11 Themes
+    // 11 Color Themes
     const THEMES = {
       midnight: {
         bgMain: '#0b1120', bgPanel: 'rgba(17, 24, 39, 0.88)', bgCard: 'rgba(30, 41, 59, 0.75)',
@@ -895,7 +899,7 @@
       return 2 * a * (x - h);
     }
 
-    // Canvas-relative coordinate transforms
+    // Precise canvas-relative coordinate conversions
     function screenToMath(canvasX, canvasY) {
       const rect = canvas.getBoundingClientRect();
       return {
@@ -1012,6 +1016,22 @@
 
       const cT = y0 - mT * x0;
       document.getElementById('dispEqT').innerText = formatLinearEq(mT, cT);
+
+      // Tracking mode label
+      const rect = canvas.getBoundingClientRect();
+      const sx = rect.width / (viewXMax - viewXMin);
+      const sy = rect.height / (viewYMax - viewYMin);
+      const screenGradMag = Math.abs(mT) * (sy / sx);
+      const trackingElem = document.getElementById('dispTrackingMode');
+      if (trackingElem) {
+        if (screenGradMag > 1.0) {
+          trackingElem.innerText = `Y-Preference (${(Math.atan(screenGradMag) * 180 / Math.PI).toFixed(0)}° > 45°)`;
+          trackingElem.style.color = '#fbbf24';
+        } else {
+          trackingElem.innerText = `X-Preference (${(Math.atan(screenGradMag) * 180 / Math.PI).toFixed(0)}° ≤ 45°)`;
+          trackingElem.style.color = '#38bdf8';
+        }
+      }
 
       if (Math.abs(mT) < 0.0001) {
         document.getElementById('dispGradN').innerText = 'Undefined (Vertical)';
@@ -1385,7 +1405,7 @@
 
       drawRightAngleBox(ptP, mT);
 
-      // Draggable Point P(x0, y0) with Hover & Drag Halo
+      // Draggable Point P(x0, y0)
       const baseRadius = 8 * Math.min(fontScale, 2.0);
       const radius = (isHoveringP || isDraggingP) ? baseRadius * 1.3 : baseRadius;
 
@@ -1659,7 +1679,7 @@
       return 5 * magnitude;
     }
 
-    // --- Interaction Handlers: Hover, Left-Click Drag, Axis Scaling & Pan ---
+    // --- Interaction Handlers: Hover, Dual (X/Y) Tracking, Axis Scaling & Pan ---
     const AXIS_HOVER_THRESHOLD = 14;
 
     function checkAxisHover(mouseX, mouseY) {
@@ -1685,12 +1705,16 @@
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // 1. Left-click on point P (Store origin position; do not displace on mere click)
+      // 1. Left-click on point P: initialize dual (x, y) offset tracking
       if (e.button === 0 && isNearPointP(mouseX, mouseY)) {
         isDraggingP = true;
         dragPStartClientX = e.clientX;
         dragPStartClientY = e.clientY;
-        dragPStartX0 = x0;
+
+        const startMouseMath = screenToMath(mouseX, mouseY);
+        dragPOffsetX = startMouseMath.x - x0;
+        dragPOffsetY = startMouseMath.y - evaluateY(x0);
+
         dragHasMoved = false;
         canvas.style.cursor = 'grabbing';
         e.preventDefault();
@@ -1733,7 +1757,7 @@
       mouseMathX = m.x;
       mouseMathY = m.y;
 
-      // Point P Dragging with relative displacement and synchronisation
+      // Point P Dual (X, Y) Tracking with Gradient Magnitude Preference
       if (isDraggingP) {
         const distMoved = Math.hypot(e.clientX - dragPStartClientX, e.clientY - dragPStartClientY);
         if (!dragHasMoved && distMoved < 3) {
@@ -1742,11 +1766,44 @@
         dragHasMoved = true;
         canvas.style.cursor = 'grabbing';
 
-        const dxPx = e.clientX - dragPStartClientX;
-        const xSpan = viewXMax - viewXMin;
-        const dxMath = (dxPx / rect.width) * xSpan;
+        const sx = rect.width / (viewXMax - viewXMin);
+        const sy = rect.height / (viewYMax - viewYMin);
 
-        x0 = Math.max(viewXMin, Math.min(viewXMax, dragPStartX0 + dxMath));
+        // Effective cursor targets accounting for initial click offset
+        const targetX = m.x - dragPOffsetX;
+        const targetY = m.y - dragPOffsetY;
+
+        // 1. Candidate X based on horizontal tracking:
+        const xCandX = targetX;
+
+        // 2. Candidate X based on vertical tracking:
+        // Invert y = a(x - h)^2 + k  =>  (x - h)^2 = (y - k) / a
+        const radicand = Math.max(0, (targetY - k) / a);
+        const sqrtVal = Math.sqrt(radicand);
+        // Branch selection matches current branch relative to vertex h
+        const branchSign = (x0 >= h) ? 1 : -1;
+        const xCandY = h + branchSign * sqrtVal;
+
+        // 3. Calculate screen gradient magnitude:
+        // |m_screen| = |f'(x0)| * (sy / sx) = tan(theta)
+        const gradMathMag = Math.abs(evaluateDerivative(x0));
+        const screenGradMag = gradMathMag * (sy / sx);
+        const angleRad = Math.atan(screenGradMag);
+
+        // Preference weighting:
+        // Magnitude < 45 deg preferences X-coordinate (wX > 0.5)
+        // Magnitude > 45 deg preferences Y-coordinate (wY > 0.5)
+        const cosVal = Math.cos(angleRad);
+        const sinVal = Math.sin(angleRad);
+        const cos4 = Math.pow(cosVal, 4);
+        const sin4 = Math.pow(sinVal, 4);
+        const wX = cos4 / (cos4 + sin4);
+        const wY = sin4 / (cos4 + sin4);
+
+        // Blend candidates seamlessly
+        const blendedX = wX * xCandX + wY * xCandY;
+        x0 = Math.max(viewXMin, Math.min(viewXMax, blendedX));
+
         updateCalculusData();
         draw();
         return;
