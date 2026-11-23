@@ -397,10 +397,10 @@
        Required fields:
          - name:     Display title shown inside the tile
          - file:     Exact .html filename in the same GitHub folder
-         - category: "Calculus & DE" | "Vectors & 3D" | "Algebra & Trig" | "Utilities"
+         - category: "Calculus & DE" | "Vectors & 3D" | "Algebra & Trig" | "Physics" | "Utilities"
          - summary:  Short 1-line description
          - motif:    "parametric" | "quadratic" | "studio" | "vector" | "calculator"
-                     | "trig" | "selector" | "de" | "surface" | "integral" | "integral-lab" | "linear" | "placeholder"
+                     | "trig" | "selector" | "de" | "surface" | "integral" | "integral-lab" | "linear" | "projectile" | "placeholder"
          - color:    "blue" | "orange" | "purple" | "green" | "indigo"
                      | "yellow" | "teal" | "red" | "cyan" | "pink"
        ========================================================================= */
@@ -502,12 +502,20 @@
     "color": "yellow"
   },
   {
+    "name": "Projectile Lab Pro",
+    "file": "Projectile-Lab-Pro.html",
+    "category": "Physics",
+    "summary": "Year 12 VCE physics projectile simulator with drag, vectors, and strobing.",
+    "motif": "projectile",
+    "color": "green"
+  },
+  {
     "name": "Placeholder 1",
     "file": "Placeholder 1.html",
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "green"
+    "color": "purple"
   },
   {
     "name": "Placeholder 2",
@@ -515,7 +523,7 @@
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "purple"
+    "color": "orange"
   },
   {
     "name": "Placeholder 3",
@@ -523,7 +531,7 @@
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "orange"
+    "color": "teal"
   },
   {
     "name": "Placeholder 4",
@@ -531,7 +539,7 @@
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "teal"
+    "color": "red"
   },
   {
     "name": "Placeholder 5",
@@ -539,7 +547,7 @@
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "red"
+    "color": "indigo"
   },
   {
     "name": "Placeholder 6",
@@ -547,19 +555,11 @@
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "indigo"
+    "color": "cyan"
   },
   {
     "name": "Placeholder 7",
     "file": "Placeholder 7.html",
-    "category": "Placeholders",
-    "summary": "Reserved tile for a future interactive math or physics simulator.",
-    "motif": "placeholder",
-    "color": "cyan"
-  },
-  {
-    "name": "Placeholder 8",
-    "file": "Placeholder 8.html",
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
@@ -670,6 +670,7 @@
         de: '<svg viewBox="0 0 240 104"><path d="M 32 76 C 72 64, 96 34, 126 36 C 156 38, 178 66, 208 78" fill="none" stroke="' + p + '" stroke-width="2.5"/></svg>',
         "integral-lab": '<svg viewBox="0 0 240 104"><line x1="24" y1="78" x2="216" y2="78" stroke="' + g + '"/><rect x="64" y="58" width="20" height="20" fill="' + f + '" stroke="' + s + '"/><rect x="84" y="42" width="20" height="36" fill="' + f + '" stroke="' + s + '"/><rect x="104" y="30" width="20" height="48" fill="' + f + '" stroke="' + s + '"/><rect x="124" y="36" width="20" height="42" fill="' + f + '" stroke="' + s + '"/><ellipse cx="176" cy="54" rx="8" ry="24" fill="' + f + '" stroke="' + p + '" stroke-width="1.5"/><path d="M 48 68 C 76 58, 96 22, 124 26 C 150 30, 168 58, 196 64" fill="none" stroke="' + p + '" stroke-width="2.25"/></svg>',
         linear: '<svg viewBox="0 0 240 104"><line x1="20" y1="62" x2="220" y2="62" stroke="' + g + '"/><line x1="96" y1="12" x2="96" y2="92" stroke="' + g + '"/><line x1="44" y1="84" x2="196" y2="20" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/><line x1="44" y1="20" x2="196" y2="84" stroke="' + s + '" stroke-width="2" stroke-dasharray="5 3" stroke-linecap="round"/><circle cx="120" cy="52" r="7" fill="' + f + '" stroke="' + p + '" stroke-width="1.25"/><circle cx="120" cy="52" r="3.5" fill="' + p + '"/></svg>',
+        projectile: '<svg viewBox="0 0 240 104"><line x1="24" y1="80" x2="216" y2="80" stroke="' + g + '" stroke-width="1.5" stroke-linecap="round"/><line x1="120" y1="26" x2="120" y2="80" stroke="' + g + '" stroke-dasharray="3 3"/><path d="M 42 80 Q 124 -12 204 80" fill="none" stroke="' + s + '" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/><path d="M 42 80 C 76 16, 146 18, 184 80" fill="none" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/><line x1="42" y1="80" x2="66" y2="38" stroke="' + p + '" stroke-width="2" stroke-linecap="round"/><polygon points="69,33 60,40 68,44" fill="' + p + '"/><circle cx="42" cy="80" r="3.2" fill="' + p + '"/><circle cx="80" cy="40" r="2.75" fill="' + f + '" stroke="' + p + '" stroke-width="1.5"/><circle cx="120" cy="30" r="3.2" fill="' + p + '"/><circle cx="156" cy="46" r="2.75" fill="' + f + '" stroke="' + p + '" stroke-width="1.5"/><circle cx="184" cy="80" r="3.2" fill="' + p + '"/></svg>',
         placeholder: '<svg viewBox="0 0 240 104"><line x1="28" y1="52" x2="212" y2="52" stroke="' + g + '"/><line x1="120" y1="14" x2="120" y2="90" stroke="' + g + '"/><rect x="84" y="24" width="72" height="56" rx="8" fill="' + f + '" stroke="' + s + '" stroke-width="1.5" stroke-dasharray="5 4"/><line x1="120" y1="40" x2="120" y2="64" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/><line x1="108" y1="52" x2="132" y2="52" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/></svg>'
       };
       return map[motif] || map.placeholder;
