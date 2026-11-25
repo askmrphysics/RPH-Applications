@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reciprocal Trig Visualizer</title>
+  <style>
+    :root {
+      --page-bg: #090D16;
+      --panel-bg: #111827;
+      --sub-bg: #1E293B;
+      --border: #1F2937;
+      --text: #F8FAFC;
+      --muted: #94A3B8;
+      --accent: #0EA5E9;
+      --accent-text: #090D16;
+      --primary: #38BDF8;
+      --reciprocal: #FB7185;
+      --invariant: #34D399;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--page-bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      width: 100%;
+    }
+    @media (min-width: 1025px) {
+      .app-shell {
+        height: 100vh;
+        overflow: hidden;
+      }
+    }
+    .app-shell.is-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      background: var(--page-bg);
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 10px 20px;
+      background: var(--panel-bg);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .brand {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 4px 2px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .header-action {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 20px;
+      background: var(--panel-bg);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    label.ctrl-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    select, button.btn {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--sub-bg);
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button.btn:hover:not(:disabled) { filter: brightness(1.08); }
+    button.btn:disabled { opacity: 0.45; cursor: default; }
+    button.btn.active-toggle {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+    .hint-text {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .workspace {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 365px;
+      gap: 14px;
+      padding: 12px 16px;
+      align-items: stretch;
+    }
+    @media (max-width: 1024px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+    .stage-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 420px;
+      height: 100%;
+    }
+    .stage-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .canvas-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 260px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+    .slider-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--panel-bg);
+      flex-shrink: 0;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .slider-bar input[type="range"] {
+      flex: 1;
+      min-width: 180px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .quick-angles {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .angle-btn {
+      padding: 3px 7px;
+      font-size: 11px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--sub-bg);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .angle-btn:hover { border-color: var(--accent); }
+    .deck {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 13px;
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      color: var(--text);
+    }
+    .toggle-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .toggle-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 9px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--sub-bg);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: left;
+      width: 100%;
+    }
+    .toggle-item.off { opacity: 0.5; }
+    .swatch {
+      width: 16px;
+      height: 3px;
+      border-radius: 2px;
+      display: inline-block;
+      margin-right: 7px;
+      vertical-align: middle;
+    }
+    .readout-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .readout-cell {
+      padding: 6px 9px;
+      border-radius: 7px;
+      background: var(--sub-bg);
+      border: 1px solid var(--border);
+    }
+    .readout-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .readout-val {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .readout-sub {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .prop-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .prop-table td {
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .prop-table tr:last-child td { border-bottom: none; }
+    .prop-key {
+      color: var(--muted);
+      width: 82px;
+      font-weight: 500;
+    }
+    .unit-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <header>
+      <div class="brand">Reciprocal Trig Visualizer</div>
+      <nav class="tabs" id="tabBar">
+        <button class="tab-btn active" data-tab="sin-csc">sin(x) &amp; csc(x)</button>
+        <button class="tab-btn" data-tab="cos-sec">cos(x) &amp; sec(x)</button>
+        <button class="tab-btn" data-tab="tan-cot">tan(x) &amp; cot(x)</button>
+      </nav>
+      <div class="header-action">Year 12 VCE Specialist Mathematics · Standalone Edition</div>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <label class="ctrl-label" for="schemeSelect">Color Scheme</label>
+        <select id="schemeSelect"></select>
+        <button class="btn" id="resetBtn">Reset View (0 to 5π)</button>
+        <button class="btn" id="snapBtn">Snap π/12: Off</button>
+        <button class="btn" id="fullscreenBtn">Full Screen</button>
+        <button class="btn" id="restoreBtn" disabled>Restore</button>
+      </div>
+      <div class="toolbar-right">
+        <span class="hint-text">Drag point horizontally · Drag axes to scale · Right-drag to pan · Scroll to zoom</span>
+      </div>
+    </div>
+
+    <main class="workspace">
+      <section class="stage-card">
+        <div class="stage-header">
+          <span id="stageTitle" style="font-weight:600;color:var(--text);">Sine and Cosecant · VCE Specialist Mathematics</span>
+          <span id="domainReadout" class="mono" style="font-size:11px;">x ∈ [0, 5π] · y ∈ [-4.0, 4.0]</span>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="graphCanvas"></canvas>
+        </div>
+        <div class="slider-bar">
+          <div class="slider-row">
+            <label class="ctrl-label mono" for="xSlider" id="sliderLabel">x = π/3</label>
+            <input type="range" id="xSlider" step="0.001" />
+          </div>
+          <div class="quick-angles" id="quickAngles"></div>
+        </div>
+      </section>
+
+      <aside class="deck">
+        <div class="card">
+          <h2 class="card-title" id="tabTitle">Sine and Cosecant</h2>
+          <div class="toggle-list" id="toggleList"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Live Value Inspection</h2>
+          <div class="readout-grid" id="readoutGrid"></div>
+        </div>
+
+        <div class="card">
+          <div class="unit-wrap">
+            <svg id="unitSvg" width="128" height="128" viewBox="0 0 128 128" style="flex-shrink:0;border-radius:8px;border:1px solid var(--border);"></svg>
+            <div id="unitText" style="font-size:11px;line-height:1.45;color:var(--muted);"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">VCE Specialist Reference</h2>
+          <table class="prop-table" id="propTable"></table>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    (function() {
+      const COLOR_SCHEMES = [{"id":"academic-daylight","name":"01. Academic Daylight (Blue & Crimson)","isDark":false,"pageBg":"#F8FAFC","panelBg":"#FFFFFF","subPanelBg":"#F1F5F9","border":"#E2E8F0","textPrimary":"#0F172A","textMuted":"#475569","uiAccent":"#1D4ED8","uiAccentText":"#FFFFFF","canvasBg":"#FFFFFF","gridMajor":"#E2E8F0","gridMinor":"#F1F5F9","axisColor":"#334155","axisHover":"#1D4ED8","axisLabelColor":"#334155","refLineColor":"#64748B","asymptoteColor":"#94A3B8","primaryColor":"#1D4ED8","reciprocalColor":"#DC2626","tracerColor":"#0F172A","invariantColor":"#059669"},{"id":"exam-bw","name":"02. Exam Mode (Black & White)","isDark":false,"isMonochrome":true,"pageBg":"#FFFFFF","panelBg":"#FFFFFF","subPanelBg":"#F4F4F5","border":"#D4D4D8","textPrimary":"#000000","textMuted":"#3F3F46","uiAccent":"#000000","uiAccentText":"#FFFFFF","canvasBg":"#FFFFFF","gridMajor":"#E4E4E7","gridMinor":"#F4F4F5","axisColor":"#000000","axisHover":"#52525B","axisLabelColor":"#000000","refLineColor":"#52525B","asymptoteColor":"#71717A","primaryColor":"#000000","reciprocalColor":"#52525B","tracerColor":"#000000","invariantColor":"#000000"},{"id":"midnight-observatory","name":"03. Midnight Observatory (Cyan & Coral)","isDark":true,"pageBg":"#090D16","panelBg":"#111827","subPanelBg":"#1E293B","border":"#1F2937","textPrimary":"#F8FAFC","textMuted":"#94A3B8","uiAccent":"#0EA5E9","uiAccentText":"#090D16","canvasBg":"#0B1120","gridMajor":"#1E293B","gridMinor":"#131C31","axisColor":"#CBD5E1","axisHover":"#38BDF8","axisLabelColor":"#CBD5E1","refLineColor":"#64748B","asymptoteColor":"#475569","primaryColor":"#38BDF8","reciprocalColor":"#FB7185","tracerColor":"#F8FAFC","invariantColor":"#34D399"},{"id":"melbourne-botanical","name":"04. Botanical Studio (Emerald & Sienna)","isDark":false,"pageBg":"#F6F7F4","panelBg":"#FFFFFF","subPanelBg":"#EDF0EA","border":"#DCE1D7","textPrimary":"#1A241B","textMuted":"#4B594D","uiAccent":"#047857","uiAccentText":"#FFFFFF","canvasBg":"#FCFDFB","gridMajor":"#E2E7DE","gridMinor":"#EFF2EC","axisColor":"#2C3A2E","axisHover":"#047857","axisLabelColor":"#2C3A2E","refLineColor":"#6B7A6C","asymptoteColor":"#9AA89B","primaryColor":"#047857","reciprocalColor":"#C2410C","tracerColor":"#1A241B","invariantColor":"#0F766E"},{"id":"blueprint-studio","name":"05. Engineering Blueprint (Chalk & Amber)","isDark":true,"pageBg":"#071324","panelBg":"#0C1E38","subPanelBg":"#132A4A","border":"#1E3A5F","textPrimary":"#F1F5F9","textMuted":"#93C5FD","uiAccent":"#FBBF24","uiAccentText":"#071324","canvasBg":"#0A192F","gridMajor":"#173257","gridMinor":"#102544","axisColor":"#E2E8F0","axisHover":"#FBBF24","axisLabelColor":"#CBD5E1","refLineColor":"#60A5FA","asymptoteColor":"#3B82F6","primaryColor":"#F8FAFC","reciprocalColor":"#FBBF24","tracerColor":"#38BDF8","invariantColor":"#4ADE80"},{"id":"nordic-frost","name":"06. Nordic Frost (Indigo & Teal)","isDark":false,"pageBg":"#F1F5F9","panelBg":"#FFFFFF","subPanelBg":"#E8EEF5","border":"#CBD5E1","textPrimary":"#1E293B","textMuted":"#475569","uiAccent":"#4338CA","uiAccentText":"#FFFFFF","canvasBg":"#FFFFFF","gridMajor":"#E2E8F0","gridMinor":"#F1F5F9","axisColor":"#334155","axisHover":"#4338CA","axisLabelColor":"#334155","refLineColor":"#64748B","asymptoteColor":"#94A3B8","primaryColor":"#4338CA","reciprocalColor":"#0D9488","tracerColor":"#0F172A","invariantColor":"#D97706"},{"id":"warm-parchment","name":"07. Classic Parchment (Ink & Burgundy)","isDark":false,"pageBg":"#F7F3E9","panelBg":"#FFFDF8","subPanelBg":"#EFE9DA","border":"#DFD6C3","textPrimary":"#292524","textMuted":"#57534E","uiAccent":"#9F1239","uiAccentText":"#FFFFFF","canvasBg":"#FFFDF7","gridMajor":"#E7E0D0","gridMinor":"#F3EEE2","axisColor":"#292524","axisHover":"#9F1239","axisLabelColor":"#44403C","refLineColor":"#78716C","asymptoteColor":"#A8A29E","primaryColor":"#0F766E","reciprocalColor":"#9F1239","tracerColor":"#1C1917","invariantColor":"#B45309"},{"id":"solarized-dark","name":"08. Solarized Dark (Teal & Orange)","isDark":true,"pageBg":"#00212B","panelBg":"#002B36","subPanelBg":"#073642","border":"#0E4857","textPrimary":"#EEE8D5","textMuted":"#93A1A1","uiAccent":"#2AA198","uiAccentText":"#00212B","canvasBg":"#002B36","gridMajor":"#073642","gridMinor":"#04303B","axisColor":"#93A1A1","axisHover":"#2AA198","axisLabelColor":"#93A1A1","refLineColor":"#586E75","asymptoteColor":"#657B83","primaryColor":"#2AA198","reciprocalColor":"#CB4B16","tracerColor":"#FDF6E3","invariantColor":"#B58900"},{"id":"okabe-ito","name":"09. Okabe-Ito Colorblind Safe","isDark":false,"pageBg":"#F9FAFB","panelBg":"#FFFFFF","subPanelBg":"#F3F4F6","border":"#D1D5DB","textPrimary":"#111827","textMuted":"#4B5563","uiAccent":"#0072B2","uiAccentText":"#FFFFFF","canvasBg":"#FFFFFF","gridMajor":"#E5E7EB","gridMinor":"#F3F4F6","axisColor":"#1F2937","axisHover":"#0072B2","axisLabelColor":"#1F2937","refLineColor":"#6B7280","asymptoteColor":"#9CA3AF","primaryColor":"#0072B2","reciprocalColor":"#D55E00","tracerColor":"#111827","invariantColor":"#009E73"},{"id":"graphite-chalkboard","name":"10. Graphite Chalkboard (Mint & Rose)","isDark":true,"pageBg":"#121215","panelBg":"#18181B","subPanelBg":"#27272A","border":"#3F3F46","textPrimary":"#FAFAFA","textMuted":"#A1A1AA","uiAccent":"#4ADE80","uiAccentText":"#121215","canvasBg":"#16161A","gridMajor":"#27272A","gridMinor":"#1E1E22","axisColor":"#E4E4E7","axisHover":"#4ADE80","axisLabelColor":"#D4D4D8","refLineColor":"#71717A","asymptoteColor":"#52525B","primaryColor":"#4ADE80","reciprocalColor":"#F472B6","tracerColor":"#FAFAFA","invariantColor":"#FACC15"}];
+      const EPS = 1e-4;
+      const defaultSchemeIdx = Math.max(0, COLOR_SCHEMES.findIndex(s => s.id === 'midnight-observatory'));
+
+      const TABS = {
+        'sin-csc': {
+          id: 'sin-csc',
+          title: 'Sine and Cosecant',
+          primaryLabel: 'f(x) = sin(x)',
+          reciprocalLabel: 'g(x) = csc(x) (cosec x)',
+          evalPrimary: (x) => Math.sin(x),
+          evalReciprocal: (x) => { const s = Math.sin(x); return Math.abs(s) < EPS ? NaN : 1 / s; },
+          asymStep: Math.PI, asymOffset: 0,
+          pAsymStep: null, pAsymOffset: null,
+          domain: 'ℝ \ { kπ : k ∈ ℤ }',
+          rangeP: '[-1, 1]',
+          rangeR: '(-∞, -1] ∪ [1, ∞)',
+          period: '2π',
+          asymRule: 'x = kπ, k ∈ ℤ',
+          deriv: 'd/dx [csc(x)] = -csc(x)cot(x)',
+          invariant: 'f(x) = g(x) = ±1 at x = π/2 + kπ'
+        },
+        'cos-sec': {
+          id: 'cos-sec',
+          title: 'Cosine and Secant',
+          primaryLabel: 'f(x) = cos(x)',
+          reciprocalLabel: 'g(x) = sec(x)',
+          evalPrimary: (x) => Math.cos(x),
+          evalReciprocal: (x) => { const c = Math.cos(x); return Math.abs(c) < EPS ? NaN : 1 / c; },
+          asymStep: Math.PI, asymOffset: Math.PI / 2,
+          pAsymStep: null, pAsymOffset: null,
+          domain: 'ℝ \ { (2k + 1)π/2 : k ∈ ℤ }',
+          rangeP: '[-1, 1]',
+          rangeR: '(-∞, -1] ∪ [1, ∞)',
+          period: '2π',
+          asymRule: 'x = (2k + 1)π/2, k ∈ ℤ',
+          deriv: 'd/dx [sec(x)] = sec(x)tan(x)',
+          invariant: 'f(x) = g(x) = ±1 at x = kπ'
+        },
+        'tan-cot': {
+          id: 'tan-cot',
+          title: 'Tangent and Cotangent',
+          primaryLabel: 'f(x) = tan(x)',
+          reciprocalLabel: 'g(x) = cot(x)',
+          evalPrimary: (x) => { const c = Math.cos(x); return Math.abs(c) < EPS ? NaN : Math.sin(x) / c; },
+          evalReciprocal: (x) => { const s = Math.sin(x); return Math.abs(s) < EPS ? NaN : Math.cos(x) / s; },
+          asymStep: Math.PI, asymOffset: 0,
+          pAsymStep: Math.PI, pAsymOffset: Math.PI / 2,
+          domain: 'ℝ \ { kπ } (cot), ℝ \ { (2k+1)π/2 } (tan)',
+          rangeP: 'ℝ',
+          rangeR: 'ℝ',
+          period: 'π',
+          asymRule: 'cot: x = kπ · tan: x = (2k+1)π/2',
+          deriv: 'd/dx [cot(x)] = -csc²(x)',
+          invariant: 'tan(x) = cot(x) = ±1 at x = π/4 + kπ/2'
+        }
+      };
+
+      const state = {
+        tabId: 'sin-csc',
+        schemeIdx: defaultSchemeIdx,
+        vp: { xMin: 0, xMax: 5 * Math.PI, yMin: -4, yMax: 4 },
+        xValue: Math.PI / 3,
+        showPrimary: true,
+        showReciprocal: true,
+        showRefLines: true,
+        showAsymptotes: true,
+        showKeyPoints: true,
+        snapToPi12: false,
+        isFullscreen: false,
+        hoverTarget: 'none',
+        drag: { type: 'none' }
+      };
+
+      function gcd(a, b) {
+        a = Math.abs(a); b = Math.abs(b);
+        while (b !== 0) { const t = b; b = a % b; a = t; }
+        return a || 1;
+      }
+
+      function formatPi(val) {
+        if (Math.abs(val) < 1e-9) return '0';
+        const ratio = val / Math.PI;
+        for (const d of [1, 2, 3, 4, 6, 12]) {
+          const n = Math.round(ratio * d);
+          if (Math.abs(ratio - n / d) < 1e-4) {
+            if (n === 0) return '0';
+            const g = gcd(n, d);
+            const nn = n / g, dd = d / g;
+            const sign = nn < 0 ? '-' : '';
+            const absN = Math.abs(nn);
+            const ns = absN === 1 ? '' : String(absN);
+            return dd === 1 ? sign + ns + 'π' : sign + ns + 'π/' + dd;
+          }
+        }
+        return val.toFixed(2);
+      }
+
+      function getExactPair(tabId, x) {
+        const r12 = (x / Math.PI) * 12;
+        const k = Math.round(r12);
+        if (Math.abs(r12 - k) > 1e-3) return null;
+        const m = ((k % 24) + 24) % 24;
+        if (m % 2 !== 0 && m % 3 !== 0) return null;
+        const sinE = {0:'0',2:'1/2',3:'√2/2',4:'√3/2',6:'1',8:'√3/2',9:'√2/2',10:'1/2',12:'0',14:'-1/2',15:'-√2/2',16:'-√3/2',18:'-1',20:'-√3/2',21:'-√2/2',22:'-1/2'};
+        const cscE = {0:'Undefined',2:'2',3:'√2',4:'2√3/3',6:'1',8:'2√3/3',9:'√2',10:'2',12:'Undefined',14:'-2',15:'-√2',16:'-2√3/3',18:'-1',20:'-2√3/3',21:'-√2',22:'-2'};
+        const tanE = {0:'0',2:'√3/3',3:'1',4:'√3',6:'Undefined',8:'-√3',9:'-1',10:'-√3/3',12:'0',14:'√3/3',15:'1',16:'√3',18:'Undefined',20:'-√3',21:'-1',22:'-√3/3'};
+        const cotE = {0:'Undefined',2:'√3',3:'1',4:'√3/3',6:'0',8:'-√3/3',9:'-1',10:'-√3',12:'Undefined',14:'√3',15:'1',16:'√3/3',18:'0',20:'-√3/3',21:'-1',22:'-√3'};
+        if (tabId === 'sin-csc') return { p: sinE[m], r: cscE[m] };
+        if (tabId === 'cos-sec') { const c = (m + 6) % 24; return { p: sinE[c], r: cscE[c] }; }
+        return { p: tanE[m], r: cotE[m] };
+      }
+
+      const appShell = document.getElementById('appShell');
+      const canvas = document.getElementById('graphCanvas');
+      const wrap = document.getElementById('canvasWrap');
+      const ctx = canvas.getContext('2d');
+      const schemeSelect = document.getElementById('schemeSelect');
+      const xSlider = document.getElementById('xSlider');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+      const restoreBtn = document.getElementById('restoreBtn');
+
+      COLOR_SCHEMES.forEach((s, idx) => {
+        const opt = document.createElement('option');
+        opt.value = String(idx);
+        opt.textContent = s.name;
+        schemeSelect.appendChild(opt);
+      });
+      schemeSelect.value = String(defaultSchemeIdx);
+
+      const quickList = [
+        { label: '0', val: 0 },
+        { label: 'π/6', val: Math.PI / 6 },
+        { label: 'π/4', val: Math.PI / 4 },
+        { label: 'π/3', val: Math.PI / 3 },
+        { label: 'π/2', val: Math.PI / 2 },
+        { label: 'π', val: Math.PI },
+        { label: '3π/2', val: 1.5 * Math.PI },
+        { label: '2π', val: 2 * Math.PI },
+        { label: '3π', val: 3 * Math.PI },
+        { label: '4π', val: 4 * Math.PI },
+        { label: '5π', val: 5 * Math.PI }
+      ];
+      const quickEl = document.getElementById('quickAngles');
+      quickList.forEach(q => {
+        const b = document.createElement('button');
+        b.className = 'angle-btn mono';
+        b.textContent = q.label;
+        b.onclick = () => { state.xValue = q.val; updateAll(); };
+        quickEl.appendChild(b);
+      });
+
+      function applyTheme() {
+        const s = COLOR_SCHEMES[state.schemeIdx];
+        const r = document.documentElement.style;
+        r.setProperty('--page-bg', s.pageBg);
+        r.setProperty('--panel-bg', s.panelBg);
+        r.setProperty('--sub-bg', s.subPanelBg);
+        r.setProperty('--border', s.border);
+        r.setProperty('--text', s.textPrimary);
+        r.setProperty('--muted', s.textMuted);
+        r.setProperty('--accent', s.uiAccent);
+        r.setProperty('--accent-text', s.uiAccentText);
+        r.setProperty('--primary', s.primaryColor);
+        r.setProperty('--reciprocal', s.reciprocalColor);
+        r.setProperty('--invariant', s.invariantColor);
+      }
+
+      function worldToX(wx, w) { return ((wx - state.vp.xMin) / (state.vp.xMax - state.vp.xMin)) * w; }
+      function worldToY(wy, h) { return ((state.vp.yMax - wy) / (state.vp.yMax - state.vp.yMin)) * h; }
+      function xToWorld(px, w) { return state.vp.xMin + (px / w) * (state.vp.xMax - state.vp.xMin); }
+      function yToWorld(py, h) { return state.vp.yMax - (py / h) * (state.vp.yMax - state.vp.yMin); }
+
+      function choosePiStep(spanX, w) {
+        const maxTicks = Math.max(2, w / 64);
+        const cands = [Math.PI/12, Math.PI/6, Math.PI/4, Math.PI/3, Math.PI/2, Math.PI, 2*Math.PI, 4*Math.PI, 8*Math.PI, 16*Math.PI, 32*Math.PI];
+        for (const c of cands) { if (spanX / c <= maxTicks) return c; }
+        return 64 * Math.PI;
+      }
+
+      function chooseLinStep(spanY, h) {
+        const maxTicks = Math.max(2, h / 46);
+        const raw = spanY / maxTicks;
+        const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+        const n = raw / mag;
+        const m = n > 5 ? 10 : n > 2.5 ? 5 : n > 1.2 ? 2 : n > 0.6 ? 1 : 0.5;
+        const step = m * mag;
+        if (spanY >= 5 && spanY <= 12 && step > 1) return 1;
+        return step;
+      }
+
+      function drawCanvas() {
+        const rect = wrap.getBoundingClientRect();
+        const w = Math.max(300, Math.floor(rect.width));
+        const h = Math.max(240, Math.floor(rect.height));
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const s = COLOR_SCHEMES[state.schemeIdx];
+        const tab = TABS[state.tabId];
+        const vp = state.vp;
+        const spanX = vp.xMax - vp.xMin;
+        const spanY = vp.yMax - vp.yMin;
+
+        ctx.fillStyle = s.canvasBg;
+        ctx.fillRect(0, 0, w, h);
+
+        const xStep = choosePiStep(spanX, w);
+        const yStep = chooseLinStep(spanY, h);
+
+        ctx.strokeStyle = s.gridMinor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const xm = xStep / 2;
+        for (let x = Math.floor(vp.xMin / xm) * xm; x <= vp.xMax + xm * 0.5; x += xm) {
+          const px = worldToX(x, w);
+          ctx.moveTo(px, 0); ctx.lineTo(px, h);
+        }
+        const ym = yStep / 2;
+        for (let y = Math.floor(vp.yMin / ym) * ym; y <= vp.yMax + ym * 0.5; y += ym) {
+          const py = worldToY(y, h);
+          ctx.moveTo(0, py); ctx.lineTo(w, py);
+        }
+        ctx.stroke();
+
+        ctx.strokeStyle = s.gridMajor;
+        ctx.beginPath();
+        const startX = Math.floor(vp.xMin / xStep) * xStep;
+        for (let x = startX; x <= vp.xMax + xStep * 0.5; x += xStep) {
+          const px = worldToX(x, w);
+          ctx.moveTo(px, 0); ctx.lineTo(px, h);
+        }
+        const startY = Math.floor(vp.yMin / yStep) * yStep;
+        for (let y = startY; y <= vp.yMax + yStep * 0.5; y += yStep) {
+          const py = worldToY(y, h);
+          ctx.moveTo(0, py); ctx.lineTo(w, py);
+        }
+        ctx.stroke();
+
+        if (state.showRefLines) {
+          ctx.save();
+          ctx.strokeStyle = s.refLineColor;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([7, 5]);
+          [1, -1].forEach(ry => {
+            const py = worldToY(ry, h);
+            if (py >= -10 && py <= h + 10) {
+              ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+              const lbl = ry === 1 ? 'y = 1' : 'y = -1';
+              ctx.font = '500 11px monospace';
+              const tw = ctx.measureText(lbl).width;
+              ctx.fillStyle = s.canvasBg; ctx.globalAlpha = 0.88;
+              ctx.fillRect(w - tw - 16, py - 18, tw + 10, 15);
+              ctx.globalAlpha = 1; ctx.fillStyle = s.refLineColor;
+              ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+              ctx.fillText(lbl, w - 10, py - 4);
+            }
+          });
+          ctx.restore();
+        }
+
+        if (state.showAsymptotes) {
+          const drawAsym = (step, offset, color, dash) => {
+            ctx.save();
+            ctx.strokeStyle = color; ctx.lineWidth = 1.25; ctx.setLineDash(dash);
+            const k0 = Math.floor((vp.xMin - offset) / step) - 1;
+            const k1 = Math.ceil((vp.xMax - offset) / step) + 1;
+            for (let k = k0; k <= k1; k++) {
+              const ax = offset + k * step;
+              const px = worldToX(ax, w);
+              if (px < -2 || px > w + 2) continue;
+              ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+            }
+            ctx.restore();
+          };
+          if (state.showReciprocal) drawAsym(tab.asymStep, tab.asymOffset, s.asymptoteColor, [4, 4]);
+          if (state.showPrimary && tab.pAsymStep) drawAsym(tab.pAsymStep, tab.pAsymOffset, s.primaryColor, [2, 5]);
+        }
+
+        const ox = worldToX(0, w);
+        const oy = worldToY(0, h);
+        const xHot = state.hoverTarget === 'x-axis' || state.drag.type === 'scale-x';
+        const yHot = state.hoverTarget === 'y-axis' || state.drag.type === 'scale-y';
+
+        if (oy >= -20 && oy <= h + 20) {
+          ctx.strokeStyle = xHot ? s.axisHover : s.axisColor;
+          ctx.lineWidth = xHot ? 2.8 : 1.6;
+          ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.stroke();
+        }
+        if (ox >= -20 && ox <= w + 20) {
+          ctx.strokeStyle = yHot ? s.axisHover : s.axisColor;
+          ctx.lineWidth = yHot ? 2.8 : 1.6;
+          ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+        }
+
+        ctx.save();
+        ctx.font = '500 11.5px monospace';
+        const xTickY = Math.max(18, Math.min(h - 22, oy));
+        const above = oy > h - 26;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = above ? 'bottom' : 'top';
+        for (let x = startX; x <= vp.xMax + xStep * 0.5; x += xStep) {
+          const px = worldToX(x, w);
+          if (px < 18 || px > w - 18) continue;
+          if (Math.abs(x) < 1e-7 && ox >= 18 && ox <= w - 18) continue;
+          const lbl = formatPi(x);
+          ctx.strokeStyle = xHot ? s.axisHover : s.axisColor;
+          ctx.lineWidth = 1.25;
+          ctx.beginPath(); ctx.moveTo(px, xTickY - 4); ctx.lineTo(px, xTickY + 4); ctx.stroke();
+          ctx.fillStyle = xHot ? s.axisHover : s.axisLabelColor;
+          ctx.fillText(lbl, px, above ? xTickY - 7 : xTickY + 7);
+        }
+
+        const yTickX = Math.max(36, Math.min(w - 14, ox));
+        const yLeft = ox >= 42;
+        ctx.textAlign = yLeft ? 'right' : 'left';
+        ctx.textBaseline = 'middle';
+        for (let y = startY; y <= vp.yMax + yStep * 0.5; y += yStep) {
+          const py = worldToY(y, h);
+          if (py < 14 || py > h - 14 || Math.abs(y) < 1e-7) continue;
+          const lbl = String(Number(y.toFixed(4)));
+          ctx.strokeStyle = yHot ? s.axisHover : s.axisColor;
+          ctx.lineWidth = 1.25;
+          ctx.beginPath(); ctx.moveTo(yTickX - 4, py); ctx.lineTo(yTickX + 4, py); ctx.stroke();
+          ctx.fillStyle = yHot ? s.axisHover : s.axisLabelColor;
+          ctx.fillText(lbl, yLeft ? yTickX - 8 : yTickX + 8, py);
+        }
+        ctx.restore();
+
+        function plot(fn, color, dash) {
+          ctx.save();
+          ctx.strokeStyle = color; ctx.lineWidth = 2.6; ctx.lineJoin = 'round'; ctx.setLineDash(dash);
+          const samples = Math.max(900, Math.floor(w * 1.5));
+          const dx = spanX / samples;
+          const topClip = vp.yMax + spanY * 0.5;
+          const botClip = vp.yMin - spanY * 0.5;
+          let drawing = false, prevY = NaN;
+          ctx.beginPath();
+          for (let i = 0; i <= samples; i++) {
+            const wx = vp.xMin + i * dx;
+            const wy = fn(wx);
+            if (!Number.isFinite(wy) || wy > topClip * 4 || wy < botClip * 4) {
+              drawing = false; prevY = NaN; continue;
+            }
+            if (drawing && Number.isFinite(prevY) && Math.abs(wy - prevY) > spanY * 1.5 && wy * prevY <= 0) {
+              drawing = false;
+            }
+            const px = worldToX(wx, w), py = worldToY(wy, h);
+            if (!drawing) { ctx.moveTo(px, py); drawing = true; } else { ctx.lineTo(px, py); }
+            prevY = wy;
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        if (state.showPrimary) plot(tab.evalPrimary, s.primaryColor, []);
+        if (state.showReciprocal) plot(tab.evalReciprocal, s.reciprocalColor, s.isMonochrome ? [9, 5] : []);
+
+        if (state.showKeyPoints) {
+          const k0 = Math.floor(vp.xMin / (Math.PI / 2)) - 2;
+          const k1 = Math.ceil(vp.xMax / (Math.PI / 2)) + 2;
+          ctx.save();
+          for (let k = k0; k <= k1; k++) {
+            let ix = null;
+            if (tab.id === 'sin-csc') ix = Math.PI / 2 + k * Math.PI;
+            else if (tab.id === 'cos-sec') ix = k * Math.PI;
+            else ix = Math.PI / 4 + (k * Math.PI) / 2;
+            if (ix >= vp.xMin && ix <= vp.xMax) {
+              const iy = tab.evalPrimary(ix);
+              if (iy >= vp.yMin && iy <= vp.yMax) {
+                ctx.fillStyle = s.canvasBg; ctx.strokeStyle = s.invariantColor; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(worldToX(ix, w), worldToY(iy, h), 4.5, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+              }
+            }
+          }
+          ctx.restore();
+        }
+
+        const tpx = worldToX(state.xValue, w);
+        if (tpx >= -30 && tpx <= w + 30) {
+          ctx.save();
+          ctx.strokeStyle = s.tracerColor;
+          ctx.globalAlpha = state.hoverTarget === 'point' || state.drag.type === 'point' ? 0.55 : 0.3;
+          ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+          ctx.beginPath(); ctx.moveTo(tpx, 0); ctx.lineTo(tpx, h); ctx.stroke();
+          ctx.restore();
+
+          const handleY = Math.max(24, Math.min(h - 24, oy));
+          ctx.save();
+          ctx.fillStyle = s.canvasBg; ctx.strokeStyle = s.tracerColor; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(tpx, handleY, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.restore();
+
+          const drawDot = (wy, color, hollow) => {
+            if (!Number.isFinite(wy) || wy < vp.yMin - 0.5 || wy > vp.yMax + 0.5) return;
+            const py = worldToY(wy, h);
+            ctx.save();
+            ctx.fillStyle = hollow ? s.canvasBg : color;
+            ctx.strokeStyle = hollow ? color : s.canvasBg;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.arc(tpx, py, 6.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.font = '600 11px monospace';
+            const lbl = wy.toFixed(3);
+            const tw = ctx.measureText(lbl).width;
+            const left = tpx > w - tw - 28;
+            const tx = left ? tpx - 12 : tpx + 12;
+            ctx.fillStyle = s.canvasBg; ctx.globalAlpha = 0.92;
+            ctx.fillRect(left ? tx - tw - 5 : tx - 5, py - 10, tw + 10, 20);
+            ctx.globalAlpha = 1; ctx.strokeStyle = color; ctx.lineWidth = 1;
+            ctx.strokeRect(left ? tx - tw - 5 : tx - 5, py - 10, tw + 10, 20);
+            ctx.fillStyle = s.textPrimary; ctx.textAlign = left ? 'right' : 'left'; ctx.textBaseline = 'middle';
+            ctx.fillText(lbl, tx, py);
+            ctx.restore();
+          };
+          if (state.showPrimary) drawDot(tab.evalPrimary(state.xValue), s.primaryColor, false);
+          if (state.showReciprocal) drawDot(tab.evalReciprocal(state.xValue), s.reciprocalColor, !!s.isMonochrome);
+        }
+      }
+
+      function detectTarget(px, py) {
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        const tab = TABS[state.tabId];
+        const tpx = worldToX(state.xValue, w);
+        const oy = worldToY(0, h), ox = worldToX(0, w);
+        const yp = tab.evalPrimary(state.xValue), yr = tab.evalReciprocal(state.xValue);
+        if (state.showPrimary && Number.isFinite(yp) && Math.hypot(px - tpx, py - worldToY(yp, h)) <= 18) return 'point';
+        if (state.showReciprocal && Number.isFinite(yr) && Math.hypot(px - tpx, py - worldToY(yr, h)) <= 18) return 'point';
+        if (Math.hypot(px - tpx, py - Math.max(24, Math.min(h - 24, oy))) <= 18) return 'point';
+        if (Math.abs(px - tpx) <= 7) return 'point';
+        if (oy >= -13 && oy <= h + 13 && Math.abs(py - oy) <= 13) return 'x-axis';
+        if (ox >= -13 && ox <= w + 13 && Math.abs(px - ox) <= 13) return 'y-axis';
+        return 'none';
+      }
+
+      function updateCursor() {
+        const d = state.drag.type, h = state.hoverTarget;
+        if (d === 'pan') canvas.style.cursor = 'grabbing';
+        else if (d === 'point' || d === 'scale-x' || h === 'x-axis') canvas.style.cursor = 'ew-resize';
+        else if (d === 'scale-y' || h === 'y-axis') canvas.style.cursor = 'ns-resize';
+        else if (h === 'point') canvas.style.cursor = 'grab';
+        else canvas.style.cursor = 'crosshair';
+      }
+
+      canvas.addEventListener('contextmenu', e => e.preventDefault());
+      canvas.addEventListener('mousedown', e => {
+        const r = canvas.getBoundingClientRect();
+        const px = e.clientX - r.left, py = e.clientY - r.top;
+        const w = r.width, h = r.height;
+        if (e.button === 2 || e.button === 1) {
+          e.preventDefault();
+          state.drag = { type: 'pan', startPx: px, startPy: py, startVp: { ...state.vp } };
+          updateCursor(); return;
+        }
+        if (e.button !== 0) return;
+        const target = detectTarget(px, py);
+        if (target === 'point') {
+          state.drag = { type: 'point', offsetPx: px - worldToX(state.xValue, w) };
+        } else if (target === 'x-axis') {
+          const zeroPx = worldToX(0, w), gx = xToWorld(px, w);
+          state.drag = { type: 'scale-x', startPx: px, startVp: { ...state.vp }, zeroPx, gx, useCenter: Math.abs(px - zeroPx) < 24 || Math.abs(gx) < 1e-4 };
+        } else if (target === 'y-axis') {
+          const zeroPy = worldToY(0, h), gy = yToWorld(py, h);
+          state.drag = { type: 'scale-y', startPy: py, startVp: { ...state.vp }, zeroPy, gy, useCenter: Math.abs(py - zeroPy) < 24 || Math.abs(gy) < 1e-4 };
+        } else {
+          state.drag = { type: 'pan', startPx: px, startPy: py, startVp: { ...state.vp } };
+        }
+        updateCursor();
+      });
+
+      window.addEventListener('mousemove', e => {
+        const r = canvas.getBoundingClientRect();
+        const px = e.clientX - r.left, py = e.clientY - r.top;
+        const w = r.width, h = r.height;
+        const d = state.drag;
+        if (d.type === 'none') {
+          if (e.target === canvas) { state.hoverTarget = detectTarget(px, py); updateCursor(); drawCanvas(); }
+          return;
+        }
+        if (d.type === 'pan') {
+          const sx = d.startVp.xMax - d.startVp.xMin, sy = d.startVp.yMax - d.startVp.yMin;
+          state.vp = {
+            xMin: d.startVp.xMin - ((px - d.startPx) / w) * sx,
+            xMax: d.startVp.xMax - ((px - d.startPx) / w) * sx,
+            yMin: d.startVp.yMin + ((py - d.startPy) / h) * sy,
+            yMax: d.startVp.yMax + ((py - d.startPy) / h) * sy
+          };
+        } else if (d.type === 'point') {
+          let nx = xToWorld(px - d.offsetPx, w);
+          if (state.snapToPi12) nx = Math.round(nx / (Math.PI / 12)) * (Math.PI / 12);
+          state.xValue = nx;
+        } else if (d.type === 'scale-x') {
+          const vp0 = d.startVp;
+          if (d.useCenter) {
+            const c = w / 2, ratio = Math.min(20, Math.max(0.05, Math.max(20, Math.abs(d.startPx - c)) / Math.max(12, Math.abs(px - c))));
+            const cw = (vp0.xMin + vp0.xMax) / 2, ns = Math.min(200*Math.PI, Math.max(0.1*Math.PI, (vp0.xMax - vp0.xMin) * ratio));
+            state.vp = { ...vp0, xMin: cw - ns/2, xMax: cw + ns/2 };
+          } else {
+            const sign = d.startPx >= d.zeroPx ? 1 : -1;
+            if ((px - d.zeroPx) * sign < 16) return;
+            const ns = Math.min(200*Math.PI, Math.max(0.1*Math.PI, (d.gx * w) / (px - d.zeroPx)));
+            const nxMin = -(d.zeroPx / w) * ns;
+            state.vp = { ...vp0, xMin: nxMin, xMax: nxMin + ns };
+          }
+        } else if (d.type === 'scale-y') {
+          const vp0 = d.startVp;
+          if (d.useCenter) {
+            const c = h / 2, ratio = Math.min(20, Math.max(0.05, Math.max(20, Math.abs(d.startPy - c)) / Math.max(12, Math.abs(py - c))));
+            const cw = (vp0.yMin + vp0.yMax) / 2, ns = Math.min(200, Math.max(0.5, (vp0.yMax - vp0.yMin) * ratio));
+            state.vp = { ...vp0, yMin: cw - ns/2, yMax: cw + ns/2 };
+          } else {
+            const sign = d.startPy <= d.zeroPy ? 1 : -1;
+            if ((d.zeroPy - py) * sign < 16) return;
+            const ns = Math.min(200, Math.max(0.5, (d.gy * h) / (d.zeroPy - py)));
+            const nyMax = (d.zeroPy / h) * ns;
+            state.vp = { ...vp0, yMax: nyMax, yMin: nyMax - ns };
+          }
+        }
+        updateAll();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (state.drag.type !== 'none') { state.drag = { type: 'none' }; updateCursor(); drawCanvas(); }
+      });
+
+      canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+        const r = canvas.getBoundingClientRect();
+        const px = e.clientX - r.left, py = e.clientY - r.top, w = r.width, h = r.height;
+        const factor = Math.exp(e.deltaY * 0.0012);
+        const wx = xToWorld(px, w), wy = yToWorld(py, h);
+        const nsX = Math.min(200*Math.PI, Math.max(0.1*Math.PI, (state.vp.xMax - state.vp.xMin) * factor));
+        const nsY = Math.min(200, Math.max(0.5, (state.vp.yMax - state.vp.yMin) * factor));
+        const nxMin = e.altKey ? state.vp.xMin : wx - (px / w) * nsX;
+        const nxMax = e.altKey ? state.vp.xMax : nxMin + nsX;
+        const nyMax = e.shiftKey ? state.vp.yMax : wy + (py / h) * nsY;
+        const nyMin = e.shiftKey ? state.vp.yMin : nyMax - nsY;
+        state.vp = { xMin: nxMin, xMax: nxMax, yMin: nyMin, yMax: nyMax };
+        updateAll();
+      }, { passive: false });
+
+      function updateFullscreenUI() {
+        appShell.classList.toggle('is-fullscreen', state.isFullscreen);
+        fullscreenBtn.disabled = state.isFullscreen;
+        fullscreenBtn.classList.toggle('active-toggle', state.isFullscreen);
+        restoreBtn.disabled = !state.isFullscreen;
+      }
+
+      document.addEventListener('fullscreenchange', () => {
+        state.isFullscreen = !!document.fullscreenElement;
+        updateFullscreenUI();
+        drawCanvas();
+      });
+
+      fullscreenBtn.onclick = async () => {
+        state.isFullscreen = true;
+        updateFullscreenUI();
+        try {
+          if (appShell.requestFullscreen && !document.fullscreenElement) {
+            await appShell.requestFullscreen();
+          }
+        } catch (err) {}
+        drawCanvas();
+      };
+
+      restoreBtn.onclick = async () => {
+        state.isFullscreen = false;
+        updateFullscreenUI();
+        try {
+          if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen();
+          }
+        } catch (err) {}
+        drawCanvas();
+      };
+
+      function updateDeck() {
+        const tab = TABS[state.tabId];
+        const s = COLOR_SCHEMES[state.schemeIdx];
+        document.getElementById('tabTitle').textContent = tab.title;
+        document.getElementById('stageTitle').textContent = tab.title + ' · VCE Specialist Mathematics';
+        document.getElementById('domainReadout').textContent =
+          'x ∈ [' + formatPi(state.vp.xMin) + ', ' + formatPi(state.vp.xMax) + '] · y ∈ [' + state.vp.yMin.toFixed(1) + ', ' + state.vp.yMax.toFixed(1) + ']';
+
+        const minS = Math.min(0, state.vp.xMin);
+        const maxS = Math.max(5 * Math.PI, state.vp.xMax);
+        xSlider.min = String(minS);
+        xSlider.max = String(maxS);
+        xSlider.value = String(Math.min(maxS, Math.max(minS, state.xValue)));
+        document.getElementById('sliderLabel').textContent = 'x = ' + formatPi(state.xValue) + ' (' + state.xValue.toFixed(3) + ' rad)';
+
+        const toggles = [
+          { key: 'showPrimary', label: tab.primaryLabel, color: s.primaryColor, dashed: false },
+          { key: 'showReciprocal', label: tab.reciprocalLabel, color: s.reciprocalColor, dashed: !!s.isMonochrome },
+          { key: 'showRefLines', label: 'Reference Lines (y = ±1)', color: s.refLineColor, dashed: true },
+          { key: 'showAsymptotes', label: 'Vertical Asymptotes', color: s.asymptoteColor, dashed: true },
+          { key: 'showKeyPoints', label: 'Invariant Points (y = ±1)', color: s.invariantColor, dashed: false }
+        ];
+        const tl = document.getElementById('toggleList');
+        tl.innerHTML = '';
+        toggles.forEach(t => {
+          const btn = document.createElement('button');
+          btn.className = 'toggle-item' + (state[t.key] ? '' : ' off');
+          btn.innerHTML = '<span><span class="swatch" style="background:' + (t.dashed ? 'transparent' : t.color) + ';border-top:' + (t.dashed ? '2px dashed ' + t.color : 'none') + ';"></span>' + t.label + '</span><span>' + (state[t.key] ? 'Active' : 'Hidden') + '</span>';
+          btn.onclick = () => { state[t.key] = !state[t.key]; updateAll(); };
+          tl.appendChild(btn);
+        });
+
+        const yp = tab.evalPrimary(state.xValue);
+        const yr = tab.evalReciprocal(state.xValue);
+        const ex = getExactPair(state.tabId, state.xValue);
+        const deg = ((state.xValue * 180) / Math.PI).toFixed(1) + '°';
+        document.getElementById('readoutGrid').innerHTML =
+          '<div class="readout-cell"><div class="readout-lbl">Angle x</div><div class="readout-val mono">' + formatPi(state.xValue) + '</div><div class="readout-sub mono">' + state.xValue.toFixed(4) + ' rad · ' + deg + '</div></div>' +
+          '<div class="readout-cell"><div class="readout-lbl">Product f(x)·g(x)</div><div class="readout-val mono">' + (Number.isFinite(yp) && Number.isFinite(yr) ? (yp * yr).toFixed(3) : 'Undefined') + '</div><div class="readout-sub">Reciprocal identity</div></div>' +
+          '<div class="readout-cell"><div class="readout-lbl" style="color:' + s.primaryColor + ';">' + tab.primaryLabel + '</div><div class="readout-val mono">' + (Number.isFinite(yp) ? yp.toFixed(4) : 'Undefined') + '</div><div class="readout-sub mono">' + (ex ? 'Exact: ' + ex.p : 'Decimal approx.') + '</div></div>' +
+          '<div class="readout-cell"><div class="readout-lbl" style="color:' + s.reciprocalColor + ';">' + tab.reciprocalLabel + '</div><div class="readout-val mono">' + (Number.isFinite(yr) ? yr.toFixed(4) : 'Undefined') + '</div><div class="readout-sub mono">' + (ex ? 'Exact: ' + ex.r : 'Vertical asymptote near 0') + '</div></div>';
+
+        const svg = document.getElementById('unitSvg');
+        svg.style.background = s.canvasBg;
+        const cx = 64, cy = 64, r = 25;
+        const cX = Math.cos(state.xValue), sY = Math.sin(state.xValue);
+        const px = cx + cX * r, py = cy - sY * r;
+        const secV = Math.abs(cX) > 0.08 ? 1 / cX : NaN;
+        const cscV = Math.abs(sY) > 0.08 ? 1 / sY : NaN;
+        let extra = '';
+        if (state.tabId === 'sin-csc') {
+          extra += '<line x1="'+px+'" y1="'+cy+'" x2="'+px+'" y2="'+py+'" stroke="'+s.primaryColor+'" stroke-width="2.2"/>';
+          if (Number.isFinite(cscV) && Math.abs(cscV) <= 2.35) {
+            const cpy = cy - cscV * r;
+            extra += '<line x1="'+px+'" y1="'+py+'" x2="'+cx+'" y2="'+cpy+'" stroke="'+s.asymptoteColor+'" stroke-dasharray="3 3" stroke-width="1"/>';
+            extra += '<line x1="'+cx+'" y1="'+cy+'" x2="'+cx+'" y2="'+cpy+'" stroke="'+s.reciprocalColor+'" stroke-width="2.4"/>';
+          }
+        } else if (state.tabId === 'cos-sec') {
+          extra += '<line x1="'+cx+'" y1="'+cy+'" x2="'+px+'" y2="'+cy+'" stroke="'+s.primaryColor+'" stroke-width="2.2"/>';
+          if (Number.isFinite(secV) && Math.abs(secV) <= 2.35) {
+            const spx = cx + secV * r;
+            extra += '<line x1="'+px+'" y1="'+py+'" x2="'+spx+'" y2="'+cy+'" stroke="'+s.asymptoteColor+'" stroke-dasharray="3 3" stroke-width="1"/>';
+            extra += '<line x1="'+cx+'" y1="'+cy+'" x2="'+spx+'" y2="'+cy+'" stroke="'+s.reciprocalColor+'" stroke-width="2.4"/>';
+          }
+        } else {
+          if (Number.isFinite(secV) && Math.abs(secV) <= 2.35) {
+            extra += '<line x1="'+px+'" y1="'+py+'" x2="'+(cx+secV*r)+'" y2="'+cy+'" stroke="'+s.primaryColor+'" stroke-width="2.2"/>';
+          }
+          if (Number.isFinite(cscV) && Math.abs(cscV) <= 2.35) {
+            extra += '<line x1="'+px+'" y1="'+py+'" x2="'+cx+'" y2="'+(cy-cscV*r)+'" stroke="'+s.reciprocalColor+'" stroke-width="2.2"/>';
+          }
+        }
+        svg.innerHTML =
+          '<line x1="6" y1="'+cy+'" x2="122" y2="'+cy+'" stroke="'+s.gridMajor+'" stroke-width="1"/>' +
+          '<line x1="'+cx+'" y1="6" x2="'+cx+'" y2="122" stroke="'+s.gridMajor+'" stroke-width="1"/>' +
+          '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+s.axisColor+'" stroke-width="1.3" opacity="0.7"/>' +
+          '<line x1="'+cx+'" y1="'+cy+'" x2="'+px+'" y2="'+py+'" stroke="'+s.textPrimary+'" stroke-width="1.4"/>' +
+          extra +
+          '<circle cx="'+px+'" cy="'+py+'" r="3.5" fill="'+s.primaryColor+'"/>';
+
+        const norm = ((state.xValue % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        document.getElementById('unitText').innerHTML =
+          '<div style="font-weight:600;color:var(--text);margin-bottom:3px;">Unit Circle Tangent Geometry</div>' +
+          '<div>P(cos x, sin x) tangent meets axes at (sec x, 0) and (0, csc x).</div>' +
+          '<div class="mono" style="margin-top:5px;">x mod 2π = ' + (norm / Math.PI).toFixed(2) + 'π</div>';
+
+        document.getElementById('propTable').innerHTML =
+          '<tr><td class="prop-key">Domain</td><td class="mono">' + tab.domain + '</td></tr>' +
+          '<tr><td class="prop-key">Range f(x)</td><td class="mono">' + tab.rangeP + '</td></tr>' +
+          '<tr><td class="prop-key">Range g(x)</td><td class="mono">' + tab.rangeR + '</td></tr>' +
+          '<tr><td class="prop-key">Period</td><td class="mono">' + tab.period + '</td></tr>' +
+          '<tr><td class="prop-key">Asymptotes</td><td class="mono">' + tab.asymRule + '</td></tr>' +
+          '<tr><td class="prop-key">Invariant</td><td class="mono">' + tab.invariant + '</td></tr>' +
+          '<tr><td class="prop-key">Derivative</td><td class="mono">' + tab.deriv + '</td></tr>';
+      }
+
+      function updateAll() {
+        applyTheme();
+        updateFullscreenUI();
+        updateDeck();
+        drawCanvas();
+      }
+
+      document.querySelectorAll('#tabBar .tab-btn').forEach(btn => {
+        btn.onclick = () => {
+          document.querySelectorAll('#tabBar .tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.tabId = btn.dataset.tab;
+          updateAll();
+        };
+      });
+
+      schemeSelect.onchange = () => { state.schemeIdx = Number(schemeSelect.value); updateAll(); };
+      document.getElementById('resetBtn').onclick = () => {
+        state.vp = { xMin: 0, xMax: 5 * Math.PI, yMin: -4, yMax: 4 };
+        updateAll();
+      };
+      const snapBtn = document.getElementById('snapBtn');
+      snapBtn.onclick = () => {
+        state.snapToPi12 = !state.snapToPi12;
+        snapBtn.textContent = 'Snap π/12: ' + (state.snapToPi12 ? 'On' : 'Off');
+        snapBtn.classList.toggle('active-toggle', state.snapToPi12);
+        if (state.snapToPi12) state.xValue = Math.round(state.xValue / (Math.PI / 12)) * (Math.PI / 12);
+        updateAll();
+      };
+      xSlider.oninput = () => {
+        let v = parseFloat(xSlider.value);
+        if (state.snapToPi12) v = Math.round(v / (Math.PI / 12)) * (Math.PI / 12);
+        state.xValue = v;
+        updateAll();
+      };
+
+      new ResizeObserver(() => drawCanvas()).observe(wrap);
+      updateAll();
+    })();
+  </script>
+</body>
+</html>
