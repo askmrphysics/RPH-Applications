@@ -7,14 +7,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
     rel="stylesheet"
   />
   <style>
     :root {
       --bg-canvas: #e5e9f0;
       --bg-surface: #ffffff;
-      --bg-well: #eef2f6;
       --border-hairline: #cbd5e1;
       --text-primary: #0f172a;
       --text-secondary: #475569;
@@ -42,7 +41,7 @@
     }
 
     .topbar-inner {
-      max-width: 1380px;
+      max-width: 1540px;
       margin: 0 auto;
       padding: 16px 24px;
       display: flex;
@@ -124,7 +123,7 @@
     }
 
     .container {
-      max-width: 1380px;
+      max-width: 1540px;
       margin: 0 auto;
       padding: 40px 24px 64px;
     }
@@ -217,6 +216,21 @@
       outline-offset: 1px;
     }
 
+    /* Main 5-column simulators + independent 1-column utilities */
+    .directory-shell {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (min-width: 1024px) {
+      .directory-shell {
+        grid-template-columns: minmax(0, 5fr) minmax(215px, 1fr);
+        gap: 20px;
+      }
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -241,20 +255,66 @@
       }
     }
 
-    .tile {
+    .utilities-aside {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @media (min-width: 1024px) {
+      .utilities-aside {
+        border-left: 1px solid var(--border-hairline);
+        padding-left: 20px;
+      }
+    }
+
+    .utilities-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 640px) and (max-width: 1023px) {
+      .utilities-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .tile,
+    .utility-tile {
       display: flex;
       flex-direction: column;
       border-radius: var(--radius);
       text-decoration: none;
       overflow: hidden;
-      border: 1px solid rgba(15, 23, 42, 0.14);
       box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
       transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
-                  box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1);
+                  box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1),
+                  background-color 160ms ease;
+    }
+
+    .tile {
+      border: 1px solid rgba(15, 23, 42, 0.14);
+    }
+
+    .utility-tile {
+      border: 2px solid #2563eb;
+      background: #f1f5f9;
+      color: #0f172a;
+      text-align: left;
+      font-family: inherit;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .utility-tile:hover {
+      background: #f8fafc;
     }
 
     .tile:hover,
-    .tile:focus-visible {
+    .tile:focus-visible,
+    .utility-tile:hover,
+    .utility-tile:focus-visible {
       transform: translateY(-3px);
       box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
       outline: 2px solid #0f172a;
@@ -269,6 +329,11 @@
       padding: 10px 12px;
     }
 
+    .utility-tile .tile-motif {
+      background: rgba(226, 232, 240, 0.85);
+      border-bottom: 1px solid rgba(203, 213, 225, 0.85);
+    }
+
     .tile-motif svg {
       width: 100%;
       height: 100%;
@@ -279,11 +344,12 @@
       display: flex;
       flex-direction: column;
       flex: 1;
+      width: 100%;
     }
 
     .tile-meta {
       font-size: 0.6875rem;
-      font-weight: 500;
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
       margin-bottom: 4px;
     }
@@ -310,6 +376,7 @@
       gap: 8px;
       padding-top: 10px;
       font-size: 0.6875rem;
+      width: 100%;
     }
 
     .tile-file {
@@ -322,6 +389,410 @@
     .tile-launch {
       font-weight: 700;
       white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .utility-notice {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      padding: 10px 12px;
+      font-size: 0.75rem;
+      color: #334155;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+    }
+
+    .utility-notice button {
+      border: 0;
+      background: transparent;
+      color: #64748b;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 0 4px;
+    }
+
+    /* Built-in Pop-out Windows */
+    .popout-window {
+      position: fixed;
+      display: none;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
+      user-select: none;
+      z-index: 40;
+    }
+
+    .popout-window.is-open {
+      display: flex;
+    }
+
+    .calc-window {
+      background: #0f172a;
+      color: #ffffff;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+    }
+
+    .snip-window {
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      width: 360px;
+    }
+
+    .popout-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      cursor: grab;
+    }
+
+    .popout-header:active {
+      cursor: grabbing;
+    }
+
+    .calc-window .popout-header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+    }
+
+    .snip-window .popout-header {
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .popout-title {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .popout-close {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .calc-window .popout-close:hover {
+      background: #334155;
+    }
+
+    .snip-window .popout-close:hover {
+      background: #e2e8f0;
+    }
+
+    .calc-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      min-height: 0;
+    }
+
+    .calc-lcd {
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #020617;
+      padding: 10px 14px;
+      text-align: right;
+    }
+
+    .calc-expr {
+      font-family: "IBM Plex Mono", monospace;
+      color: #94a3b8;
+      min-height: 1.3em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .calc-val {
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: #ffffff;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .calc-val.is-error {
+      color: #fb7185;
+    }
+
+    .calc-keys {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-rows: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .calc-key {
+      border: 0;
+      border-radius: 6px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 120ms ease;
+    }
+
+    .calc-key:hover {
+      background: #334155;
+    }
+
+    .calc-key.num {
+      background: rgba(51, 65, 85, 0.85);
+      color: #ffffff;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .calc-key.num:hover {
+      background: #475569;
+    }
+
+    .calc-key.mode {
+      background: #334155;
+      color: #7dd3fc;
+    }
+
+    .calc-key.mode.active {
+      background: #0284c7;
+      color: #ffffff;
+    }
+
+    .calc-key.op {
+      background: #0369a1;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .calc-key.op:hover {
+      background: #0284c7;
+    }
+
+    .calc-key.ac {
+      background: #be123c;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .calc-key.ac:hover {
+      background: #e11d48;
+    }
+
+    .calc-key.eq {
+      background: #059669;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .calc-key.eq:hover {
+      background: #10b981;
+    }
+
+    .resize-corner {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 20px;
+      height: 20px;
+      cursor: nwse-resize;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 4px;
+      color: #94a3b8;
+    }
+
+    .resize-corner:hover {
+      color: #ffffff;
+    }
+
+    .snip-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 0.75rem;
+    }
+
+    .snip-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .snip-primary-btn {
+      flex: 1;
+      border: 0;
+      border-radius: 8px;
+      background: #047857;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 9px 14px;
+      cursor: pointer;
+    }
+
+    .snip-primary-btn:hover:not(:disabled) {
+      background: #065f46;
+    }
+
+    .snip-primary-btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .snip-select {
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 8px 10px;
+    }
+
+    .snip-preview-box {
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #f1f5f9;
+      overflow: hidden;
+    }
+
+    .snip-preview-box img {
+      display: block;
+      width: 100%;
+      max-height: 160px;
+      object-fit: contain;
+    }
+
+    .snip-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .snip-sec-btn {
+      flex: 1;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #1e293b;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    .snip-sec-btn:hover {
+      background: #f8fafc;
+    }
+
+    .snip-error {
+      border: 1px solid #fecdd3;
+      background: #fff1f2;
+      color: #be123c;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin: 0;
+    }
+
+    .snip-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      background: #020617;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: crosshair;
+      user-select: none;
+    }
+
+    .snip-overlay.is-active {
+      display: flex;
+    }
+
+    .snip-overlay img {
+      max-width: 100vw;
+      max-height: 100vh;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    .snip-overlay-bar {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 125;
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid #334155;
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.75rem;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .snip-overlay-bar button {
+      border: 0;
+      background: #334155;
+      color: #ffffff;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .snip-marquee {
+      position: fixed;
+      z-index: 122;
+      border: 2px solid #34d399;
+      box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.58);
+      pointer-events: none;
+      display: none;
+    }
+
+    .snip-dims {
+      position: absolute;
+      left: 0;
+      bottom: -24px;
+      background: rgba(15, 23, 42, 0.92);
+      color: #6ee7b7;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
     }
 
     .footer {
@@ -330,7 +801,7 @@
     }
 
     .footer-inner {
-      max-width: 1380px;
+      max-width: 1540px;
       margin: 0 auto;
       padding: 20px 24px;
       font-size: 0.8125rem;
@@ -379,7 +850,16 @@
       />
     </div>
 
-    <div class="grid" id="simulatorGrid"></div>
+    <div class="directory-shell">
+      <div class="grid" id="simulatorGrid"></div>
+      <aside class="utilities-aside" aria-label="Built-in utilities">
+        <div class="utilities-grid" id="utilitiesGrid"></div>
+        <div id="utilityNotice" class="utility-notice" style="display:none;">
+          <span id="utilityNoticeText"></span>
+          <button type="button" id="utilityNoticeClose" aria-label="Dismiss notice">✕</button>
+        </div>
+      </aside>
+    </div>
   </main>
 
   <footer class="footer">
@@ -388,6 +868,73 @@
       <span id="appCount"></span>
     </div>
   </footer>
+
+  <!-- Built-in Pop-out Scientific Calculator Window (Draggable + Corner Resizable) -->
+  <div id="calcWindow" class="popout-window calc-window" role="dialog" aria-label="Scientific Calculator" tabindex="0">
+    <div class="popout-header" id="calcDragHandle">
+      <span class="popout-title">Scientific Calculator</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="calcModeBadge" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#38bdf8;">DEG</span>
+        <button type="button" class="popout-close" id="calcCloseBtn" aria-label="Close calculator">✕</button>
+      </div>
+    </div>
+    <div class="calc-body">
+      <div class="calc-lcd">
+        <div id="calcExpr" class="calc-expr">0</div>
+        <div id="calcVal" class="calc-val">0</div>
+      </div>
+      <div class="calc-keys" id="calcKeys"></div>
+    </div>
+    <div id="calcResizeHandle" class="resize-corner" title="Drag corner to resize calculator" aria-label="Drag corner to resize calculator">
+      <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+        <path d="M 11 3 L 3 11 M 11 7 L 7 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Built-in Pop-out Screen Capture Tool Window -->
+  <div id="snipWindow" class="popout-window snip-window" role="dialog" aria-label="Screen Capture Tool">
+    <div class="popout-header" id="snipDragHandle">
+      <span class="popout-title">Screen Capture Tool</span>
+      <button type="button" class="popout-close" id="snipCloseBtn" aria-label="Close screen capture tool">✕</button>
+    </div>
+    <div class="snip-body">
+      <p style="margin:0;color:#475569;line-height:1.45;">
+        Select any running simulator, window, or browser tab, then click and drag over any region to save as a PNG file.
+      </p>
+      <div class="snip-controls">
+        <button type="button" id="snipStartBtn" class="snip-primary-btn">New Snip</button>
+        <select id="snipDelaySelect" class="snip-select" aria-label="Capture delay">
+          <option value="0">No Delay</option>
+          <option value="3">3s Delay</option>
+          <option value="5">5s Delay</option>
+        </select>
+      </div>
+      <p id="snipStatus" style="margin:0;font-weight:600;color:#334155;display:none;"></p>
+      <p id="snipError" class="snip-error" style="display:none;"></p>
+      <div id="snipPreviewWrap" style="display:none;flex-direction:column;gap:8px;border-top:1px solid #e2e8f0;padding-top:10px;">
+        <div class="snip-preview-box">
+          <img id="snipPreviewImg" alt="Latest screen snip preview" />
+        </div>
+        <div class="snip-actions">
+          <button type="button" id="snipSaveBtn" class="snip-sec-btn">Save PNG</button>
+          <button type="button" id="snipCopyBtn" class="snip-sec-btn">Copy PNG</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-Viewport Region Cropper Overlay -->
+  <div id="snipOverlay" class="snip-overlay">
+    <img id="snipFrameImg" alt="Captured screen frame" draggable="false" />
+    <div class="snip-overlay-bar" id="snipOverlayBar">
+      <span>Drag across any area to capture and save PNG</span>
+      <button type="button" id="snipCancelOverlayBtn">Cancel (Esc)</button>
+    </div>
+    <div id="snipMarquee" class="snip-marquee">
+      <span id="snipDims" class="snip-dims">0 × 0 px</span>
+    </div>
+  </div>
 
   <script>
     /* =========================================================================
@@ -630,6 +1177,79 @@
   }
 };
 
+    /* =========================================================================
+       INDEPENDENT RIGHT-HAND UTILITIES COLUMN (Grayscale + Colored Border)
+       ========================================================================= */
+    const UTILITIES = [
+  {
+    "id": "utility-calculator",
+    "label": "Utility 1",
+    "name": "Scientific Calculator",
+    "subtitle": "Pop-out Window",
+    "summary": "Resizable scientific calculator with trig, logs, powers, and constants.",
+    "motif": "utility-calc",
+    "borderHex": "#2563EB",
+    "actionType": "calculator"
+  },
+  {
+    "id": "utility-screen-capture",
+    "label": "Utility 2",
+    "name": "Screen Capture Tool",
+    "subtitle": "Pop-out Snipper",
+    "summary": "Capture any running app window or region and save directly as PNG.",
+    "motif": "utility-snip",
+    "borderHex": "#059669",
+    "actionType": "screen-capture"
+  },
+  {
+    "id": "utility-placeholder-1",
+    "label": "Utility 3",
+    "name": "utility-placeholder-1",
+    "subtitle": "Reserved Utility",
+    "summary": "Reserved grayscale utility slot for a future built-in classroom tool.",
+    "motif": "utility-placeholder",
+    "borderHex": "#D97706",
+    "actionType": "placeholder"
+  },
+  {
+    "id": "utility-placeholder-2",
+    "label": "Utility 4",
+    "name": "utility-placeholder-2",
+    "subtitle": "Reserved Utility",
+    "summary": "Reserved grayscale utility slot for a future built-in classroom tool.",
+    "motif": "utility-placeholder",
+    "borderHex": "#7C3AED",
+    "actionType": "placeholder"
+  }
+];
+
+    const CALC_POPUP_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Scientific Calculator — Ask Mr Physics<\/title>\n  <style>\n    * { box-sizing: border-box; }\n    html, body {\n      margin: 0;\n      width: 100%;\n      height: 100%;\n      overflow: hidden;\n      background: #0f172a;\n      color: #ffffff;\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;\n      user-select: none;\n    }\n    .shell {\n      position: relative;\n      display: flex;\n      flex-direction: column;\n      width: 100vw;\n      height: 100vh;\n      padding: 12px;\n      gap: 10px;\n    }\n    .topbar {\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      padding: 2px 4px;\n      font-size: 12px;\n      color: #cbd5e1;\n      flex-shrink: 0;\n    }\n    .topbar-title {\n      font-weight: 700;\n      letter-spacing: -0.01em;\n      color: #f8fafc;\n    }\n    .mode-badge {\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n      font-weight: 700;\n      color: #38bdf8;\n    }\n    .lcd {\n      border-radius: 10px;\n      border: 1px solid #334155;\n      background: #020617;\n      padding: 10px 14px;\n      text-align: right;\n      flex-shrink: 0;\n    }\n    .expr {\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n      color: #94a3b8;\n      min-height: 1.3em;\n      overflow: hidden;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      font-size: 13px;\n    }\n    .val {\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n      font-weight: 700;\n      font-variant-numeric: tabular-nums;\n      color: #ffffff;\n      margin-top: 4px;\n      overflow: hidden;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      font-size: 28px;\n      line-height: 1.15;\n    }\n    .val.is-error { color: #fb7185; }\n    .keys {\n      flex: 1;\n      min-height: 0;\n      display: grid;\n      grid-template-columns: repeat(5, minmax(0, 1fr));\n      grid-template-rows: repeat(7, minmax(0, 1fr));\n      gap: 6px;\n    }\n    button.key {\n      border: 0;\n      border-radius: 7px;\n      background: #1e293b;\n      color: #e2e8f0;\n      font-family: inherit;\n      font-weight: 600;\n      font-size: 13px;\n      cursor: pointer;\n      transition: background-color 120ms ease;\n    }\n    button.key:hover { background: #334155; }\n    button.key:active { transform: scale(0.97); }\n    button.key.num {\n      background: rgba(51, 65, 85, 0.85);\n      color: #ffffff;\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n    }\n    button.key.num:hover { background: #475569; }\n    button.key.mode {\n      background: #334155;\n      color: #7dd3fc;\n    }\n    button.key.mode.active {\n      background: #0284c7;\n      color: #ffffff;\n    }\n    button.key.op {\n      background: #0369a1;\n      color: #ffffff;\n      font-weight: 700;\n    }\n    button.key.op:hover { background: #0284c7; }\n    button.key.ac {\n      background: #be123c;\n      color: #ffffff;\n      font-weight: 700;\n    }\n    button.key.ac:hover { background: #e11d48; }\n    button.key.eq {\n      background: #059669;\n      color: #ffffff;\n      font-weight: 700;\n    }\n    button.key.eq:hover { background: #10b981; }\n    .resize-grip {\n      position: fixed;\n      right: 2px;\n      bottom: 2px;\n      width: 16px;\n      height: 16px;\n      cursor: nwse-resize;\n      color: #64748b;\n      display: flex;\n      align-items: flex-end;\n      justify-content: flex-end;\n      padding: 2px;\n    }\n    .resize-grip:hover { color: #e2e8f0; }\n  <\/style>\n<\/head>\n<body>\n  <div class=\"shell\">\n    <div class=\"topbar\">\n      <span class=\"topbar-title\">Scientific Calculator<\/span>\n      <span id=\"modeBadge\" class=\"mode-badge\">DEG<\/span>\n    <\/div>\n    <div class=\"lcd\">\n      <div id=\"exprEl\" class=\"expr\">0<\/div>\n      <div id=\"valEl\" class=\"val\">0<\/div>\n    <\/div>\n    <div id=\"keysEl\" class=\"keys\"><\/div>\n    <div id=\"resizeGrip\" class=\"resize-grip\" title=\"Drag window corner to resize\" aria-hidden=\"true\">\n      <svg viewBox=\"0 0 12 12\" width=\"12\" height=\"12\">\n        <path d=\"M 11 3 L 3 11 M 11 7 L 7 11\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n      <\/svg>\n    <\/div>\n  <\/div>\n\n  <script>\n    (function () {\n      const exprEl = document.getElementById(\"exprEl\");\n      const valEl = document.getElementById(\"valEl\");\n      const modeBadge = document.getElementById(\"modeBadge\");\n      const keysEl = document.getElementById(\"keysEl\");\n      const resizeGrip = document.getElementById(\"resizeGrip\");\n\n      const st = {\n        expr: \"\",\n        display: \"0\",\n        ans: 0,\n        degMode: true,\n        secondMode: false,\n        justEvaluated: false,\n        hasError: false\n      };\n\n      function applyScale() {\n        const s = Math.min(window.innerWidth / 340, window.innerHeight / 480);\n        exprEl.style.fontSize = Math.max(11, Math.round(13 * s)) + \"px\";\n        valEl.style.fontSize = Math.max(20, Math.round(28 * s)) + \"px\";\n        const keyPx = Math.max(11, Math.round(13 * s)) + \"px\";\n        keysEl.querySelectorAll(\"button\").forEach(function (b) {\n          b.style.fontSize = keyPx;\n        });\n      }\n\n      function formatRes(val) {\n        if (!Number.isFinite(val)) return \"Error\";\n        if (val === 0) return \"0\";\n        const abs = Math.abs(val);\n        if (abs >= 1e10 || abs < 1e-6) {\n          return val.toExponential(6).replace(/\\.?0+e/, \"e\");\n        }\n        return String(Number(val.toPrecision(10)));\n      }\n\n      function evaluateExpr(raw, degMode, ansVal) {\n        const str = raw.replace(/×/g, \"*\").replace(/÷/g, \"/\").replace(/−/g, \"-\").replace(/π/g, \"pi\").replace(/√/g, \"sqrt\").trim();\n        const funcs = new Set([\"sin\", \"cos\", \"tan\", \"asin\", \"acos\", \"atan\", \"ln\", \"log\", \"sqrt\", \"abs\", \"exp\"]);\n        const rawToks = [];\n        let i = 0;\n        while (i < str.length) {\n          const ch = str[i];\n          if (/\\s/.test(ch)) { i++; continue; }\n          if (/[0-9.]/.test(ch)) {\n            let num = \"\", dots = 0;\n            while (i < str.length && /[0-9.]/.test(str[i])) {\n              if (str[i] === \".\") dots++;\n              if (dots > 1) throw new Error(\"Syntax error\");\n              num += str[i++];\n            }\n            if (i < str.length && (str[i] === \"e\" || str[i] === \"E\")) {\n              const nxt = str[i + 1];\n              if (nxt && (/[0-9]/.test(nxt) || ((nxt === \"+\" || nxt === \"-\") && str[i + 2] && /[0-9]/.test(str[i + 2])))) {\n                num += str[i++];\n                if (str[i] === \"+\" || str[i] === \"-\") num += str[i++];\n                while (i < str.length && /[0-9]/.test(str[i])) num += str[i++];\n              }\n            }\n            rawToks.push({ t: \"num\", v: Number(num) });\n            continue;\n          }\n          if (/[a-zA-Z]/.test(ch)) {\n            let id = \"\";\n            while (i < str.length && /[a-zA-Z0-9]/.test(str[i])) id += str[i++];\n            rawToks.push({ t: \"id\", v: id.toLowerCase() });\n            continue;\n          }\n          if (ch === \"(\" || ch === \")\") { rawToks.push({ t: ch }); i++; continue; }\n          if (\"+-*/^!\".includes(ch)) { rawToks.push({ t: \"op\", v: ch }); i++; continue; }\n          throw new Error(\"Syntax error\");\n        }\n        const tokens = [];\n        for (let idx = 0; idx < rawToks.length; idx++) {\n          const curr = rawToks[idx];\n          const prev = tokens[tokens.length - 1];\n          if (prev) {\n            const prevEnd = prev.t === \"num\" || prev.t === \")\" || (prev.t === \"op\" && prev.v === \"!\") || (prev.t === \"id\" && !funcs.has(prev.v));\n            const currStart = curr.t === \"num\" || curr.t === \"(\" || curr.t === \"id\";\n            if (prevEnd && currStart) tokens.push({ t: \"op\", v: \"*\" });\n          }\n          tokens.push(curr);\n        }\n        if (!tokens.length) return 0;\n        let pos = 0;\n        const peek = function () { return tokens[pos]; };\n        const next = function () { return tokens[pos++]; };\n        function fact(n) {\n          if (!Number.isFinite(n) || n < 0 || Math.floor(n) !== n) throw new Error(\"Domain error\");\n          if (n > 170) return Infinity;\n          let r = 1;\n          for (let k = 2; k <= n; k++) r *= k;\n          return r;\n        }\n        function parseExpr() {\n          let left = parseTerm();\n          while (peek() && peek().t === \"op\" && (peek().v === \"+\" || peek().v === \"-\")) {\n            const op = next().v;\n            const right = parseTerm();\n            left = op === \"+\" ? left + right : left - right;\n          }\n          return left;\n        }\n        function parseTerm() {\n          let left = parseUnary();\n          while (peek() && peek().t === \"op\" && (peek().v === \"*\" || peek().v === \"/\")) {\n            const op = next().v;\n            const right = parseUnary();\n            if (op === \"/\" && right === 0) throw new Error(\"Divide by zero\");\n            left = op === \"*\" ? left * right : left / right;\n          }\n          return left;\n        }\n        function parseUnary() {\n          if (peek() && peek().t === \"op\" && (peek().v === \"+\" || peek().v === \"-\")) {\n            const op = next().v;\n            const v = parseUnary();\n            return op === \"-\" ? -v : v;\n          }\n          return parsePow();\n        }\n        function parsePow() {\n          const base = parsePost();\n          if (peek() && peek().t === \"op\" && peek().v === \"^\") {\n            next();\n            return Math.pow(base, parseUnary());\n          }\n          return base;\n        }\n        function parsePost() {\n          let v = parsePrim();\n          while (peek() && peek().t === \"op\" && peek().v === \"!\") {\n            next();\n            v = fact(v);\n          }\n          return v;\n        }\n        function applyFn(fn, a) {\n          const toR = function (x) { return degMode ? (x * Math.PI) / 180 : x; };\n          const fromR = function (x) { return degMode ? (x * 180) / Math.PI : x; };\n          if (fn === \"sin\") return Math.sin(toR(a));\n          if (fn === \"cos\") return Math.cos(toR(a));\n          if (fn === \"tan\") { if (Math.abs(Math.cos(toR(a))) < 1e-12) throw new Error(\"Undefined\"); return Math.tan(toR(a)); }\n          if (fn === \"asin\") { if (a < -1 || a > 1) throw new Error(\"Domain error\"); return fromR(Math.asin(a)); }\n          if (fn === \"acos\") { if (a < -1 || a > 1) throw new Error(\"Domain error\"); return fromR(Math.acos(a)); }\n          if (fn === \"atan\") return fromR(Math.atan(a));\n          if (fn === \"ln\") { if (a <= 0) throw new Error(\"Domain error\"); return Math.log(a); }\n          if (fn === \"log\") { if (a <= 0) throw new Error(\"Domain error\"); return Math.log10(a); }\n          if (fn === \"sqrt\") { if (a < 0) throw new Error(\"Domain error\"); return Math.sqrt(a); }\n          if (fn === \"abs\") return Math.abs(a);\n          if (fn === \"exp\") return Math.exp(a);\n          throw new Error(\"Syntax error\");\n        }\n        function parsePrim() {\n          const tok = peek();\n          if (!tok) throw new Error(\"Syntax error\");\n          if (tok.t === \"num\") { next(); return tok.v; }\n          if (tok.t === \"id\") {\n            next();\n            if (tok.v === \"pi\") return Math.PI;\n            if (tok.v === \"e\") return Math.E;\n            if (tok.v === \"ans\") return ansVal;\n            if (funcs.has(tok.v)) {\n              let arg;\n              if (peek() && peek().t === \"(\") {\n                next();\n                arg = parseExpr();\n                if (!peek() || next().t !== \")\") throw new Error(\"Syntax error\");\n              } else {\n                arg = parseUnary();\n              }\n              return applyFn(tok.v, arg);\n            }\n            throw new Error(\"Syntax error\");\n          }\n          if (tok.t === \"(\") {\n            next();\n            const v = parseExpr();\n            if (!peek() || next().t !== \")\") throw new Error(\"Syntax error\");\n            return v;\n          }\n          throw new Error(\"Syntax error\");\n        }\n        const res = parseExpr();\n        if (pos < tokens.length || !Number.isFinite(res)) throw new Error(\"Math error\");\n        return Math.abs(res) < 1e-13 ? 0 : Number(res.toPrecision(12));\n      }\n\n      function updateDisplay() {\n        exprEl.textContent = st.expr || \"0\";\n        valEl.textContent = st.display;\n        valEl.classList.toggle(\"is-error\", st.hasError);\n        modeBadge.textContent = st.degMode ? \"DEG\" : \"RAD\";\n      }\n\n      function renderKeys() {\n        const s2 = st.secondMode;\n        const keys = [\n          { label: st.degMode ? \"DEG\" : \"RAD\", cls: \"mode\", act: \"deg\" },\n          { label: \"2nd\", cls: \"mode\" + (s2 ? \" active\" : \"\"), act: \"2nd\" },\n          { label: \"Ans\", cls: \"mode\", tok: \"Ans\" },\n          { label: \"DEL\", cls: \"mode\", act: \"del\" },\n          { label: \"AC\", cls: \"ac\", act: \"ac\" },\n          { label: s2 ? \"sin⁻¹\" : \"sin\", tok: s2 ? \"asin(\" : \"sin(\" },\n          { label: s2 ? \"cos⁻¹\" : \"cos\", tok: s2 ? \"acos(\" : \"cos(\" },\n          { label: s2 ? \"tan⁻¹\" : \"tan\", tok: s2 ? \"atan(\" : \"tan(\" },\n          { label: s2 ? \"eˣ\" : \"ln\", tok: s2 ? \"exp(\" : \"ln(\" },\n          { label: s2 ? \"10ˣ\" : \"log\", tok: s2 ? \"10^(\" : \"log(\" },\n          { label: s2 ? \"√x\" : \"x²\", act: s2 ? undefined : \"sq\", tok: s2 ? \"sqrt(\" : undefined },\n          { label: \"xʸ\", tok: \"^\", isOp: true },\n          { label: \"(\", tok: \"(\" },\n          { label: \")\", tok: \")\" },\n          { label: \"÷\", cls: \"op\", tok: \"÷\", isOp: true },\n          { label: \"π\", tok: \"π\" },\n          { label: \"7\", cls: \"num\", tok: \"7\" },\n          { label: \"8\", cls: \"num\", tok: \"8\" },\n          { label: \"9\", cls: \"num\", tok: \"9\" },\n          { label: \"×\", cls: \"op\", tok: \"×\", isOp: true },\n          { label: \"e\", tok: \"e\" },\n          { label: \"4\", cls: \"num\", tok: \"4\" },\n          { label: \"5\", cls: \"num\", tok: \"5\" },\n          { label: \"6\", cls: \"num\", tok: \"6\" },\n          { label: \"−\", cls: \"op\", tok: \"−\", isOp: true },\n          { label: \"1/x\", act: \"inv\" },\n          { label: \"1\", cls: \"num\", tok: \"1\" },\n          { label: \"2\", cls: \"num\", tok: \"2\" },\n          { label: \"3\", cls: \"num\", tok: \"3\" },\n          { label: \"+\", cls: \"op\", tok: \"+\", isOp: true },\n          { label: \"n!\", tok: \"!\", isOp: true },\n          { label: \"0\", cls: \"num\", tok: \"0\" },\n          { label: \".\", cls: \"num\", tok: \".\" },\n          { label: \"±\", cls: \"num\", act: \"sign\" },\n          { label: \"=\", cls: \"eq\", act: \"eq\" }\n        ];\n        keysEl.innerHTML = \"\";\n        keys.forEach(function (k) {\n          const b = document.createElement(\"button\");\n          b.type = \"button\";\n          b.className = \"key\" + (k.cls ? \" \" + k.cls : \"\");\n          b.textContent = k.label;\n          b.addEventListener(\"click\", function () {\n            st.hasError = false;\n            if (k.act === \"deg\") { st.degMode = !st.degMode; renderKeys(); }\n            else if (k.act === \"2nd\") { st.secondMode = !st.secondMode; renderKeys(); }\n            else if (k.act === \"ac\") { st.expr = \"\"; st.display = \"0\"; st.justEvaluated = false; }\n            else if (k.act === \"del\") {\n              st.justEvaluated = false;\n              const mult = [\"asin(\",\"acos(\",\"atan(\",\"sqrt(\",\"sin(\",\"cos(\",\"tan(\",\"log(\",\"exp(\",\"ln(\",\"Ans\"];\n              const hit = mult.find(function (m) { return st.expr.endsWith(m); });\n              st.expr = hit ? st.expr.slice(0, -hit.length) : st.expr.slice(0, -1);\n            } else if (k.act === \"sq\") {\n              st.expr = st.justEvaluated ? \"(\" + formatRes(st.ans) + \")^2\" : (st.expr ? st.expr + \"^2\" : \"Ans^2\");\n              st.justEvaluated = false;\n            } else if (k.act === \"inv\") {\n              st.expr = st.justEvaluated ? \"1/(\" + formatRes(st.ans) + \")\" : (st.expr ? \"1/(\" + st.expr + \")\" : \"1/(\");\n              st.justEvaluated = false;\n            } else if (k.act === \"sign\") {\n              if (st.justEvaluated) {\n                st.ans = -st.ans;\n                st.expr = formatRes(st.ans);\n                st.display = st.expr;\n                st.justEvaluated = false;\n              } else if (!st.expr) {\n                st.expr = \"-\";\n              } else if (st.expr.startsWith(\"-(\") && st.expr.endsWith(\")\")) {\n                st.expr = st.expr.slice(2, -1);\n              } else {\n                st.expr = st.expr.startsWith(\"-\") ? st.expr.slice(1) : \"-(\" + st.expr + \")\";\n              }\n            } else if (k.act === \"eq\") {\n              if (st.expr.trim()) {\n                try {\n                  const v = evaluateExpr(st.expr, st.degMode, st.ans);\n                  st.ans = v;\n                  st.display = formatRes(v);\n                  st.justEvaluated = true;\n                } catch (err) {\n                  st.display = err.message || \"Error\";\n                  st.hasError = true;\n                  st.justEvaluated = false;\n                }\n              }\n            } else if (k.tok) {\n              if (st.justEvaluated) {\n                st.justEvaluated = false;\n                st.expr = k.isOp ? formatRes(st.ans) + k.tok : k.tok;\n              } else {\n                st.expr += k.tok;\n              }\n            }\n            updateDisplay();\n          });\n          keysEl.appendChild(b);\n        });\n        applyScale();\n        updateDisplay();\n      }\n\n      document.addEventListener(\"keydown\", function (e) {\n        if (/^[0-9.()^!]$/.test(e.key)) {\n          e.preventDefault();\n          if (st.justEvaluated) {\n            st.justEvaluated = false;\n            st.expr = (e.key === \"^\" || e.key === \"!\") ? formatRes(st.ans) + e.key : e.key;\n          } else st.expr += e.key;\n          updateDisplay();\n        } else if (e.key === \"+\" || e.key === \"-\" || e.key === \"*\" || e.key === \"/\") {\n          e.preventDefault();\n          const opMap = { \"+\": \"+\", \"-\": \"−\", \"*\": \"×\", \"/\": \"÷\" };\n          if (st.justEvaluated) {\n            st.justEvaluated = false;\n            st.expr = formatRes(st.ans) + opMap[e.key];\n          } else st.expr += opMap[e.key];\n          updateDisplay();\n        } else if (e.key === \"Enter\" || e.key === \"=\") {\n          e.preventDefault();\n          if (st.expr.trim()) {\n            try {\n              const v = evaluateExpr(st.expr, st.degMode, st.ans);\n              st.ans = v;\n              st.display = formatRes(v);\n              st.hasError = false;\n              st.justEvaluated = true;\n            } catch (err) {\n              st.display = err.message || \"Error\";\n              st.hasError = true;\n            }\n            updateDisplay();\n          }\n        } else if (e.key === \"Backspace\") {\n          e.preventDefault();\n          st.expr = st.expr.slice(0, -1);\n          updateDisplay();\n        }\n      });\n\n      /* Corner grip resize support inside the standalone popup window */\n      let gripDrag = null;\n      resizeGrip.addEventListener(\"pointerdown\", function (e) {\n        e.preventDefault();\n        gripDrag = { sx: e.screenX, sy: e.screenY, ow: window.outerWidth, oh: window.outerHeight };\n      });\n      window.addEventListener(\"pointermove\", function (e) {\n        if (!gripDrag) return;\n        const nw = Math.max(290, gripDrag.ow + (e.screenX - gripDrag.sx));\n        const nh = Math.max(410, gripDrag.oh + (e.screenY - gripDrag.sy));\n        try { window.resizeTo(nw, nh); } catch (err) {}\n      });\n      window.addEventListener(\"pointerup\", function () { gripDrag = null; });\n\n      window.addEventListener(\"resize\", applyScale);\n      renderKeys();\n    })();\n  <\/script>\n<\/body>\n<\/html>";
+    const SNIP_POPUP_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Screen Capture Tool — Ask Mr Physics<\/title>\n  <style>\n    * { box-sizing: border-box; }\n    html, body {\n      margin: 0;\n      width: 100%;\n      height: 100%;\n      background: #f8fafc;\n      color: #0f172a;\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;\n    }\n    .panel {\n      display: flex;\n      flex-direction: column;\n      gap: 12px;\n      padding: 16px;\n      min-height: 100vh;\n    }\n    .header {\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      border-bottom: 1px solid #e2e8f0;\n      padding-bottom: 10px;\n    }\n    .title {\n      font-size: 15px;\n      font-weight: 700;\n      letter-spacing: -0.01em;\n    }\n    .badge {\n      font-size: 11px;\n      font-weight: 600;\n      color: #047857;\n    }\n    .desc {\n      margin: 0;\n      font-size: 12.5px;\n      line-height: 1.5;\n      color: #475569;\n    }\n    .controls {\n      display: flex;\n      gap: 8px;\n      align-items: center;\n    }\n    .primary-btn {\n      flex: 1;\n      border: 0;\n      border-radius: 8px;\n      background: #047857;\n      color: #ffffff;\n      font-family: inherit;\n      font-size: 13px;\n      font-weight: 600;\n      padding: 10px 14px;\n      cursor: pointer;\n    }\n    .primary-btn:hover:not(:disabled) { background: #065f46; }\n    .primary-btn:disabled { opacity: 0.6; cursor: default; }\n    select {\n      border-radius: 8px;\n      border: 1px solid #cbd5e1;\n      background: #ffffff;\n      color: #334155;\n      font-family: inherit;\n      font-size: 12.5px;\n      font-weight: 600;\n      padding: 9px 10px;\n    }\n    .status {\n      margin: 0;\n      font-size: 12px;\n      font-weight: 600;\n      color: #334155;\n      display: none;\n    }\n    .error {\n      margin: 0;\n      font-size: 12px;\n      border: 1px solid #fecdd3;\n      background: #fff1f2;\n      color: #be123c;\n      border-radius: 8px;\n      padding: 9px 11px;\n      display: none;\n    }\n    .preview-wrap {\n      display: none;\n      flex-direction: column;\n      gap: 10px;\n      border-top: 1px solid #e2e8f0;\n      padding-top: 12px;\n    }\n    .preview-box {\n      border: 1px solid #cbd5e1;\n      border-radius: 8px;\n      background: #e2e8f0;\n      overflow: hidden;\n    }\n    .preview-box img {\n      display: block;\n      width: 100%;\n      max-height: 220px;\n      object-fit: contain;\n    }\n    .actions {\n      display: flex;\n      gap: 8px;\n    }\n    .sec-btn {\n      flex: 1;\n      border: 1px solid #cbd5e1;\n      border-radius: 8px;\n      background: #ffffff;\n      color: #0f172a;\n      font-family: inherit;\n      font-size: 12.5px;\n      font-weight: 600;\n      padding: 8px 12px;\n      cursor: pointer;\n    }\n    .sec-btn:hover { background: #f1f5f9; }\n    .overlay {\n      position: fixed;\n      inset: 0;\n      z-index: 100;\n      background: #020617;\n      display: none;\n      align-items: center;\n      justify-content: center;\n      cursor: crosshair;\n      user-select: none;\n    }\n    .overlay.is-active { display: flex; }\n    .overlay img {\n      max-width: 100vw;\n      max-height: 100vh;\n      object-fit: contain;\n      pointer-events: none;\n    }\n    .overlay-bar {\n      position: fixed;\n      top: 14px;\n      left: 50%;\n      transform: translateX(-50%);\n      z-index: 110;\n      background: rgba(15, 23, 42, 0.94);\n      border: 1px solid #334155;\n      color: #ffffff;\n      border-radius: 8px;\n      padding: 8px 14px;\n      display: flex;\n      align-items: center;\n      gap: 12px;\n      font-size: 12.5px;\n      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);\n      white-space: nowrap;\n    }\n    .overlay-bar button {\n      border: 0;\n      background: #334155;\n      color: #ffffff;\n      border-radius: 6px;\n      padding: 5px 10px;\n      font-size: 12px;\n      font-weight: 600;\n      cursor: pointer;\n    }\n    .marquee {\n      position: fixed;\n      z-index: 105;\n      border: 2px solid #34d399;\n      box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.58);\n      pointer-events: none;\n      display: none;\n    }\n    .dims {\n      position: absolute;\n      left: 0;\n      bottom: -24px;\n      background: rgba(15, 23, 42, 0.94);\n      color: #6ee7b7;\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n      font-size: 11px;\n      padding: 2px 6px;\n      border-radius: 4px;\n      white-space: nowrap;\n    }\n  <\/style>\n<\/head>\n<body>\n  <div class=\"panel\">\n    <div class=\"header\">\n      <span class=\"title\">Screen Capture Tool<\/span>\n      <span class=\"badge\">PNG Snipper<\/span>\n    <\/div>\n    <p class=\"desc\">\n      Click <strong>New Snip<\/strong>, choose any running simulator, browser window, or desktop screen, then click and drag any area to capture and save as a PNG file.\n    <\/p>\n    <div class=\"controls\">\n      <button type=\"button\" id=\"startBtn\" class=\"primary-btn\">New Snip<\/button>\n      <select id=\"delaySelect\" aria-label=\"Capture delay\">\n        <option value=\"0\">No Delay<\/option>\n        <option value=\"3\">3s Delay<\/option>\n        <option value=\"5\">5s Delay<\/option>\n      <\/select>\n    <\/div>\n    <p id=\"statusEl\" class=\"status\"><\/p>\n    <p id=\"errorEl\" class=\"error\"><\/p>\n    <div id=\"previewWrap\" class=\"preview-wrap\">\n      <div class=\"preview-box\">\n        <img id=\"previewImg\" alt=\"Captured PNG preview\" />\n      <\/div>\n      <div class=\"actions\">\n        <button type=\"button\" id=\"saveBtn\" class=\"sec-btn\">Save PNG<\/button>\n        <button type=\"button\" id=\"copyBtn\" class=\"sec-btn\">Copy PNG<\/button>\n      <\/div>\n    <\/div>\n  <\/div>\n\n  <div id=\"overlayEl\" class=\"overlay\">\n    <img id=\"frameImg\" alt=\"Captured screen frame\" draggable=\"false\" />\n    <div id=\"overlayBar\" class=\"overlay-bar\">\n      <span>Drag across any area to capture and save PNG<\/span>\n      <button type=\"button\" id=\"cancelOverlayBtn\">Cancel (Esc)<\/button>\n    <\/div>\n    <div id=\"marqueeEl\" class=\"marquee\">\n      <span id=\"dimsEl\" class=\"dims\">0 × 0 px<\/span>\n    <\/div>\n  <\/div>\n\n  <script>\n    (function () {\n      const startBtn = document.getElementById(\"startBtn\");\n      const delaySelect = document.getElementById(\"delaySelect\");\n      const statusEl = document.getElementById(\"statusEl\");\n      const errorEl = document.getElementById(\"errorEl\");\n      const previewWrap = document.getElementById(\"previewWrap\");\n      const previewImg = document.getElementById(\"previewImg\");\n      const saveBtn = document.getElementById(\"saveBtn\");\n      const copyBtn = document.getElementById(\"copyBtn\");\n      const overlayEl = document.getElementById(\"overlayEl\");\n      const frameImg = document.getElementById(\"frameImg\");\n      const marqueeEl = document.getElementById(\"marqueeEl\");\n      const dimsEl = document.getElementById(\"dimsEl\");\n\n      let frameW = 0, frameH = 0, lastPngUrl = \"\", sel = null, timer = null;\n      let savedBounds = null;\n\n      function downloadPng(url) {\n        const stamp = new Date().toISOString().replace(/[:T]/g, \"-\").slice(0, 19);\n        const a = document.createElement(\"a\");\n        a.href = url;\n        a.download = \"snip-\" + stamp + \".png\";\n        document.body.appendChild(a);\n        a.click();\n        document.body.removeChild(a);\n      }\n\n      function expandForCrop() {\n        savedBounds = {\n          x: window.screenX,\n          y: window.screenY,\n          w: window.outerWidth,\n          h: window.outerHeight\n        };\n        try {\n          const targetW = Math.round(screen.availWidth * 0.92);\n          const targetH = Math.round(screen.availHeight * 0.92);\n          const targetX = Math.round(screen.availLeft + (screen.availWidth - targetW) / 2);\n          const targetY = Math.round(screen.availTop + (screen.availHeight - targetH) / 2);\n          window.moveTo(targetX, targetY);\n          window.resizeTo(targetW, targetH);\n        } catch (err) {}\n      }\n\n      function restoreWindowBounds() {\n        if (!savedBounds) return;\n        try {\n          window.resizeTo(savedBounds.w, savedBounds.h);\n          window.moveTo(savedBounds.x, savedBounds.y);\n        } catch (err) {}\n        savedBounds = null;\n      }\n\n      async function captureScreen() {\n        errorEl.style.display = \"none\";\n        statusEl.textContent = \"Choose any running application, window, or tab...\";\n        statusEl.style.display = \"block\";\n\n        if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {\n          statusEl.style.display = \"none\";\n          errorEl.textContent = \"Screen capture API is unavailable in this browser.\";\n          errorEl.style.display = \"block\";\n          return;\n        }\n\n        let stream = null;\n        try {\n          stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });\n          const video = document.createElement(\"video\");\n          video.srcObject = stream;\n          video.muted = true;\n          video.playsInline = true;\n\n          await new Promise(function (resolve, reject) {\n            video.onloadedmetadata = function () {\n              video.play().then(function () { setTimeout(resolve, 140); }).catch(reject);\n            };\n            video.onerror = function () { reject(new Error(\"Could not read screen frame.\")); };\n          });\n\n          frameW = video.videoWidth;\n          frameH = video.videoHeight;\n          const canvas = document.createElement(\"canvas\");\n          canvas.width = frameW;\n          canvas.height = frameH;\n          canvas.getContext(\"2d\").drawImage(video, 0, 0, frameW, frameH);\n          frameImg.src = canvas.toDataURL(\"image/png\");\n          marqueeEl.style.display = \"none\";\n          expandForCrop();\n          overlayEl.classList.add(\"is-active\");\n          statusEl.textContent = \"Click and drag over any region to save PNG.\";\n        } catch (err) {\n          const msg = ((err && err.message) || \"\").toLowerCase();\n          if (msg.includes(\"cancel\") || msg.includes(\"permission\") || msg.includes(\"abort\")) {\n            statusEl.textContent = \"Capture cancelled.\";\n          } else {\n            statusEl.style.display = \"none\";\n            errorEl.textContent = \"Screen capture was blocked or failed. Allow screen access and try again.\";\n            errorEl.style.display = \"block\";\n          }\n        } finally {\n          if (stream) stream.getTracks().forEach(function (t) { t.stop(); });\n        }\n      }\n\n      startBtn.addEventListener(\"click\", function () {\n        if (timer) clearInterval(timer);\n        const delay = Number(delaySelect.value) || 0;\n        if (delay === 0) { captureScreen(); return; }\n        let rem = delay;\n        errorEl.style.display = \"none\";\n        statusEl.style.display = \"block\";\n        statusEl.textContent = \"Starting capture in \" + rem + \"s...\";\n        startBtn.disabled = true;\n        startBtn.textContent = \"Capturing in \" + rem + \"s...\";\n        timer = setInterval(function () {\n          rem--;\n          if (rem <= 0) {\n            clearInterval(timer);\n            timer = null;\n            startBtn.disabled = false;\n            startBtn.textContent = \"New Snip\";\n            captureScreen();\n          } else {\n            statusEl.textContent = \"Starting capture in \" + rem + \"s...\";\n            startBtn.textContent = \"Capturing in \" + rem + \"s...\";\n          }\n        }, 1000);\n      });\n\n      overlayEl.addEventListener(\"pointerdown\", function (e) {\n        if (e.target.closest(\"#overlayBar\") || e.button !== 0) return;\n        sel = { sx: e.clientX, sy: e.clientY, cx: e.clientX, cy: e.clientY };\n        marqueeEl.style.display = \"none\";\n      });\n\n      overlayEl.addEventListener(\"pointermove\", function (e) {\n        if (!sel) return;\n        sel.cx = e.clientX;\n        sel.cy = e.clientY;\n        const x = Math.min(sel.sx, sel.cx);\n        const y = Math.min(sel.sy, sel.cy);\n        const w = Math.abs(sel.cx - sel.sx);\n        const h = Math.abs(sel.cy - sel.sy);\n        if (w > 2 && h > 2) {\n          marqueeEl.style.display = \"block\";\n          marqueeEl.style.left = x + \"px\";\n          marqueeEl.style.top = y + \"px\";\n          marqueeEl.style.width = w + \"px\";\n          marqueeEl.style.height = h + \"px\";\n          dimsEl.textContent = Math.round(w) + \" × \" + Math.round(h) + \" px\";\n        }\n      });\n\n      overlayEl.addEventListener(\"pointerup\", function (e) {\n        if (!sel) return;\n        const rect = { sx: sel.sx, sy: sel.sy, cx: e.clientX, cy: e.clientY };\n        sel = null;\n        const x1 = Math.min(rect.sx, rect.cx), y1 = Math.min(rect.sy, rect.cy);\n        const w = Math.abs(rect.cx - rect.sx), h = Math.abs(rect.cy - rect.sy);\n        if (w < 6 || h < 6) {\n          marqueeEl.style.display = \"none\";\n          return;\n        }\n        const b = frameImg.getBoundingClientRect();\n        const sx = frameW / b.width, sy = frameH / b.height;\n        const rx = Math.max(0, x1 - b.left), ry = Math.max(0, y1 - b.top);\n        const cw = Math.round(Math.min(frameW - rx * sx, w * sx));\n        const ch = Math.round(Math.min(frameH - ry * sy, h * sy));\n        if (cw >= 2 && ch >= 2) {\n          const out = document.createElement(\"canvas\");\n          out.width = cw;\n          out.height = ch;\n          out.getContext(\"2d\").drawImage(frameImg, Math.round(rx * sx), Math.round(ry * sy), cw, ch, 0, 0, cw, ch);\n          lastPngUrl = out.toDataURL(\"image/png\");\n          previewImg.src = lastPngUrl;\n          previewWrap.style.display = \"flex\";\n          downloadPng(lastPngUrl);\n          statusEl.textContent = \"Saved \" + cw + \" × \" + ch + \" px PNG.\";\n        }\n        overlayEl.classList.remove(\"is-active\");\n        marqueeEl.style.display = \"none\";\n        restoreWindowBounds();\n      });\n\n      function cancelCrop() {\n        overlayEl.classList.remove(\"is-active\");\n        marqueeEl.style.display = \"none\";\n        sel = null;\n        statusEl.textContent = \"Screen snip cancelled.\";\n        restoreWindowBounds();\n      }\n\n      document.getElementById(\"cancelOverlayBtn\").addEventListener(\"click\", cancelCrop);\n      document.addEventListener(\"keydown\", function (e) {\n        if (e.key === \"Escape\" && overlayEl.classList.contains(\"is-active\")) cancelCrop();\n      });\n\n      saveBtn.addEventListener(\"click\", function () {\n        if (lastPngUrl) downloadPng(lastPngUrl);\n      });\n\n      copyBtn.addEventListener(\"click\", async function () {\n        if (!lastPngUrl) return;\n        try {\n          const res = await fetch(lastPngUrl);\n          const blob = await res.blob();\n          await navigator.clipboard.write([new ClipboardItem({ \"image/png\": blob })]);\n          copyBtn.textContent = \"Copied\";\n          setTimeout(function () { copyBtn.textContent = \"Copy PNG\"; }, 2000);\n        } catch (err) {\n          errorEl.textContent = \"Clipboard image copy is not supported here.\";\n          errorEl.style.display = \"block\";\n        }\n      });\n    })();\n  <\/script>\n<\/body>\n<\/html>";
+
+    const popupHandles = { calc: null, snip: null };
+
+    function openSeparateWindow(key, html, name, features) {
+      try {
+        if (popupHandles[key] && !popupHandles[key].closed) {
+          popupHandles[key].focus();
+          return true;
+        }
+      } catch (e) {
+        popupHandles[key] = null;
+      }
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const blobUrl = URL.createObjectURL(blob);
+      const win = window.open(blobUrl, name, features);
+      if (win && !win.closed) {
+        popupHandles[key] = win;
+        win.focus();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        return true;
+      }
+      URL.revokeObjectURL(blobUrl);
+      return false;
+    }
+
     function getMotifSvg(motif, inkMode) {
       const p = inkMode === "on-dark" ? "#FFFFFF" : "#0F172A";
       const s = inkMode === "on-dark" ? "rgba(255,255,255,0.55)" : "rgba(15,23,42,0.45)";
@@ -677,7 +1297,25 @@
       return map[motif] || map.placeholder;
     }
 
+    function getUtilityMotifSvg(motif) {
+      const m = "#334155";
+      const mu = "#64748B";
+      const gr = "rgba(51,65,85,0.16)";
+      const fl = "rgba(51,65,85,0.08)";
+      const ch = "rgba(51,65,85,0.22)";
+      if (motif === "utility-calc") {
+        return '<svg viewBox="0 0 240 104"><rect x="82" y="12" width="76" height="80" rx="6" fill="' + fl + '" stroke="' + m + '" stroke-width="1.75"/><rect x="90" y="20" width="60" height="16" rx="2" fill="#FFFFFF" stroke="' + mu + '" stroke-width="1.2"/><line x1="98" y1="28" x2="140" y2="28" stroke="' + m + '" stroke-width="2" stroke-linecap="round"/><g fill="' + ch + '"><rect x="90" y="43" width="12" height="7" rx="1.5"/><rect x="106" y="43" width="12" height="7" rx="1.5"/><rect x="122" y="43" width="12" height="7" rx="1.5"/><rect x="138" y="43" width="12" height="7" rx="1.5" fill="' + m + '"/><rect x="90" y="55" width="12" height="7" rx="1.5"/><rect x="106" y="55" width="12" height="7" rx="1.5"/><rect x="122" y="55" width="12" height="7" rx="1.5"/><rect x="138" y="55" width="12" height="7" rx="1.5"/><rect x="90" y="67" width="12" height="7" rx="1.5"/><rect x="106" y="67" width="12" height="7" rx="1.5"/><rect x="122" y="67" width="12" height="7" rx="1.5"/><rect x="138" y="67" width="12" height="19" rx="1.5" fill="' + m + '"/><rect x="90" y="79" width="28" height="7" rx="1.5"/><rect x="122" y="79" width="12" height="7" rx="1.5"/></g></svg>';
+      }
+      if (motif === "utility-snip") {
+        return '<svg viewBox="0 0 240 104"><line x1="36" y1="20" x2="204" y2="20" stroke="' + gr + '"/><line x1="36" y1="84" x2="204" y2="84" stroke="' + gr + '"/><rect x="64" y="22" width="112" height="60" rx="4" fill="' + fl + '" stroke="' + m + '" stroke-width="1.75" stroke-dasharray="5 3"/><rect x="61" y="19" width="6" height="6" fill="' + m + '"/><rect x="173" y="19" width="6" height="6" fill="' + m + '"/><rect x="61" y="79" width="6" height="6" fill="' + m + '"/><rect x="173" y="79" width="6" height="6" fill="' + m + '"/><line x1="120" y1="40" x2="120" y2="64" stroke="' + m + '" stroke-width="2" stroke-linecap="round"/><line x1="108" y1="52" x2="132" y2="52" stroke="' + m + '" stroke-width="2" stroke-linecap="round"/><circle cx="120" cy="52" r="9" fill="none" stroke="' + mu + '" stroke-width="1.25"/></svg>';
+      }
+      return '<svg viewBox="0 0 240 104"><line x1="28" y1="52" x2="212" y2="52" stroke="' + gr + '"/><line x1="120" y1="14" x2="120" y2="90" stroke="' + gr + '"/><rect x="84" y="24" width="72" height="56" rx="8" fill="' + fl + '" stroke="' + mu + '" stroke-width="1.5" stroke-dasharray="5 4"/><line x1="120" y1="40" x2="120" y2="64" stroke="' + m + '" stroke-width="2.25" stroke-linecap="round"/><line x1="108" y1="52" x2="132" y2="52" stroke="' + m + '" stroke-width="2.25" stroke-linecap="round"/></svg>';
+    }
+
     const gridEl = document.getElementById("simulatorGrid");
+    const utilitiesGridEl = document.getElementById("utilitiesGrid");
+    const utilityNoticeEl = document.getElementById("utilityNotice");
+    const utilityNoticeTextEl = document.getElementById("utilityNoticeText");
     const filtersEl = document.getElementById("categoryFilters");
     const searchEl = document.getElementById("searchInput");
     const countEl = document.getElementById("appCount");
@@ -733,29 +1371,104 @@
         const num = String(index + 1).padStart(2, "0");
         const svg = getMotifSvg(sim.motif, theme.inkMode);
 
-        tile.innerHTML = `
-          <div class="tile-motif" style="background:${wellBg};border-bottom:1px solid ${divider};">${svg}</div>
-          <div class="tile-body">
-            <div class="tile-meta" style="color:${mutedColor};">${num} &middot; ${sim.category}</div>
-            <h2 class="tile-title" style="color:${titleColor};">${sim.name}</h2>
-            <p class="tile-summary" style="color:${bodyColor};">${sim.summary}</p>
-            <div class="tile-footer" style="border-top:1px solid ${divider};">
-              <span class="tile-file" style="color:${mutedColor};">${sim.file}</span>
-              <span class="tile-launch" style="color:${titleColor};">Launch &rarr;</span>
-            </div>
-          </div>
-        `;
+        tile.innerHTML =
+          '<div class="tile-motif" style="background:' + wellBg + ';border-bottom:1px solid ' + divider + ';">' + svg + '</div>' +
+          '<div class="tile-body">' +
+            '<div class="tile-meta" style="color:' + mutedColor + ';">' + num + ' &middot; ' + sim.category + '</div>' +
+            '<h2 class="tile-title" style="color:' + titleColor + ';">' + sim.name + '</h2>' +
+            '<p class="tile-summary" style="color:' + bodyColor + ';">' + sim.summary + '</p>' +
+            '<div class="tile-footer" style="border-top:1px solid ' + divider + ';">' +
+              '<span class="tile-file" style="color:' + mutedColor + ';">' + sim.file + '</span>' +
+              '<span class="tile-launch" style="color:' + titleColor + ';">Launch &rarr;</span>' +
+            '</div>' +
+          '</div>';
         gridEl.appendChild(tile);
       });
 
-      countEl.textContent = `Showing ${filtered.length} of ${SIMULATORS.length} simulators`;
+      countEl.textContent = "Showing " + filtered.length + " of " + SIMULATORS.length + " simulators";
     }
+
+    function renderUtilities() {
+      utilitiesGridEl.innerHTML = "";
+      UTILITIES.forEach((util) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "utility-tile";
+        btn.style.borderColor = util.borderHex;
+
+        const isCalcActive = util.actionType === "calculator" && calcWinEl.classList.contains("is-open");
+        const isSnipActive = util.actionType === "screen-capture" && snipWinEl.classList.contains("is-open");
+        const actionLabel =
+          util.actionType === "placeholder"
+            ? "Reserved"
+            : isCalcActive || isSnipActive
+              ? "Active"
+              : "Open Tool";
+
+        btn.innerHTML =
+          '<div class="tile-motif">' + getUtilityMotifSvg(util.motif) + '</div>' +
+          '<div class="tile-body">' +
+            '<div class="tile-meta" style="color:#475569;">' + util.label + ' &middot; ' + util.subtitle + '</div>' +
+            '<h2 class="tile-title" style="color:#0f172a;">' + util.name + '</h2>' +
+            '<p class="tile-summary" style="color:#475569;">' + util.summary + '</p>' +
+            '<div class="tile-footer" style="border-top:1px solid rgba(203,213,225,0.85);">' +
+              '<span class="tile-file" style="color:#64748b;">' + (util.actionType === "placeholder" ? util.name : "Separate Window") + '</span>' +
+              '<span class="tile-launch" style="color:' + util.borderHex + ';">' + (util.actionType === "placeholder" ? "Reserved" : isCalcActive || isSnipActive ? "Active" : "Pop Out") + ' &rarr;</span>' +
+            '</div>' +
+          '</div>';
+
+        btn.addEventListener("click", () => {
+          if (util.actionType === "calculator") {
+            const opened = openSeparateWindow(
+              "calc",
+              CALC_POPUP_HTML,
+              "askMrPhysicsCalculator",
+              "popup=yes,width=360,height=510,resizable=yes,scrollbars=no"
+            );
+            if (opened) {
+              utilityNoticeEl.style.display = "none";
+            } else {
+              openCalcWindow();
+              utilityNoticeTextEl.textContent = "Popup blocked by browser; opened Scientific Calculator inline instead.";
+              utilityNoticeEl.style.display = "flex";
+            }
+          } else if (util.actionType === "screen-capture") {
+            const opened = openSeparateWindow(
+              "snip",
+              SNIP_POPUP_HTML,
+              "askMrPhysicsScreenCapture",
+              "popup=yes,width=420,height=440,resizable=yes,scrollbars=no"
+            );
+            if (opened) {
+              utilityNoticeEl.style.display = "none";
+            } else {
+              openSnipWindow();
+              utilityNoticeTextEl.textContent = "Popup blocked by browser; opened Screen Capture Tool inline instead.";
+              utilityNoticeEl.style.display = "flex";
+            }
+          } else {
+            utilityNoticeTextEl.textContent = util.label + " (" + util.name + ") is reserved for a future built-in utility.";
+            utilityNoticeEl.style.display = "flex";
+          }
+          renderUtilities();
+        });
+
+        utilitiesGridEl.appendChild(btn);
+      });
+    }
+
+    document.getElementById("utilityNoticeClose").addEventListener("click", () => {
+      utilityNoticeEl.style.display = "none";
+    });
 
     searchEl.addEventListener("input", (e) => {
       searchQuery = e.target.value;
       renderGrid();
     });
 
+    /* =========================================================================
+       FULL SCREEN TOGGLE
+       ========================================================================= */
     const fullscreenBtn = document.getElementById("fullscreenBtn");
     const fullscreenIcon = document.getElementById("fullscreenIcon");
     const fullscreenLabel = document.getElementById("fullscreenLabel");
@@ -805,9 +1518,629 @@
     document.addEventListener("fullscreenchange", syncFullscreenButton);
     document.addEventListener("webkitfullscreenchange", syncFullscreenButton);
 
+    /* =========================================================================
+       POP-OUT SCIENTIFIC CALCULATOR (Draggable + Corner Resizable)
+       ========================================================================= */
+    const calcWinEl = document.getElementById("calcWindow");
+    const snipWinEl = document.getElementById("snipWindow");
+    const calcExprEl = document.getElementById("calcExpr");
+    const calcValEl = document.getElementById("calcVal");
+    const calcModeBadgeEl = document.getElementById("calcModeBadge");
+    const calcKeysEl = document.getElementById("calcKeys");
+
+    let calcState = {
+      x: 48,
+      y: 84,
+      w: 340,
+      h: 475,
+      expr: "",
+      display: "0",
+      ans: 0,
+      degMode: true,
+      secondMode: false,
+      justEvaluated: false,
+      hasError: false
+    };
+
+    function bringToFront(winEl) {
+      calcWinEl.style.zIndex = winEl === calcWinEl ? "55" : "45";
+      snipWinEl.style.zIndex = winEl === snipWinEl ? "55" : "45";
+    }
+
+    function openCalcWindow() {
+      calcState.x = Math.min(Math.max(16, calcState.x), Math.max(16, window.innerWidth - calcState.w - 16));
+      calcState.y = Math.min(Math.max(16, calcState.y), Math.max(16, window.innerHeight - calcState.h - 16));
+      applyCalcGeometry();
+      calcWinEl.classList.add("is-open");
+      bringToFront(calcWinEl);
+      calcWinEl.focus();
+    }
+
+    function applyCalcGeometry() {
+      calcWinEl.style.left = calcState.x + "px";
+      calcWinEl.style.top = calcState.y + "px";
+      calcWinEl.style.width = calcState.w + "px";
+      calcWinEl.style.height = calcState.h + "px";
+      const scale = Math.min(calcState.w / 340, calcState.h / 475);
+      calcExprEl.style.fontSize = Math.max(11, Math.round(13 * scale)) + "px";
+      calcValEl.style.fontSize = Math.max(20, Math.round(28 * scale)) + "px";
+      const btnPx = Math.max(11, Math.round(13 * scale)) + "px";
+      calcKeysEl.querySelectorAll("button").forEach((b) => {
+        b.style.fontSize = btnPx;
+      });
+    }
+
+    function formatCalcResult(val) {
+      if (!Number.isFinite(val)) return "Error";
+      if (val === 0) return "0";
+      const abs = Math.abs(val);
+      if (abs >= 1e10 || abs < 1e-6) {
+        return val.toExponential(6).replace(/\.?0+e/, "e");
+      }
+      return String(Number(val.toPrecision(10)));
+    }
+
+    function evaluateMathExpr(raw, degMode, ansVal) {
+      const s = raw.replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-").replace(/π/g, "pi").replace(/√/g, "sqrt").trim();
+      const funcs = new Set(["sin", "cos", "tan", "asin", "acos", "atan", "ln", "log", "sqrt", "abs", "exp"]);
+      const rawTokens = [];
+      let i = 0;
+      while (i < s.length) {
+        const ch = s[i];
+        if (/\s/.test(ch)) { i++; continue; }
+        if (/[0-9.]/.test(ch)) {
+          let num = "", dots = 0;
+          while (i < s.length && /[0-9.]/.test(s[i])) {
+            if (s[i] === ".") dots++;
+            if (dots > 1) throw new Error("Syntax error");
+            num += s[i++];
+          }
+          if (i < s.length && (s[i] === "e" || s[i] === "E")) {
+            const nxt = s[i + 1];
+            if (nxt && (/[0-9]/.test(nxt) || ((nxt === "+" || nxt === "-") && s[i + 2] && /[0-9]/.test(s[i + 2])))) {
+              num += s[i++];
+              if (s[i] === "+" || s[i] === "-") num += s[i++];
+              while (i < s.length && /[0-9]/.test(s[i])) num += s[i++];
+            }
+          }
+          rawTokens.push({ t: "num", v: Number(num) });
+          continue;
+        }
+        if (/[a-zA-Z]/.test(ch)) {
+          let id = "";
+          while (i < s.length && /[a-zA-Z0-9]/.test(s[i])) id += s[i++];
+          rawTokens.push({ t: "id", v: id.toLowerCase() });
+          continue;
+        }
+        if (ch === "(" || ch === ")") { rawTokens.push({ t: ch }); i++; continue; }
+        if ("+-*/^!".includes(ch)) { rawTokens.push({ t: "op", v: ch }); i++; continue; }
+        throw new Error("Syntax error");
+      }
+      const tokens = [];
+      for (let idx = 0; idx < rawTokens.length; idx++) {
+        const curr = rawTokens[idx];
+        const prev = tokens[tokens.length - 1];
+        if (prev) {
+          const prevEnd = prev.t === "num" || prev.t === ")" || (prev.t === "op" && prev.v === "!") || (prev.t === "id" && !funcs.has(prev.v));
+          const currStart = curr.t === "num" || curr.t === "(" || curr.t === "id";
+          if (prevEnd && currStart) tokens.push({ t: "op", v: "*" });
+        }
+        tokens.push(curr);
+      }
+      if (!tokens.length) return 0;
+      let pos = 0;
+      const peek = () => tokens[pos];
+      const next = () => tokens[pos++];
+      function fact(n) {
+        if (!Number.isFinite(n) || n < 0 || Math.floor(n) !== n) throw new Error("Domain error");
+        if (n > 170) return Infinity;
+        let r = 1;
+        for (let k = 2; k <= n; k++) r *= k;
+        return r;
+      }
+      function parseExpr() {
+        let left = parseTerm();
+        while (peek() && peek().t === "op" && (peek().v === "+" || peek().v === "-")) {
+          const op = next().v;
+          const right = parseTerm();
+          left = op === "+" ? left + right : left - right;
+        }
+        return left;
+      }
+      function parseTerm() {
+        let left = parseUnary();
+        while (peek() && peek().t === "op" && (peek().v === "*" || peek().v === "/")) {
+          const op = next().v;
+          const right = parseUnary();
+          if (op === "/" && right === 0) throw new Error("Divide by zero");
+          left = op === "*" ? left * right : left / right;
+        }
+        return left;
+      }
+      function parseUnary() {
+        if (peek() && peek().t === "op" && (peek().v === "+" || peek().v === "-")) {
+          const op = next().v;
+          const v = parseUnary();
+          return op === "-" ? -v : v;
+        }
+        return parsePow();
+      }
+      function parsePow() {
+        const base = parsePost();
+        if (peek() && peek().t === "op" && peek().v === "^") {
+          next();
+          return Math.pow(base, parseUnary());
+        }
+        return base;
+      }
+      function parsePost() {
+        let v = parsePrim();
+        while (peek() && peek().t === "op" && peek().v === "!") {
+          next();
+          v = fact(v);
+        }
+        return v;
+      }
+      function applyFn(fn, a) {
+        const toR = (x) => degMode ? (x * Math.PI) / 180 : x;
+        const fromR = (x) => degMode ? (x * 180) / Math.PI : x;
+        if (fn === "sin") return Math.sin(toR(a));
+        if (fn === "cos") return Math.cos(toR(a));
+        if (fn === "tan") { if (Math.abs(Math.cos(toR(a))) < 1e-12) throw new Error("Undefined"); return Math.tan(toR(a)); }
+        if (fn === "asin") { if (a < -1 || a > 1) throw new Error("Domain error"); return fromR(Math.asin(a)); }
+        if (fn === "acos") { if (a < -1 || a > 1) throw new Error("Domain error"); return fromR(Math.acos(a)); }
+        if (fn === "atan") return fromR(Math.atan(a));
+        if (fn === "ln") { if (a <= 0) throw new Error("Domain error"); return Math.log(a); }
+        if (fn === "log") { if (a <= 0) throw new Error("Domain error"); return Math.log10(a); }
+        if (fn === "sqrt") { if (a < 0) throw new Error("Domain error"); return Math.sqrt(a); }
+        if (fn === "abs") return Math.abs(a);
+        if (fn === "exp") return Math.exp(a);
+        throw new Error("Syntax error");
+      }
+      function parsePrim() {
+        const tok = peek();
+        if (!tok) throw new Error("Syntax error");
+        if (tok.t === "num") { next(); return tok.v; }
+        if (tok.t === "id") {
+          next();
+          if (tok.v === "pi") return Math.PI;
+          if (tok.v === "e") return Math.E;
+          if (tok.v === "ans") return ansVal;
+          if (funcs.has(tok.v)) {
+            let arg;
+            if (peek() && peek().t === "(") {
+              next();
+              arg = parseExpr();
+              if (!peek() || next().t !== ")") throw new Error("Syntax error");
+            } else {
+              arg = parseUnary();
+            }
+            return applyFn(tok.v, arg);
+          }
+          throw new Error("Syntax error");
+        }
+        if (tok.t === "(") {
+          next();
+          const v = parseExpr();
+          if (!peek() || next().t !== ")") throw new Error("Syntax error");
+          return v;
+        }
+        throw new Error("Syntax error");
+      }
+      const res = parseExpr();
+      if (pos < tokens.length || !Number.isFinite(res)) throw new Error("Math error");
+      return Math.abs(res) < 1e-13 ? 0 : Number(res.toPrecision(12));
+    }
+
+    function updateCalcDisplay() {
+      calcExprEl.textContent = calcState.expr || "0";
+      calcValEl.textContent = calcState.display;
+      calcValEl.classList.toggle("is-error", calcState.hasError);
+      calcModeBadgeEl.textContent = calcState.degMode ? "DEG" : "RAD";
+    }
+
+    function renderCalcKeys() {
+      const s2 = calcState.secondMode;
+      const keys = [
+        { label: calcState.degMode ? "DEG" : "RAD", cls: "mode", act: "deg" },
+        { label: "2nd", cls: "mode" + (s2 ? " active" : ""), act: "2nd" },
+        { label: "Ans", cls: "mode", tok: "Ans" },
+        { label: "DEL", cls: "mode", act: "del" },
+        { label: "AC", cls: "ac", act: "ac" },
+        { label: s2 ? "sin⁻¹" : "sin", tok: s2 ? "asin(" : "sin(" },
+        { label: s2 ? "cos⁻¹" : "cos", tok: s2 ? "acos(" : "cos(" },
+        { label: s2 ? "tan⁻¹" : "tan", tok: s2 ? "atan(" : "tan(" },
+        { label: s2 ? "eˣ" : "ln", tok: s2 ? "exp(" : "ln(" },
+        { label: s2 ? "10ˣ" : "log", tok: s2 ? "10^(" : "log(" },
+        { label: s2 ? "√x" : "x²", act: s2 ? undefined : "sq", tok: s2 ? "sqrt(" : undefined },
+        { label: "xʸ", tok: "^", isOp: true },
+        { label: "(", tok: "(" },
+        { label: ")", tok: ")" },
+        { label: "÷", cls: "op", tok: "÷", isOp: true },
+        { label: "π", tok: "π" },
+        { label: "7", cls: "num", tok: "7" },
+        { label: "8", cls: "num", tok: "8" },
+        { label: "9", cls: "num", tok: "9" },
+        { label: "×", cls: "op", tok: "×", isOp: true },
+        { label: "e", tok: "e" },
+        { label: "4", cls: "num", tok: "4" },
+        { label: "5", cls: "num", tok: "5" },
+        { label: "6", cls: "num", tok: "6" },
+        { label: "−", cls: "op", tok: "−", isOp: true },
+        { label: "1/x", act: "inv" },
+        { label: "1", cls: "num", tok: "1" },
+        { label: "2", cls: "num", tok: "2" },
+        { label: "3", cls: "num", tok: "3" },
+        { label: "+", cls: "op", tok: "+", isOp: true },
+        { label: "n!", tok: "!", isOp: true },
+        { label: "0", cls: "num", tok: "0" },
+        { label: ".", cls: "num", tok: "." },
+        { label: "±", cls: "num", act: "sign" },
+        { label: "=", cls: "eq", act: "eq" }
+      ];
+      calcKeysEl.innerHTML = "";
+      keys.forEach((k) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "calc-key" + (k.cls ? " " + k.cls : "");
+        b.textContent = k.label;
+        b.addEventListener("click", () => {
+          calcState.hasError = false;
+          if (k.act === "deg") { calcState.degMode = !calcState.degMode; renderCalcKeys(); }
+          else if (k.act === "2nd") { calcState.secondMode = !calcState.secondMode; renderCalcKeys(); }
+          else if (k.act === "ac") { calcState.expr = ""; calcState.display = "0"; calcState.justEvaluated = false; }
+          else if (k.act === "del") {
+            calcState.justEvaluated = false;
+            const mult = ["asin(","acos(","atan(","sqrt(","sin(","cos(","tan(","log(","exp(","ln(","Ans"];
+            const hit = mult.find((m) => calcState.expr.endsWith(m));
+            calcState.expr = hit ? calcState.expr.slice(0, -hit.length) : calcState.expr.slice(0, -1);
+          } else if (k.act === "sq") {
+            calcState.expr = calcState.justEvaluated ? "(" + formatCalcResult(calcState.ans) + ")^2" : (calcState.expr ? calcState.expr + "^2" : "Ans^2");
+            calcState.justEvaluated = false;
+          } else if (k.act === "inv") {
+            calcState.expr = calcState.justEvaluated ? "1/(" + formatCalcResult(calcState.ans) + ")" : (calcState.expr ? "1/(" + calcState.expr + ")" : "1/(");
+            calcState.justEvaluated = false;
+          } else if (k.act === "sign") {
+            if (calcState.justEvaluated) {
+              calcState.ans = -calcState.ans;
+              calcState.expr = formatCalcResult(calcState.ans);
+              calcState.display = calcState.expr;
+              calcState.justEvaluated = false;
+            } else if (!calcState.expr) {
+              calcState.expr = "-";
+            } else if (calcState.expr.startsWith("-(") && calcState.expr.endsWith(")")) {
+              calcState.expr = calcState.expr.slice(2, -1);
+            } else {
+              calcState.expr = calcState.expr.startsWith("-") ? calcState.expr.slice(1) : "-(" + calcState.expr + ")";
+            }
+          } else if (k.act === "eq") {
+            if (calcState.expr.trim()) {
+              try {
+                const v = evaluateMathExpr(calcState.expr, calcState.degMode, calcState.ans);
+                calcState.ans = v;
+                calcState.display = formatCalcResult(v);
+                calcState.justEvaluated = true;
+              } catch (err) {
+                calcState.display = err.message || "Error";
+                calcState.hasError = true;
+                calcState.justEvaluated = false;
+              }
+            }
+          } else if (k.tok) {
+            if (calcState.justEvaluated) {
+              calcState.justEvaluated = false;
+              calcState.expr = k.isOp ? formatCalcResult(calcState.ans) + k.tok : k.tok;
+            } else {
+              calcState.expr += k.tok;
+            }
+          }
+          updateCalcDisplay();
+        });
+        calcKeysEl.appendChild(b);
+      });
+      applyCalcGeometry();
+      updateCalcDisplay();
+    }
+
+    calcWinEl.addEventListener("pointerdown", () => bringToFront(calcWinEl));
+    document.getElementById("calcCloseBtn").addEventListener("click", () => {
+      calcWinEl.classList.remove("is-open");
+      renderUtilities();
+    });
+
+    calcWinEl.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        calcWinEl.classList.remove("is-open");
+        renderUtilities();
+        return;
+      }
+      if (/^[0-9.()^!]$/.test(e.key)) {
+        e.preventDefault();
+        if (calcState.justEvaluated) {
+          calcState.justEvaluated = false;
+          calcState.expr = (e.key === "^" || e.key === "!") ? formatCalcResult(calcState.ans) + e.key : e.key;
+        } else calcState.expr += e.key;
+        updateCalcDisplay();
+      } else if (e.key === "+" || e.key === "-" || e.key === "*" || e.key === "/") {
+        e.preventDefault();
+        const opMap = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+        if (calcState.justEvaluated) {
+          calcState.justEvaluated = false;
+          calcState.expr = formatCalcResult(calcState.ans) + opMap[e.key];
+        } else calcState.expr += opMap[e.key];
+        updateCalcDisplay();
+      } else if (e.key === "Enter" || e.key === "=") {
+        e.preventDefault();
+        if (calcState.expr.trim()) {
+          try {
+            const v = evaluateMathExpr(calcState.expr, calcState.degMode, calcState.ans);
+            calcState.ans = v;
+            calcState.display = formatCalcResult(v);
+            calcState.hasError = false;
+            calcState.justEvaluated = true;
+          } catch (err) {
+            calcState.display = err.message || "Error";
+            calcState.hasError = true;
+          }
+          updateCalcDisplay();
+        }
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        calcState.expr = calcState.expr.slice(0, -1);
+        updateCalcDisplay();
+      }
+    });
+
+    /* =========================================================================
+       POP-OUT SCREEN CAPTURE TOOL (Snipping Tool -> Click-Drag -> PNG)
+       ========================================================================= */
+    const snipStartBtn = document.getElementById("snipStartBtn");
+    const snipDelayEl = document.getElementById("snipDelaySelect");
+    const snipStatusEl = document.getElementById("snipStatus");
+    const snipErrorEl = document.getElementById("snipError");
+    const snipPreviewWrapEl = document.getElementById("snipPreviewWrap");
+    const snipPreviewImgEl = document.getElementById("snipPreviewImg");
+    const snipOverlayEl = document.getElementById("snipOverlay");
+    const snipFrameImgEl = document.getElementById("snipFrameImg");
+    const snipMarqueeEl = document.getElementById("snipMarquee");
+    const snipDimsEl = document.getElementById("snipDims");
+
+    let snipState = {
+      x: 80,
+      y: 120,
+      frameW: 0,
+      frameH: 0,
+      lastPngUrl: "",
+      sel: null,
+      countdownTimer: null
+    };
+
+    function openSnipWindow() {
+      snipState.x = Math.min(Math.max(16, snipState.x), Math.max(16, window.innerWidth - 376));
+      snipState.y = Math.min(Math.max(16, snipState.y), Math.max(16, window.innerHeight - 240));
+      snipWinEl.style.left = snipState.x + "px";
+      snipWinEl.style.top = snipState.y + "px";
+      snipWinEl.classList.add("is-open");
+      bringToFront(snipWinEl);
+    }
+
+    function downloadPngUrl(url) {
+      const stamp = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 19);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "snip-" + stamp + ".png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    async function runDisplaySnip() {
+      snipErrorEl.style.display = "none";
+      snipStatusEl.textContent = "Select any running window, tab, or screen to snip...";
+      snipStatusEl.style.display = "block";
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        snipStatusEl.style.display = "none";
+        snipErrorEl.textContent = "Screen capture API is unavailable in this browser context.";
+        snipErrorEl.style.display = "block";
+        return;
+      }
+      let stream = null;
+      try {
+        stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        const video = document.createElement("video");
+        video.srcObject = stream;
+        video.muted = true;
+        video.playsInline = true;
+        await new Promise((resolve, reject) => {
+          video.onloadedmetadata = () => video.play().then(() => setTimeout(resolve, 140)).catch(reject);
+          video.onerror = () => reject(new Error("Frame capture failed"));
+        });
+        const w = video.videoWidth, h = video.videoHeight;
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        c.getContext("2d").drawImage(video, 0, 0, w, h);
+        snipState.frameW = w;
+        snipState.frameH = h;
+        snipFrameImgEl.src = c.toDataURL("image/png");
+        snipMarqueeEl.style.display = "none";
+        snipOverlayEl.classList.add("is-active");
+        snipStatusEl.textContent = "Click and drag across any region to save PNG.";
+      } catch (err) {
+        const msg = (err && err.message || "").toLowerCase();
+        if (msg.includes("cancel") || msg.includes("permission") || msg.includes("abort")) {
+          snipStatusEl.textContent = "Capture cancelled.";
+        } else {
+          snipStatusEl.style.display = "none";
+          snipErrorEl.textContent = "Could not start screen capture. Check browser permissions.";
+          snipErrorEl.style.display = "block";
+        }
+      } finally {
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+      }
+    }
+
+    snipStartBtn.addEventListener("click", () => {
+      if (snipState.countdownTimer) clearInterval(snipState.countdownTimer);
+      const delay = Number(snipDelayEl.value) || 0;
+      if (delay === 0) { runDisplaySnip(); return; }
+      let rem = delay;
+      snipErrorEl.style.display = "none";
+      snipStatusEl.style.display = "block";
+      snipStatusEl.textContent = "Starting capture in " + rem + "s...";
+      snipStartBtn.disabled = true;
+      snipStartBtn.textContent = "Capturing in " + rem + "s...";
+      snipState.countdownTimer = setInterval(() => {
+        rem--;
+        if (rem <= 0) {
+          clearInterval(snipState.countdownTimer);
+          snipState.countdownTimer = null;
+          snipStartBtn.disabled = false;
+          snipStartBtn.textContent = "New Snip";
+          runDisplaySnip();
+        } else {
+          snipStatusEl.textContent = "Starting capture in " + rem + "s...";
+          snipStartBtn.textContent = "Capturing in " + rem + "s...";
+        }
+      }, 1000);
+    });
+
+    snipOverlayEl.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("#snipOverlayBar") || e.button !== 0) return;
+      snipState.sel = { sx: e.clientX, sy: e.clientY, cx: e.clientX, cy: e.clientY };
+      snipMarqueeEl.style.display = "none";
+    });
+
+    snipOverlayEl.addEventListener("pointermove", (e) => {
+      if (!snipState.sel) return;
+      snipState.sel.cx = e.clientX;
+      snipState.sel.cy = e.clientY;
+      const x = Math.min(snipState.sel.sx, snipState.sel.cx);
+      const y = Math.min(snipState.sel.sy, snipState.sel.cy);
+      const w = Math.abs(snipState.sel.cx - snipState.sel.sx);
+      const h = Math.abs(snipState.sel.cy - snipState.sel.sy);
+      if (w > 2 && h > 2) {
+        snipMarqueeEl.style.display = "block";
+        snipMarqueeEl.style.left = x + "px";
+        snipMarqueeEl.style.top = y + "px";
+        snipMarqueeEl.style.width = w + "px";
+        snipMarqueeEl.style.height = h + "px";
+        snipDimsEl.textContent = Math.round(w) + " × " + Math.round(h) + " px";
+      }
+    });
+
+    snipOverlayEl.addEventListener("pointerup", (e) => {
+      if (!snipState.sel) return;
+      const sel = { ...snipState.sel, cx: e.clientX, cy: e.clientY };
+      snipState.sel = null;
+      const x1 = Math.min(sel.sx, sel.cx), y1 = Math.min(sel.sy, sel.cy);
+      const w = Math.abs(sel.cx - sel.sx), h = Math.abs(sel.cy - sel.sy);
+      if (w < 6 || h < 6) { snipMarqueeEl.style.display = "none"; return; }
+      const b = snipFrameImgEl.getBoundingClientRect();
+      const sx = snipState.frameW / b.width, sy = snipState.frameH / b.height;
+      const rx = Math.max(0, x1 - b.left), ry = Math.max(0, y1 - b.top);
+      const cw = Math.round(Math.min(snipState.frameW - rx * sx, w * sx));
+      const ch = Math.round(Math.min(snipState.frameH - ry * sy, h * sy));
+      if (cw >= 2 && ch >= 2) {
+        const out = document.createElement("canvas");
+        out.width = cw; out.height = ch;
+        out.getContext("2d").drawImage(snipFrameImgEl, Math.round(rx * sx), Math.round(ry * sy), cw, ch, 0, 0, cw, ch);
+        const pngUrl = out.toDataURL("image/png");
+        snipState.lastPngUrl = pngUrl;
+        snipPreviewImgEl.src = pngUrl;
+        snipPreviewWrapEl.style.display = "flex";
+        downloadPngUrl(pngUrl);
+        snipStatusEl.textContent = "Saved " + cw + " × " + ch + " px PNG.";
+      }
+      snipOverlayEl.classList.remove("is-active");
+      snipMarqueeEl.style.display = "none";
+    });
+
+    document.getElementById("snipCancelOverlayBtn").addEventListener("click", () => {
+      snipOverlayEl.classList.remove("is-active");
+      snipMarqueeEl.style.display = "none";
+      snipState.sel = null;
+      snipStatusEl.textContent = "Screen snip cancelled.";
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && snipOverlayEl.classList.contains("is-active")) {
+        snipOverlayEl.classList.remove("is-active");
+        snipMarqueeEl.style.display = "none";
+        snipState.sel = null;
+        snipStatusEl.textContent = "Screen snip cancelled.";
+      }
+    });
+
+    document.getElementById("snipSaveBtn").addEventListener("click", () => {
+      if (snipState.lastPngUrl) downloadPngUrl(snipState.lastPngUrl);
+    });
+
+    document.getElementById("snipCopyBtn").addEventListener("click", async () => {
+      if (!snipState.lastPngUrl) return;
+      try {
+        const res = await fetch(snipState.lastPngUrl);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        const btn = document.getElementById("snipCopyBtn");
+        btn.textContent = "Copied";
+        setTimeout(() => { btn.textContent = "Copy PNG"; }, 2000);
+      } catch (err) {
+        snipErrorEl.textContent = "Clipboard image copy is not supported here.";
+        snipErrorEl.style.display = "block";
+      }
+    });
+
+    snipWinEl.addEventListener("pointerdown", () => bringToFront(snipWinEl));
+    document.getElementById("snipCloseBtn").addEventListener("click", () => {
+      snipWinEl.classList.remove("is-open");
+      renderUtilities();
+    });
+
+    /* Shared Drag & Resize Pointer Controller */
+    let activeDrag = null;
+    document.getElementById("calcDragHandle").addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button")) return;
+      bringToFront(calcWinEl);
+      activeDrag = { kind: "calc-move", sx: e.clientX, sy: e.clientY, ox: calcState.x, oy: calcState.y };
+    });
+    document.getElementById("calcResizeHandle").addEventListener("pointerdown", (e) => {
+      e.stopPropagation();
+      bringToFront(calcWinEl);
+      activeDrag = { kind: "calc-resize", sx: e.clientX, sy: e.clientY, ow: calcState.w, oh: calcState.h };
+    });
+    document.getElementById("snipDragHandle").addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button")) return;
+      bringToFront(snipWinEl);
+      activeDrag = { kind: "snip-move", sx: e.clientX, sy: e.clientY, ox: snipState.x, oy: snipState.y };
+    });
+
+    window.addEventListener("pointermove", (e) => {
+      if (!activeDrag) return;
+      if (activeDrag.kind === "calc-move") {
+        calcState.x = Math.min(Math.max(8, activeDrag.ox + (e.clientX - activeDrag.sx)), Math.max(8, window.innerWidth - 120));
+        calcState.y = Math.min(Math.max(8, activeDrag.oy + (e.clientY - activeDrag.sy)), Math.max(8, window.innerHeight - 64));
+        applyCalcGeometry();
+      } else if (activeDrag.kind === "calc-resize") {
+        calcState.w = Math.min(Math.max(285, activeDrag.ow + (e.clientX - activeDrag.sx)), Math.min(700, window.innerWidth - calcState.x - 12));
+        calcState.h = Math.min(Math.max(400, activeDrag.oh + (e.clientY - activeDrag.sy)), Math.min(840, window.innerHeight - calcState.y - 12));
+        applyCalcGeometry();
+      } else if (activeDrag.kind === "snip-move") {
+        snipState.x = Math.min(Math.max(8, activeDrag.ox + (e.clientX - activeDrag.sx)), Math.max(8, window.innerWidth - 140));
+        snipState.y = Math.min(Math.max(8, activeDrag.oy + (e.clientY - activeDrag.sy)), Math.max(8, window.innerHeight - 64));
+        snipWinEl.style.left = snipState.x + "px";
+        snipWinEl.style.top = snipState.y + "px";
+      }
+    });
+
+    window.addEventListener("pointerup", () => {
+      activeDrag = null;
+    });
+
     syncFullscreenButton();
     renderFilters();
     renderGrid();
+    renderCalcKeys();
+    renderUtilities();
   </script>
 </body>
 </html>
