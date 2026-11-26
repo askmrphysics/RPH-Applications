@@ -795,6 +795,105 @@
       white-space: nowrap;
     }
 
+    .hl-window {
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      width: 740px;
+      height: 500px;
+    }
+
+    .hl-window .popout-header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+    }
+
+    .hl-window .popout-close:hover {
+      background: #334155;
+    }
+
+    .hl-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      font-size: 11px;
+    }
+
+    .hl-color-btn,
+    .hl-tool-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid #475569;
+      border-radius: 5px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 7px;
+      cursor: pointer;
+    }
+
+    .hl-color-btn.is-active {
+      border-color: #ffffff;
+      background: #334155;
+      color: #ffffff;
+    }
+
+    .hl-tool-btn.is-on {
+      background: #d97706;
+      border-color: #f59e0b;
+      color: #ffffff;
+    }
+
+    .hl-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    .hl-stage {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      cursor: crosshair;
+      background-color: #f8fafc;
+      background-image:
+        linear-gradient(to right, rgba(148,163,184,0.22) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148,163,184,0.22) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .hl-box-item {
+      position: absolute;
+      border-radius: 6px;
+      border: 2.5px solid;
+      pointer-events: none;
+    }
+
+    .hl-draft-box {
+      position: absolute;
+      border-radius: 6px;
+      border: 2.5px dashed;
+      pointer-events: none;
+      display: none;
+    }
+
+    .hl-pointer-halo {
+      position: absolute;
+      border-radius: 999px;
+      border: 3px solid;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      display: none;
+    }
+
     .footer {
       background: var(--bg-surface);
       border-top: 1px solid var(--border-hairline);
@@ -936,6 +1035,28 @@
     </div>
   </div>
 
+  <!-- Built-in Inline Screen Highlighter Fallback Window (when browser popups are blocked) -->
+  <div id="hlWindow" class="popout-window hl-window" role="dialog" aria-label="Screen Highlighter">
+    <div class="popout-header" id="hlDragHandle">
+      <span class="popout-title">Screen Highlighter</span>
+      <button type="button" class="popout-close" id="hlCloseBtn" aria-label="Close screen highlighter">✕</button>
+    </div>
+    <div class="hl-toolbar">
+      <div id="hlColorsEl" style="display:flex;gap:4px;"></div>
+      <button type="button" id="hlCircleToggle" class="hl-tool-btn is-on">Circle: On</button>
+      <label style="display:inline-flex;align-items:center;gap:4px;color:#cbd5e1;">
+        <span>Size</span>
+        <input id="hlCircleSize" type="range" min="24" max="180" step="4" value="76" style="width:68px;" />
+      </label>
+      <button type="button" id="hlClearBtn" class="hl-tool-btn" style="margin-left:auto;">Clear Boxes</button>
+    </div>
+    <div id="hlStage" class="hl-stage">
+      <div id="hlBoxesEl" style="position:absolute;inset:0;pointer-events:none;"></div>
+      <div id="hlDraftBox" class="hl-draft-box"></div>
+      <div id="hlPointerHalo" class="hl-pointer-halo"></div>
+    </div>
+  </div>
+
   <script>
     /* =========================================================================
        HOW TO ADD OR EDIT HTML APPS IN THIS INDEX FILE:
@@ -947,7 +1068,7 @@
          - category: "Calculus & DE" | "Vectors & 3D" | "Algebra & Trig" | "Physics" | "Utilities"
          - summary:  Short 1-line description
          - motif:    "parametric" | "quadratic" | "studio" | "vector" | "calculator"
-                     | "trig" | "reciprocal-trig" | "selector" | "de" | "surface" | "integral" | "integral-lab" | "linear" | "projectile" | "placeholder"
+                     | "trig" | "reciprocal-trig" | "selector" | "de" | "surface" | "integral" | "integral-lab" | "linear" | "projectile" | "collision" | "placeholder"
          - color:    "blue" | "orange" | "purple" | "green" | "indigo"
                      | "yellow" | "teal" | "red" | "cyan" | "pink"
        ========================================================================= */
@@ -1065,12 +1186,20 @@
     "color": "purple"
   },
   {
+    "name": "Collision Lab Pro",
+    "file": "Collision Lab Pro.html",
+    "category": "Physics",
+    "summary": "Interactive 1D and 2D collision simulator for momentum, impulse, and energy.",
+    "motif": "collision",
+    "color": "orange"
+  },
+  {
     "name": "Placeholder 1",
     "file": "Placeholder 1.html",
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "orange"
+    "color": "teal"
   },
   {
     "name": "Placeholder 2",
@@ -1078,7 +1207,7 @@
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "teal"
+    "color": "red"
   },
   {
     "name": "Placeholder 3",
@@ -1086,7 +1215,7 @@
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "red"
+    "color": "indigo"
   },
   {
     "name": "Placeholder 4",
@@ -1094,19 +1223,11 @@
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
-    "color": "indigo"
+    "color": "cyan"
   },
   {
     "name": "Placeholder 5",
     "file": "Placeholder 5.html",
-    "category": "Placeholders",
-    "summary": "Reserved tile for a future interactive math or physics simulator.",
-    "motif": "placeholder",
-    "color": "cyan"
-  },
-  {
-    "name": "Placeholder 6",
-    "file": "Placeholder 6.html",
     "category": "Placeholders",
     "summary": "Reserved tile for a future interactive math or physics simulator.",
     "motif": "placeholder",
@@ -1202,19 +1323,19 @@
     "actionType": "screen-capture"
   },
   {
-    "id": "utility-placeholder-1",
+    "id": "utility-highlighter",
     "label": "Utility 3",
-    "name": "utility-placeholder-1",
-    "subtitle": "Reserved Utility",
-    "summary": "Reserved grayscale utility slot for a future built-in classroom tool.",
-    "motif": "utility-placeholder",
+    "name": "Screen Highlighter",
+    "subtitle": "Pop-out Spotlight",
+    "summary": "Drag color highlighter boxes and track cursor with an adjustable spotlight circle.",
+    "motif": "utility-highlight",
     "borderHex": "#D97706",
-    "actionType": "placeholder"
+    "actionType": "highlighter"
   },
   {
-    "id": "utility-placeholder-2",
+    "id": "utility-placeholder-1",
     "label": "Utility 4",
-    "name": "utility-placeholder-2",
+    "name": "utility-placeholder-1",
     "subtitle": "Reserved Utility",
     "summary": "Reserved grayscale utility slot for a future built-in classroom tool.",
     "motif": "utility-placeholder",
@@ -1225,8 +1346,9 @@
 
     const CALC_POPUP_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Scientific Calculator — Ask Mr Physics<\/title>\n  <style>\n    * { box-sizing: border-box; }\n    html, body {\n      margin: 0;\n      width: 100%;\n      height: 100%;\n      overflow: hidden;\n      background: #0f172a;\n      color: #ffffff;\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;\n      user-select: none;\n    }\n    .shell {\n      position: relative;\n      display: flex;\n      flex-direction: column;\n      width: 100vw;\n      height: 100vh;\n      padding: 12px;\n      gap: 10px;\n    }\n    .topbar {\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      padding: 2px 4px;\n      font-size: 12px;\n      color: #cbd5e1;\n      flex-shrink: 0;\n    }\n    .topbar-title {\n      font-weight: 700;\n      letter-spacing: -0.01em;\n      color: #f8fafc;\n    }\n    .mode-badge {\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n      font-weight: 700;\n      color: #38bdf8;\n    }\n    .lcd {\n      border-radius: 10px;\n      border: 1px solid #334155;\n      background: #020617;\n      padding: 10px 14px;\n      text-align: right;\n      flex-shrink: 0;\n    }\n    .expr {\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n      color: #94a3b8;\n      min-height: 1.3em;\n      overflow: hidden;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      font-size: 13px;\n    }\n    .val {\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n      font-weight: 700;\n      font-variant-numeric: tabular-nums;\n      color: #ffffff;\n      margin-top: 4px;\n      overflow: hidden;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      font-size: 28px;\n      line-height: 1.15;\n    }\n    .val.is-error { color: #fb7185; }\n    .keys {\n      flex: 1;\n      min-height: 0;\n      display: grid;\n      grid-template-columns: repeat(5, minmax(0, 1fr));\n      grid-template-rows: repeat(7, minmax(0, 1fr));\n      gap: 6px;\n    }\n    button.key {\n      border: 0;\n      border-radius: 7px;\n      background: #1e293b;\n      color: #e2e8f0;\n      font-family: inherit;\n      font-weight: 600;\n      font-size: 13px;\n      cursor: pointer;\n      transition: background-color 120ms ease;\n    }\n    button.key:hover { background: #334155; }\n    button.key:active { transform: scale(0.97); }\n    button.key.num {\n      background: rgba(51, 65, 85, 0.85);\n      color: #ffffff;\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n    }\n    button.key.num:hover { background: #475569; }\n    button.key.mode {\n      background: #334155;\n      color: #7dd3fc;\n    }\n    button.key.mode.active {\n      background: #0284c7;\n      color: #ffffff;\n    }\n    button.key.op {\n      background: #0369a1;\n      color: #ffffff;\n      font-weight: 700;\n    }\n    button.key.op:hover { background: #0284c7; }\n    button.key.ac {\n      background: #be123c;\n      color: #ffffff;\n      font-weight: 700;\n    }\n    button.key.ac:hover { background: #e11d48; }\n    button.key.eq {\n      background: #059669;\n      color: #ffffff;\n      font-weight: 700;\n    }\n    button.key.eq:hover { background: #10b981; }\n    .resize-grip {\n      position: fixed;\n      right: 2px;\n      bottom: 2px;\n      width: 16px;\n      height: 16px;\n      cursor: nwse-resize;\n      color: #64748b;\n      display: flex;\n      align-items: flex-end;\n      justify-content: flex-end;\n      padding: 2px;\n    }\n    .resize-grip:hover { color: #e2e8f0; }\n  <\/style>\n<\/head>\n<body>\n  <div class=\"shell\">\n    <div class=\"topbar\">\n      <span class=\"topbar-title\">Scientific Calculator<\/span>\n      <span id=\"modeBadge\" class=\"mode-badge\">DEG<\/span>\n    <\/div>\n    <div class=\"lcd\">\n      <div id=\"exprEl\" class=\"expr\">0<\/div>\n      <div id=\"valEl\" class=\"val\">0<\/div>\n    <\/div>\n    <div id=\"keysEl\" class=\"keys\"><\/div>\n    <div id=\"resizeGrip\" class=\"resize-grip\" title=\"Drag window corner to resize\" aria-hidden=\"true\">\n      <svg viewBox=\"0 0 12 12\" width=\"12\" height=\"12\">\n        <path d=\"M 11 3 L 3 11 M 11 7 L 7 11\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n      <\/svg>\n    <\/div>\n  <\/div>\n\n  <script>\n    (function () {\n      const exprEl = document.getElementById(\"exprEl\");\n      const valEl = document.getElementById(\"valEl\");\n      const modeBadge = document.getElementById(\"modeBadge\");\n      const keysEl = document.getElementById(\"keysEl\");\n      const resizeGrip = document.getElementById(\"resizeGrip\");\n\n      const st = {\n        expr: \"\",\n        display: \"0\",\n        ans: 0,\n        degMode: true,\n        secondMode: false,\n        justEvaluated: false,\n        hasError: false\n      };\n\n      function applyScale() {\n        const s = Math.min(window.innerWidth / 340, window.innerHeight / 480);\n        exprEl.style.fontSize = Math.max(11, Math.round(13 * s)) + \"px\";\n        valEl.style.fontSize = Math.max(20, Math.round(28 * s)) + \"px\";\n        const keyPx = Math.max(11, Math.round(13 * s)) + \"px\";\n        keysEl.querySelectorAll(\"button\").forEach(function (b) {\n          b.style.fontSize = keyPx;\n        });\n      }\n\n      function formatRes(val) {\n        if (!Number.isFinite(val)) return \"Error\";\n        if (val === 0) return \"0\";\n        const abs = Math.abs(val);\n        if (abs >= 1e10 || abs < 1e-6) {\n          return val.toExponential(6).replace(/\\.?0+e/, \"e\");\n        }\n        return String(Number(val.toPrecision(10)));\n      }\n\n      function evaluateExpr(raw, degMode, ansVal) {\n        const str = raw.replace(/×/g, \"*\").replace(/÷/g, \"/\").replace(/−/g, \"-\").replace(/π/g, \"pi\").replace(/√/g, \"sqrt\").trim();\n        const funcs = new Set([\"sin\", \"cos\", \"tan\", \"asin\", \"acos\", \"atan\", \"ln\", \"log\", \"sqrt\", \"abs\", \"exp\"]);\n        const rawToks = [];\n        let i = 0;\n        while (i < str.length) {\n          const ch = str[i];\n          if (/\\s/.test(ch)) { i++; continue; }\n          if (/[0-9.]/.test(ch)) {\n            let num = \"\", dots = 0;\n            while (i < str.length && /[0-9.]/.test(str[i])) {\n              if (str[i] === \".\") dots++;\n              if (dots > 1) throw new Error(\"Syntax error\");\n              num += str[i++];\n            }\n            if (i < str.length && (str[i] === \"e\" || str[i] === \"E\")) {\n              const nxt = str[i + 1];\n              if (nxt && (/[0-9]/.test(nxt) || ((nxt === \"+\" || nxt === \"-\") && str[i + 2] && /[0-9]/.test(str[i + 2])))) {\n                num += str[i++];\n                if (str[i] === \"+\" || str[i] === \"-\") num += str[i++];\n                while (i < str.length && /[0-9]/.test(str[i])) num += str[i++];\n              }\n            }\n            rawToks.push({ t: \"num\", v: Number(num) });\n            continue;\n          }\n          if (/[a-zA-Z]/.test(ch)) {\n            let id = \"\";\n            while (i < str.length && /[a-zA-Z0-9]/.test(str[i])) id += str[i++];\n            rawToks.push({ t: \"id\", v: id.toLowerCase() });\n            continue;\n          }\n          if (ch === \"(\" || ch === \")\") { rawToks.push({ t: ch }); i++; continue; }\n          if (\"+-*/^!\".includes(ch)) { rawToks.push({ t: \"op\", v: ch }); i++; continue; }\n          throw new Error(\"Syntax error\");\n        }\n        const tokens = [];\n        for (let idx = 0; idx < rawToks.length; idx++) {\n          const curr = rawToks[idx];\n          const prev = tokens[tokens.length - 1];\n          if (prev) {\n            const prevEnd = prev.t === \"num\" || prev.t === \")\" || (prev.t === \"op\" && prev.v === \"!\") || (prev.t === \"id\" && !funcs.has(prev.v));\n            const currStart = curr.t === \"num\" || curr.t === \"(\" || curr.t === \"id\";\n            if (prevEnd && currStart) tokens.push({ t: \"op\", v: \"*\" });\n          }\n          tokens.push(curr);\n        }\n        if (!tokens.length) return 0;\n        let pos = 0;\n        const peek = function () { return tokens[pos]; };\n        const next = function () { return tokens[pos++]; };\n        function fact(n) {\n          if (!Number.isFinite(n) || n < 0 || Math.floor(n) !== n) throw new Error(\"Domain error\");\n          if (n > 170) return Infinity;\n          let r = 1;\n          for (let k = 2; k <= n; k++) r *= k;\n          return r;\n        }\n        function parseExpr() {\n          let left = parseTerm();\n          while (peek() && peek().t === \"op\" && (peek().v === \"+\" || peek().v === \"-\")) {\n            const op = next().v;\n            const right = parseTerm();\n            left = op === \"+\" ? left + right : left - right;\n          }\n          return left;\n        }\n        function parseTerm() {\n          let left = parseUnary();\n          while (peek() && peek().t === \"op\" && (peek().v === \"*\" || peek().v === \"/\")) {\n            const op = next().v;\n            const right = parseUnary();\n            if (op === \"/\" && right === 0) throw new Error(\"Divide by zero\");\n            left = op === \"*\" ? left * right : left / right;\n          }\n          return left;\n        }\n        function parseUnary() {\n          if (peek() && peek().t === \"op\" && (peek().v === \"+\" || peek().v === \"-\")) {\n            const op = next().v;\n            const v = parseUnary();\n            return op === \"-\" ? -v : v;\n          }\n          return parsePow();\n        }\n        function parsePow() {\n          const base = parsePost();\n          if (peek() && peek().t === \"op\" && peek().v === \"^\") {\n            next();\n            return Math.pow(base, parseUnary());\n          }\n          return base;\n        }\n        function parsePost() {\n          let v = parsePrim();\n          while (peek() && peek().t === \"op\" && peek().v === \"!\") {\n            next();\n            v = fact(v);\n          }\n          return v;\n        }\n        function applyFn(fn, a) {\n          const toR = function (x) { return degMode ? (x * Math.PI) / 180 : x; };\n          const fromR = function (x) { return degMode ? (x * 180) / Math.PI : x; };\n          if (fn === \"sin\") return Math.sin(toR(a));\n          if (fn === \"cos\") return Math.cos(toR(a));\n          if (fn === \"tan\") { if (Math.abs(Math.cos(toR(a))) < 1e-12) throw new Error(\"Undefined\"); return Math.tan(toR(a)); }\n          if (fn === \"asin\") { if (a < -1 || a > 1) throw new Error(\"Domain error\"); return fromR(Math.asin(a)); }\n          if (fn === \"acos\") { if (a < -1 || a > 1) throw new Error(\"Domain error\"); return fromR(Math.acos(a)); }\n          if (fn === \"atan\") return fromR(Math.atan(a));\n          if (fn === \"ln\") { if (a <= 0) throw new Error(\"Domain error\"); return Math.log(a); }\n          if (fn === \"log\") { if (a <= 0) throw new Error(\"Domain error\"); return Math.log10(a); }\n          if (fn === \"sqrt\") { if (a < 0) throw new Error(\"Domain error\"); return Math.sqrt(a); }\n          if (fn === \"abs\") return Math.abs(a);\n          if (fn === \"exp\") return Math.exp(a);\n          throw new Error(\"Syntax error\");\n        }\n        function parsePrim() {\n          const tok = peek();\n          if (!tok) throw new Error(\"Syntax error\");\n          if (tok.t === \"num\") { next(); return tok.v; }\n          if (tok.t === \"id\") {\n            next();\n            if (tok.v === \"pi\") return Math.PI;\n            if (tok.v === \"e\") return Math.E;\n            if (tok.v === \"ans\") return ansVal;\n            if (funcs.has(tok.v)) {\n              let arg;\n              if (peek() && peek().t === \"(\") {\n                next();\n                arg = parseExpr();\n                if (!peek() || next().t !== \")\") throw new Error(\"Syntax error\");\n              } else {\n                arg = parseUnary();\n              }\n              return applyFn(tok.v, arg);\n            }\n            throw new Error(\"Syntax error\");\n          }\n          if (tok.t === \"(\") {\n            next();\n            const v = parseExpr();\n            if (!peek() || next().t !== \")\") throw new Error(\"Syntax error\");\n            return v;\n          }\n          throw new Error(\"Syntax error\");\n        }\n        const res = parseExpr();\n        if (pos < tokens.length || !Number.isFinite(res)) throw new Error(\"Math error\");\n        return Math.abs(res) < 1e-13 ? 0 : Number(res.toPrecision(12));\n      }\n\n      function updateDisplay() {\n        exprEl.textContent = st.expr || \"0\";\n        valEl.textContent = st.display;\n        valEl.classList.toggle(\"is-error\", st.hasError);\n        modeBadge.textContent = st.degMode ? \"DEG\" : \"RAD\";\n      }\n\n      function renderKeys() {\n        const s2 = st.secondMode;\n        const keys = [\n          { label: st.degMode ? \"DEG\" : \"RAD\", cls: \"mode\", act: \"deg\" },\n          { label: \"2nd\", cls: \"mode\" + (s2 ? \" active\" : \"\"), act: \"2nd\" },\n          { label: \"Ans\", cls: \"mode\", tok: \"Ans\" },\n          { label: \"DEL\", cls: \"mode\", act: \"del\" },\n          { label: \"AC\", cls: \"ac\", act: \"ac\" },\n          { label: s2 ? \"sin⁻¹\" : \"sin\", tok: s2 ? \"asin(\" : \"sin(\" },\n          { label: s2 ? \"cos⁻¹\" : \"cos\", tok: s2 ? \"acos(\" : \"cos(\" },\n          { label: s2 ? \"tan⁻¹\" : \"tan\", tok: s2 ? \"atan(\" : \"tan(\" },\n          { label: s2 ? \"eˣ\" : \"ln\", tok: s2 ? \"exp(\" : \"ln(\" },\n          { label: s2 ? \"10ˣ\" : \"log\", tok: s2 ? \"10^(\" : \"log(\" },\n          { label: s2 ? \"√x\" : \"x²\", act: s2 ? undefined : \"sq\", tok: s2 ? \"sqrt(\" : undefined },\n          { label: \"xʸ\", tok: \"^\", isOp: true },\n          { label: \"(\", tok: \"(\" },\n          { label: \")\", tok: \")\" },\n          { label: \"÷\", cls: \"op\", tok: \"÷\", isOp: true },\n          { label: \"π\", tok: \"π\" },\n          { label: \"7\", cls: \"num\", tok: \"7\" },\n          { label: \"8\", cls: \"num\", tok: \"8\" },\n          { label: \"9\", cls: \"num\", tok: \"9\" },\n          { label: \"×\", cls: \"op\", tok: \"×\", isOp: true },\n          { label: \"e\", tok: \"e\" },\n          { label: \"4\", cls: \"num\", tok: \"4\" },\n          { label: \"5\", cls: \"num\", tok: \"5\" },\n          { label: \"6\", cls: \"num\", tok: \"6\" },\n          { label: \"−\", cls: \"op\", tok: \"−\", isOp: true },\n          { label: \"1/x\", act: \"inv\" },\n          { label: \"1\", cls: \"num\", tok: \"1\" },\n          { label: \"2\", cls: \"num\", tok: \"2\" },\n          { label: \"3\", cls: \"num\", tok: \"3\" },\n          { label: \"+\", cls: \"op\", tok: \"+\", isOp: true },\n          { label: \"n!\", tok: \"!\", isOp: true },\n          { label: \"0\", cls: \"num\", tok: \"0\" },\n          { label: \".\", cls: \"num\", tok: \".\" },\n          { label: \"±\", cls: \"num\", act: \"sign\" },\n          { label: \"=\", cls: \"eq\", act: \"eq\" }\n        ];\n        keysEl.innerHTML = \"\";\n        keys.forEach(function (k) {\n          const b = document.createElement(\"button\");\n          b.type = \"button\";\n          b.className = \"key\" + (k.cls ? \" \" + k.cls : \"\");\n          b.textContent = k.label;\n          b.addEventListener(\"click\", function () {\n            st.hasError = false;\n            if (k.act === \"deg\") { st.degMode = !st.degMode; renderKeys(); }\n            else if (k.act === \"2nd\") { st.secondMode = !st.secondMode; renderKeys(); }\n            else if (k.act === \"ac\") { st.expr = \"\"; st.display = \"0\"; st.justEvaluated = false; }\n            else if (k.act === \"del\") {\n              st.justEvaluated = false;\n              const mult = [\"asin(\",\"acos(\",\"atan(\",\"sqrt(\",\"sin(\",\"cos(\",\"tan(\",\"log(\",\"exp(\",\"ln(\",\"Ans\"];\n              const hit = mult.find(function (m) { return st.expr.endsWith(m); });\n              st.expr = hit ? st.expr.slice(0, -hit.length) : st.expr.slice(0, -1);\n            } else if (k.act === \"sq\") {\n              st.expr = st.justEvaluated ? \"(\" + formatRes(st.ans) + \")^2\" : (st.expr ? st.expr + \"^2\" : \"Ans^2\");\n              st.justEvaluated = false;\n            } else if (k.act === \"inv\") {\n              st.expr = st.justEvaluated ? \"1/(\" + formatRes(st.ans) + \")\" : (st.expr ? \"1/(\" + st.expr + \")\" : \"1/(\");\n              st.justEvaluated = false;\n            } else if (k.act === \"sign\") {\n              if (st.justEvaluated) {\n                st.ans = -st.ans;\n                st.expr = formatRes(st.ans);\n                st.display = st.expr;\n                st.justEvaluated = false;\n              } else if (!st.expr) {\n                st.expr = \"-\";\n              } else if (st.expr.startsWith(\"-(\") && st.expr.endsWith(\")\")) {\n                st.expr = st.expr.slice(2, -1);\n              } else {\n                st.expr = st.expr.startsWith(\"-\") ? st.expr.slice(1) : \"-(\" + st.expr + \")\";\n              }\n            } else if (k.act === \"eq\") {\n              if (st.expr.trim()) {\n                try {\n                  const v = evaluateExpr(st.expr, st.degMode, st.ans);\n                  st.ans = v;\n                  st.display = formatRes(v);\n                  st.justEvaluated = true;\n                } catch (err) {\n                  st.display = err.message || \"Error\";\n                  st.hasError = true;\n                  st.justEvaluated = false;\n                }\n              }\n            } else if (k.tok) {\n              if (st.justEvaluated) {\n                st.justEvaluated = false;\n                st.expr = k.isOp ? formatRes(st.ans) + k.tok : k.tok;\n              } else {\n                st.expr += k.tok;\n              }\n            }\n            updateDisplay();\n          });\n          keysEl.appendChild(b);\n        });\n        applyScale();\n        updateDisplay();\n      }\n\n      document.addEventListener(\"keydown\", function (e) {\n        if (/^[0-9.()^!]$/.test(e.key)) {\n          e.preventDefault();\n          if (st.justEvaluated) {\n            st.justEvaluated = false;\n            st.expr = (e.key === \"^\" || e.key === \"!\") ? formatRes(st.ans) + e.key : e.key;\n          } else st.expr += e.key;\n          updateDisplay();\n        } else if (e.key === \"+\" || e.key === \"-\" || e.key === \"*\" || e.key === \"/\") {\n          e.preventDefault();\n          const opMap = { \"+\": \"+\", \"-\": \"−\", \"*\": \"×\", \"/\": \"÷\" };\n          if (st.justEvaluated) {\n            st.justEvaluated = false;\n            st.expr = formatRes(st.ans) + opMap[e.key];\n          } else st.expr += opMap[e.key];\n          updateDisplay();\n        } else if (e.key === \"Enter\" || e.key === \"=\") {\n          e.preventDefault();\n          if (st.expr.trim()) {\n            try {\n              const v = evaluateExpr(st.expr, st.degMode, st.ans);\n              st.ans = v;\n              st.display = formatRes(v);\n              st.hasError = false;\n              st.justEvaluated = true;\n            } catch (err) {\n              st.display = err.message || \"Error\";\n              st.hasError = true;\n            }\n            updateDisplay();\n          }\n        } else if (e.key === \"Backspace\") {\n          e.preventDefault();\n          st.expr = st.expr.slice(0, -1);\n          updateDisplay();\n        }\n      });\n\n      /* Corner grip resize support inside the standalone popup window */\n      let gripDrag = null;\n      resizeGrip.addEventListener(\"pointerdown\", function (e) {\n        e.preventDefault();\n        gripDrag = { sx: e.screenX, sy: e.screenY, ow: window.outerWidth, oh: window.outerHeight };\n      });\n      window.addEventListener(\"pointermove\", function (e) {\n        if (!gripDrag) return;\n        const nw = Math.max(290, gripDrag.ow + (e.screenX - gripDrag.sx));\n        const nh = Math.max(410, gripDrag.oh + (e.screenY - gripDrag.sy));\n        try { window.resizeTo(nw, nh); } catch (err) {}\n      });\n      window.addEventListener(\"pointerup\", function () { gripDrag = null; });\n\n      window.addEventListener(\"resize\", applyScale);\n      renderKeys();\n    })();\n  <\/script>\n<\/body>\n<\/html>";
     const SNIP_POPUP_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Screen Capture Tool — Ask Mr Physics<\/title>\n  <style>\n    * { box-sizing: border-box; }\n    html, body {\n      margin: 0;\n      width: 100%;\n      height: 100%;\n      background: #f8fafc;\n      color: #0f172a;\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;\n    }\n    .panel {\n      display: flex;\n      flex-direction: column;\n      gap: 12px;\n      padding: 16px;\n      min-height: 100vh;\n    }\n    .header {\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      border-bottom: 1px solid #e2e8f0;\n      padding-bottom: 10px;\n    }\n    .title {\n      font-size: 15px;\n      font-weight: 700;\n      letter-spacing: -0.01em;\n    }\n    .badge {\n      font-size: 11px;\n      font-weight: 600;\n      color: #047857;\n    }\n    .desc {\n      margin: 0;\n      font-size: 12.5px;\n      line-height: 1.5;\n      color: #475569;\n    }\n    .controls {\n      display: flex;\n      gap: 8px;\n      align-items: center;\n    }\n    .primary-btn {\n      flex: 1;\n      border: 0;\n      border-radius: 8px;\n      background: #047857;\n      color: #ffffff;\n      font-family: inherit;\n      font-size: 13px;\n      font-weight: 600;\n      padding: 10px 14px;\n      cursor: pointer;\n    }\n    .primary-btn:hover:not(:disabled) { background: #065f46; }\n    .primary-btn:disabled { opacity: 0.6; cursor: default; }\n    select {\n      border-radius: 8px;\n      border: 1px solid #cbd5e1;\n      background: #ffffff;\n      color: #334155;\n      font-family: inherit;\n      font-size: 12.5px;\n      font-weight: 600;\n      padding: 9px 10px;\n    }\n    .status {\n      margin: 0;\n      font-size: 12px;\n      font-weight: 600;\n      color: #334155;\n      display: none;\n    }\n    .error {\n      margin: 0;\n      font-size: 12px;\n      border: 1px solid #fecdd3;\n      background: #fff1f2;\n      color: #be123c;\n      border-radius: 8px;\n      padding: 9px 11px;\n      display: none;\n    }\n    .preview-wrap {\n      display: none;\n      flex-direction: column;\n      gap: 10px;\n      border-top: 1px solid #e2e8f0;\n      padding-top: 12px;\n    }\n    .preview-box {\n      border: 1px solid #cbd5e1;\n      border-radius: 8px;\n      background: #e2e8f0;\n      overflow: hidden;\n    }\n    .preview-box img {\n      display: block;\n      width: 100%;\n      max-height: 220px;\n      object-fit: contain;\n    }\n    .actions {\n      display: flex;\n      gap: 8px;\n    }\n    .sec-btn {\n      flex: 1;\n      border: 1px solid #cbd5e1;\n      border-radius: 8px;\n      background: #ffffff;\n      color: #0f172a;\n      font-family: inherit;\n      font-size: 12.5px;\n      font-weight: 600;\n      padding: 8px 12px;\n      cursor: pointer;\n    }\n    .sec-btn:hover { background: #f1f5f9; }\n    .overlay {\n      position: fixed;\n      inset: 0;\n      z-index: 100;\n      background: #020617;\n      display: none;\n      align-items: center;\n      justify-content: center;\n      cursor: crosshair;\n      user-select: none;\n    }\n    .overlay.is-active { display: flex; }\n    .overlay img {\n      max-width: 100vw;\n      max-height: 100vh;\n      object-fit: contain;\n      pointer-events: none;\n    }\n    .overlay-bar {\n      position: fixed;\n      top: 14px;\n      left: 50%;\n      transform: translateX(-50%);\n      z-index: 110;\n      background: rgba(15, 23, 42, 0.94);\n      border: 1px solid #334155;\n      color: #ffffff;\n      border-radius: 8px;\n      padding: 8px 14px;\n      display: flex;\n      align-items: center;\n      gap: 12px;\n      font-size: 12.5px;\n      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);\n      white-space: nowrap;\n    }\n    .overlay-bar button {\n      border: 0;\n      background: #334155;\n      color: #ffffff;\n      border-radius: 6px;\n      padding: 5px 10px;\n      font-size: 12px;\n      font-weight: 600;\n      cursor: pointer;\n    }\n    .marquee {\n      position: fixed;\n      z-index: 105;\n      border: 2px solid #34d399;\n      box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.58);\n      pointer-events: none;\n      display: none;\n    }\n    .dims {\n      position: absolute;\n      left: 0;\n      bottom: -24px;\n      background: rgba(15, 23, 42, 0.94);\n      color: #6ee7b7;\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n      font-size: 11px;\n      padding: 2px 6px;\n      border-radius: 4px;\n      white-space: nowrap;\n    }\n  <\/style>\n<\/head>\n<body>\n  <div class=\"panel\">\n    <div class=\"header\">\n      <span class=\"title\">Screen Capture Tool<\/span>\n      <span class=\"badge\">PNG Snipper<\/span>\n    <\/div>\n    <p class=\"desc\">\n      Click <strong>New Snip<\/strong>, choose any running simulator, browser window, or desktop screen, then click and drag any area to capture and save as a PNG file.\n    <\/p>\n    <div class=\"controls\">\n      <button type=\"button\" id=\"startBtn\" class=\"primary-btn\">New Snip<\/button>\n      <select id=\"delaySelect\" aria-label=\"Capture delay\">\n        <option value=\"0\">No Delay<\/option>\n        <option value=\"3\">3s Delay<\/option>\n        <option value=\"5\">5s Delay<\/option>\n      <\/select>\n    <\/div>\n    <p id=\"statusEl\" class=\"status\"><\/p>\n    <p id=\"errorEl\" class=\"error\"><\/p>\n    <div id=\"previewWrap\" class=\"preview-wrap\">\n      <div class=\"preview-box\">\n        <img id=\"previewImg\" alt=\"Captured PNG preview\" />\n      <\/div>\n      <div class=\"actions\">\n        <button type=\"button\" id=\"saveBtn\" class=\"sec-btn\">Save PNG<\/button>\n        <button type=\"button\" id=\"copyBtn\" class=\"sec-btn\">Copy PNG<\/button>\n      <\/div>\n    <\/div>\n  <\/div>\n\n  <div id=\"overlayEl\" class=\"overlay\">\n    <img id=\"frameImg\" alt=\"Captured screen frame\" draggable=\"false\" />\n    <div id=\"overlayBar\" class=\"overlay-bar\">\n      <span>Drag across any area to capture and save PNG<\/span>\n      <button type=\"button\" id=\"cancelOverlayBtn\">Cancel (Esc)<\/button>\n    <\/div>\n    <div id=\"marqueeEl\" class=\"marquee\">\n      <span id=\"dimsEl\" class=\"dims\">0 × 0 px<\/span>\n    <\/div>\n  <\/div>\n\n  <script>\n    (function () {\n      const startBtn = document.getElementById(\"startBtn\");\n      const delaySelect = document.getElementById(\"delaySelect\");\n      const statusEl = document.getElementById(\"statusEl\");\n      const errorEl = document.getElementById(\"errorEl\");\n      const previewWrap = document.getElementById(\"previewWrap\");\n      const previewImg = document.getElementById(\"previewImg\");\n      const saveBtn = document.getElementById(\"saveBtn\");\n      const copyBtn = document.getElementById(\"copyBtn\");\n      const overlayEl = document.getElementById(\"overlayEl\");\n      const frameImg = document.getElementById(\"frameImg\");\n      const marqueeEl = document.getElementById(\"marqueeEl\");\n      const dimsEl = document.getElementById(\"dimsEl\");\n\n      let frameW = 0, frameH = 0, lastPngUrl = \"\", sel = null, timer = null;\n      let savedBounds = null;\n\n      function downloadPng(url) {\n        const stamp = new Date().toISOString().replace(/[:T]/g, \"-\").slice(0, 19);\n        const a = document.createElement(\"a\");\n        a.href = url;\n        a.download = \"snip-\" + stamp + \".png\";\n        document.body.appendChild(a);\n        a.click();\n        document.body.removeChild(a);\n      }\n\n      function expandForCrop() {\n        savedBounds = {\n          x: window.screenX,\n          y: window.screenY,\n          w: window.outerWidth,\n          h: window.outerHeight\n        };\n        try {\n          const targetW = Math.round(screen.availWidth * 0.92);\n          const targetH = Math.round(screen.availHeight * 0.92);\n          const targetX = Math.round(screen.availLeft + (screen.availWidth - targetW) / 2);\n          const targetY = Math.round(screen.availTop + (screen.availHeight - targetH) / 2);\n          window.moveTo(targetX, targetY);\n          window.resizeTo(targetW, targetH);\n        } catch (err) {}\n      }\n\n      function restoreWindowBounds() {\n        if (!savedBounds) return;\n        try {\n          window.resizeTo(savedBounds.w, savedBounds.h);\n          window.moveTo(savedBounds.x, savedBounds.y);\n        } catch (err) {}\n        savedBounds = null;\n      }\n\n      async function captureScreen() {\n        errorEl.style.display = \"none\";\n        statusEl.textContent = \"Choose any running application, window, or tab...\";\n        statusEl.style.display = \"block\";\n\n        if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {\n          statusEl.style.display = \"none\";\n          errorEl.textContent = \"Screen capture API is unavailable in this browser.\";\n          errorEl.style.display = \"block\";\n          return;\n        }\n\n        let stream = null;\n        try {\n          stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });\n          const video = document.createElement(\"video\");\n          video.srcObject = stream;\n          video.muted = true;\n          video.playsInline = true;\n\n          await new Promise(function (resolve, reject) {\n            video.onloadedmetadata = function () {\n              video.play().then(function () { setTimeout(resolve, 140); }).catch(reject);\n            };\n            video.onerror = function () { reject(new Error(\"Could not read screen frame.\")); };\n          });\n\n          frameW = video.videoWidth;\n          frameH = video.videoHeight;\n          const canvas = document.createElement(\"canvas\");\n          canvas.width = frameW;\n          canvas.height = frameH;\n          canvas.getContext(\"2d\").drawImage(video, 0, 0, frameW, frameH);\n          frameImg.src = canvas.toDataURL(\"image/png\");\n          marqueeEl.style.display = \"none\";\n          expandForCrop();\n          overlayEl.classList.add(\"is-active\");\n          statusEl.textContent = \"Click and drag over any region to save PNG.\";\n        } catch (err) {\n          const msg = ((err && err.message) || \"\").toLowerCase();\n          if (msg.includes(\"cancel\") || msg.includes(\"permission\") || msg.includes(\"abort\")) {\n            statusEl.textContent = \"Capture cancelled.\";\n          } else {\n            statusEl.style.display = \"none\";\n            errorEl.textContent = \"Screen capture was blocked or failed. Allow screen access and try again.\";\n            errorEl.style.display = \"block\";\n          }\n        } finally {\n          if (stream) stream.getTracks().forEach(function (t) { t.stop(); });\n        }\n      }\n\n      startBtn.addEventListener(\"click\", function () {\n        if (timer) clearInterval(timer);\n        const delay = Number(delaySelect.value) || 0;\n        if (delay === 0) { captureScreen(); return; }\n        let rem = delay;\n        errorEl.style.display = \"none\";\n        statusEl.style.display = \"block\";\n        statusEl.textContent = \"Starting capture in \" + rem + \"s...\";\n        startBtn.disabled = true;\n        startBtn.textContent = \"Capturing in \" + rem + \"s...\";\n        timer = setInterval(function () {\n          rem--;\n          if (rem <= 0) {\n            clearInterval(timer);\n            timer = null;\n            startBtn.disabled = false;\n            startBtn.textContent = \"New Snip\";\n            captureScreen();\n          } else {\n            statusEl.textContent = \"Starting capture in \" + rem + \"s...\";\n            startBtn.textContent = \"Capturing in \" + rem + \"s...\";\n          }\n        }, 1000);\n      });\n\n      overlayEl.addEventListener(\"pointerdown\", function (e) {\n        if (e.target.closest(\"#overlayBar\") || e.button !== 0) return;\n        sel = { sx: e.clientX, sy: e.clientY, cx: e.clientX, cy: e.clientY };\n        marqueeEl.style.display = \"none\";\n      });\n\n      overlayEl.addEventListener(\"pointermove\", function (e) {\n        if (!sel) return;\n        sel.cx = e.clientX;\n        sel.cy = e.clientY;\n        const x = Math.min(sel.sx, sel.cx);\n        const y = Math.min(sel.sy, sel.cy);\n        const w = Math.abs(sel.cx - sel.sx);\n        const h = Math.abs(sel.cy - sel.sy);\n        if (w > 2 && h > 2) {\n          marqueeEl.style.display = \"block\";\n          marqueeEl.style.left = x + \"px\";\n          marqueeEl.style.top = y + \"px\";\n          marqueeEl.style.width = w + \"px\";\n          marqueeEl.style.height = h + \"px\";\n          dimsEl.textContent = Math.round(w) + \" × \" + Math.round(h) + \" px\";\n        }\n      });\n\n      overlayEl.addEventListener(\"pointerup\", function (e) {\n        if (!sel) return;\n        const rect = { sx: sel.sx, sy: sel.sy, cx: e.clientX, cy: e.clientY };\n        sel = null;\n        const x1 = Math.min(rect.sx, rect.cx), y1 = Math.min(rect.sy, rect.cy);\n        const w = Math.abs(rect.cx - rect.sx), h = Math.abs(rect.cy - rect.sy);\n        if (w < 6 || h < 6) {\n          marqueeEl.style.display = \"none\";\n          return;\n        }\n        const b = frameImg.getBoundingClientRect();\n        const sx = frameW / b.width, sy = frameH / b.height;\n        const rx = Math.max(0, x1 - b.left), ry = Math.max(0, y1 - b.top);\n        const cw = Math.round(Math.min(frameW - rx * sx, w * sx));\n        const ch = Math.round(Math.min(frameH - ry * sy, h * sy));\n        if (cw >= 2 && ch >= 2) {\n          const out = document.createElement(\"canvas\");\n          out.width = cw;\n          out.height = ch;\n          out.getContext(\"2d\").drawImage(frameImg, Math.round(rx * sx), Math.round(ry * sy), cw, ch, 0, 0, cw, ch);\n          lastPngUrl = out.toDataURL(\"image/png\");\n          previewImg.src = lastPngUrl;\n          previewWrap.style.display = \"flex\";\n          downloadPng(lastPngUrl);\n          statusEl.textContent = \"Saved \" + cw + \" × \" + ch + \" px PNG.\";\n        }\n        overlayEl.classList.remove(\"is-active\");\n        marqueeEl.style.display = \"none\";\n        restoreWindowBounds();\n      });\n\n      function cancelCrop() {\n        overlayEl.classList.remove(\"is-active\");\n        marqueeEl.style.display = \"none\";\n        sel = null;\n        statusEl.textContent = \"Screen snip cancelled.\";\n        restoreWindowBounds();\n      }\n\n      document.getElementById(\"cancelOverlayBtn\").addEventListener(\"click\", cancelCrop);\n      document.addEventListener(\"keydown\", function (e) {\n        if (e.key === \"Escape\" && overlayEl.classList.contains(\"is-active\")) cancelCrop();\n      });\n\n      saveBtn.addEventListener(\"click\", function () {\n        if (lastPngUrl) downloadPng(lastPngUrl);\n      });\n\n      copyBtn.addEventListener(\"click\", async function () {\n        if (!lastPngUrl) return;\n        try {\n          const res = await fetch(lastPngUrl);\n          const blob = await res.blob();\n          await navigator.clipboard.write([new ClipboardItem({ \"image/png\": blob })]);\n          copyBtn.textContent = \"Copied\";\n          setTimeout(function () { copyBtn.textContent = \"Copy PNG\"; }, 2000);\n        } catch (err) {\n          errorEl.textContent = \"Clipboard image copy is not supported here.\";\n          errorEl.style.display = \"block\";\n        }\n      });\n    })();\n  <\/script>\n<\/body>\n<\/html>";
+    const HIGHLIGHTER_POPUP_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Screen Highlighter — Ask Mr Physics<\/title>\n  <style>\n    * { box-sizing: border-box; }\n    html, body {\n      margin: 0;\n      width: 100%;\n      height: 100%;\n      overflow: hidden;\n      background: #0f172a;\n      color: #f8fafc;\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;\n      user-select: none;\n    }\n    .app {\n      display: flex;\n      flex-direction: column;\n      width: 100vw;\n      height: 100vh;\n    }\n    .toolbar {\n      display: flex;\n      flex-wrap: wrap;\n      align-items: center;\n      gap: 8px;\n      padding: 8px 12px;\n      background: #1e293b;\n      border-bottom: 1px solid #334155;\n      z-index: 20;\n      flex-shrink: 0;\n    }\n    .brand {\n      font-size: 12.5px;\n      font-weight: 700;\n      color: #f8fafc;\n      margin-right: 4px;\n      white-space: nowrap;\n    }\n    .group {\n      display: flex;\n      align-items: center;\n      gap: 5px;\n      padding-right: 8px;\n      border-right: 1px solid #334155;\n    }\n    .group:last-child {\n      border-right: 0;\n      padding-right: 0;\n      margin-left: auto;\n    }\n    .color-btn {\n      display: inline-flex;\n      align-items: center;\n      gap: 5px;\n      border: 1.5px solid #475569;\n      border-radius: 6px;\n      background: #0f172a;\n      color: #e2e8f0;\n      font-family: inherit;\n      font-size: 11.5px;\n      font-weight: 600;\n      padding: 4px 8px;\n      cursor: pointer;\n      white-space: nowrap;\n      transition: border-color 120ms ease, background-color 120ms ease;\n    }\n    .color-btn:hover { background: #334155; }\n    .color-btn.is-active {\n      border-color: #ffffff;\n      background: #334155;\n      color: #ffffff;\n      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);\n    }\n    .swatch {\n      width: 11px;\n      height: 11px;\n      border-radius: 3px;\n      flex-shrink: 0;\n      border: 1px solid rgba(15, 23, 42, 0.45);\n    }\n    .tool-btn {\n      display: inline-flex;\n      align-items: center;\n      gap: 5px;\n      border: 1px solid #475569;\n      border-radius: 6px;\n      background: #0f172a;\n      color: #e2e8f0;\n      font-family: inherit;\n      font-size: 11.5px;\n      font-weight: 600;\n      padding: 5px 9px;\n      cursor: pointer;\n      white-space: nowrap;\n    }\n    .tool-btn:hover:not(:disabled) { background: #334155; color: #ffffff; }\n    .tool-btn:disabled { opacity: 0.45; cursor: default; }\n    .tool-btn.is-on {\n      background: #d97706;\n      border-color: #f59e0b;\n      color: #ffffff;\n    }\n    .tool-btn.is-stream {\n      background: #0369a1;\n      border-color: #0ea5e9;\n      color: #ffffff;\n    }\n    .tool-btn.is-stream:hover { background: #0284c7; }\n    .slider-label {\n      display: inline-flex;\n      align-items: center;\n      gap: 6px;\n      font-size: 11.5px;\n      font-weight: 600;\n      color: #cbd5e1;\n      white-space: nowrap;\n    }\n    .slider-label input[type=\"range\"] {\n      width: 82px;\n      accent-color: #f59e0b;\n      cursor: pointer;\n    }\n    .size-readout {\n      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;\n      font-size: 11px;\n      color: #94a3b8;\n      min-width: 38px;\n      text-align: right;\n    }\n    .stage {\n      position: relative;\n      flex: 1;\n      min-height: 0;\n      overflow: hidden;\n      cursor: crosshair;\n      background-color: #f8fafc;\n      background-image:\n        linear-gradient(to right, rgba(148, 163, 184, 0.22) 1px, transparent 1px),\n        linear-gradient(to bottom, rgba(148, 163, 184, 0.22) 1px, transparent 1px);\n      background-size: 28px 28px;\n    }\n    .stage.is-dark {\n      background-color: #020617;\n      background-image:\n        linear-gradient(to right, rgba(51, 65, 85, 0.45) 1px, transparent 1px),\n        linear-gradient(to bottom, rgba(51, 65, 85, 0.45) 1px, transparent 1px);\n    }\n    .stage video,\n    .stage img.bg-frame {\n      position: absolute;\n      inset: 0;\n      width: 100%;\n      height: 100%;\n      object-fit: contain;\n      pointer-events: none;\n      display: none;\n    }\n    .stage video.is-visible,\n    .stage img.bg-frame.is-visible {\n      display: block;\n    }\n    .stage-hint {\n      position: absolute;\n      left: 50%;\n      top: 50%;\n      transform: translate(-50%, -50%);\n      max-width: 440px;\n      text-align: center;\n      padding: 16px 20px;\n      border-radius: 12px;\n      border: 1px dashed rgba(100, 116, 139, 0.45);\n      background: rgba(255, 255, 255, 0.78);\n      color: #334155;\n      font-size: 12.5px;\n      line-height: 1.5;\n      pointer-events: none;\n    }\n    .stage.is-dark .stage-hint {\n      background: rgba(15, 23, 42, 0.78);\n      color: #cbd5e1;\n      border-color: rgba(148, 163, 184, 0.35);\n    }\n    .boxes-layer {\n      position: absolute;\n      inset: 0;\n      pointer-events: none;\n    }\n    .hl-box {\n      position: absolute;\n      border-radius: 6px;\n      border-style: solid;\n      border-width: 2.5px;\n      pointer-events: auto;\n    }\n    .hl-box-del {\n      position: absolute;\n      top: -10px;\n      right: -10px;\n      width: 20px;\n      height: 20px;\n      border-radius: 999px;\n      border: 1px solid rgba(15, 23, 42, 0.35);\n      background: #0f172a;\n      color: #ffffff;\n      font-size: 11px;\n      font-weight: 700;\n      line-height: 1;\n      cursor: pointer;\n      opacity: 0;\n      transition: opacity 120ms ease;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n    }\n    .hl-box:hover .hl-box-del {\n      opacity: 1;\n    }\n    .hl-draft {\n      position: absolute;\n      border-radius: 6px;\n      border-style: dashed;\n      border-width: 2.5px;\n      pointer-events: none;\n      display: none;\n    }\n    .pointer-halo {\n      position: absolute;\n      left: 0;\n      top: 0;\n      border-radius: 999px;\n      pointer-events: none;\n      transform: translate(-50%, -50%);\n      display: none;\n      z-index: 15;\n      border-width: 3px;\n      border-style: solid;\n      box-shadow: 0 0 18px rgba(0, 0, 0, 0.22);\n    }\n    .pointer-halo-core {\n      position: absolute;\n      left: 50%;\n      top: 50%;\n      width: 7px;\n      height: 7px;\n      border-radius: 999px;\n      transform: translate(-50%, -50%);\n    }\n    .statusbar {\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      gap: 10px;\n      padding: 5px 12px;\n      background: #0f172a;\n      border-top: 1px solid #334155;\n      font-size: 11px;\n      color: #94a3b8;\n      flex-shrink: 0;\n    }\n    .resize-grip {\n      position: fixed;\n      right: 2px;\n      bottom: 2px;\n      width: 14px;\n      height: 14px;\n      cursor: nwse-resize;\n      color: #64748b;\n      z-index: 30;\n    }\n    .resize-grip:hover { color: #f8fafc; }\n  <\/style>\n<\/head>\n<body>\n  <div class=\"app\">\n    <div class=\"toolbar\">\n      <span class=\"brand\">Screen Highlighter<\/span>\n\n      <div class=\"group\" id=\"colorGroup\" role=\"group\" aria-label=\"Highlighter color\"><\/div>\n\n      <div class=\"group\">\n        <button type=\"button\" id=\"circleToggleBtn\" class=\"tool-btn is-on\" aria-pressed=\"true\">Circle: On<\/button>\n        <label class=\"slider-label\" for=\"circleSizeRange\">\n          <span>Size<\/span>\n          <input id=\"circleSizeRange\" type=\"range\" min=\"24\" max=\"180\" step=\"4\" value=\"76\" />\n          <span id=\"circleSizeVal\" class=\"size-readout\">76px<\/span>\n        <\/label>\n      <\/div>\n\n      <div class=\"group\">\n        <button type=\"button\" id=\"streamBtn\" class=\"tool-btn is-stream\">Stream App / Screen<\/button>\n        <button type=\"button\" id=\"freezeBtn\" class=\"tool-btn\" style=\"display:none;\">Freeze Frame<\/button>\n        <button type=\"button\" id=\"stopStreamBtn\" class=\"tool-btn\" style=\"display:none;\">Stop Stream<\/button>\n        <button type=\"button\" id=\"themeBtn\" class=\"tool-btn\">Dark Grid<\/button>\n      <\/div>\n\n      <div class=\"group\">\n        <button type=\"button\" id=\"undoBtn\" class=\"tool-btn\" disabled>Undo Box<\/button>\n        <button type=\"button\" id=\"clearBtn\" class=\"tool-btn\" disabled>Clear Boxes<\/button>\n        <button type=\"button\" id=\"savePngBtn\" class=\"tool-btn\">Save PNG<\/button>\n      <\/div>\n    <\/div>\n\n    <div id=\"stageEl\" class=\"stage\">\n      <video id=\"streamVideo\" autoplay muted playsinline><\/video>\n      <img id=\"bgFrameImg\" class=\"bg-frame\" alt=\"Pinned background frame\" />\n      <div id=\"stageHint\" class=\"stage-hint\">\n        <strong>Click and drag<\/strong> anywhere here to draw persistent highlighter boxes, or move your mouse to track with the <strong>pointer spotlight circle<\/strong>.<br /><br />\n        Click <strong>Stream App / Screen<\/strong> above to show any running simulator live underneath, or press <strong>Ctrl+V<\/strong> to paste a screenshot.\n      <\/div>\n      <div id=\"boxesLayer\" class=\"boxes-layer\"><\/div>\n      <div id=\"draftBox\" class=\"hl-draft\"><\/div>\n      <div id=\"pointerHalo\" class=\"pointer-halo\">\n        <div id=\"pointerCore\" class=\"pointer-halo-core\"><\/div>\n      <\/div>\n    <\/div>\n\n    <div class=\"statusbar\">\n      <span id=\"statusMsg\">Active color: Yellow &middot; Drag to draw highlighter box<\/span>\n      <span id=\"boxCountEl\">0 boxes<\/span>\n    <\/div>\n  <\/div>\n\n  <div id=\"resizeGrip\" class=\"resize-grip\" title=\"Drag corner to resize window\" aria-hidden=\"true\">\n    <svg viewBox=\"0 0 12 12\" width=\"12\" height=\"12\">\n      <path d=\"M 11 3 L 3 11 M 11 7 L 7 11\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n    <\/svg>\n  <\/div>\n\n  <script>\n    (function () {\n      const COLORS = [\n        { id: \"yellow\", label: \"Yellow\", hex: \"#FACC15\", fill: \"rgba(250, 204, 21, 0.28)\", haloFill: \"rgba(250, 204, 21, 0.18)\" },\n        { id: \"blue\", label: \"Blue\", hex: \"#38BDF8\", fill: \"rgba(56, 189, 248, 0.28)\", haloFill: \"rgba(56, 189, 248, 0.18)\" },\n        { id: \"red\", label: \"Red\", hex: \"#FB7185\", fill: \"rgba(251, 113, 133, 0.28)\", haloFill: \"rgba(251, 113, 133, 0.18)\" },\n        { id: \"green\", label: \"Green\", hex: \"#4ADE80\", fill: \"rgba(74, 222, 128, 0.28)\", haloFill: \"rgba(74, 222, 128, 0.18)\" },\n        { id: \"gray\", label: \"Gray\", hex: \"#94A3B8\", fill: \"rgba(148, 163, 184, 0.32)\", haloFill: \"rgba(148, 163, 184, 0.22)\" }\n      ];\n\n      const colorGroup = document.getElementById(\"colorGroup\");\n      const circleToggleBtn = document.getElementById(\"circleToggleBtn\");\n      const circleSizeRange = document.getElementById(\"circleSizeRange\");\n      const circleSizeVal = document.getElementById(\"circleSizeVal\");\n      const streamBtn = document.getElementById(\"streamBtn\");\n      const freezeBtn = document.getElementById(\"freezeBtn\");\n      const stopStreamBtn = document.getElementById(\"stopStreamBtn\");\n      const themeBtn = document.getElementById(\"themeBtn\");\n      const undoBtn = document.getElementById(\"undoBtn\");\n      const clearBtn = document.getElementById(\"clearBtn\");\n      const savePngBtn = document.getElementById(\"savePngBtn\");\n      const stageEl = document.getElementById(\"stageEl\");\n      const streamVideo = document.getElementById(\"streamVideo\");\n      const bgFrameImg = document.getElementById(\"bgFrameImg\");\n      const stageHint = document.getElementById(\"stageHint\");\n      const boxesLayer = document.getElementById(\"boxesLayer\");\n      const draftBox = document.getElementById(\"draftBox\");\n      const pointerHalo = document.getElementById(\"pointerHalo\");\n      const pointerCore = document.getElementById(\"pointerCore\");\n      const statusMsg = document.getElementById(\"statusMsg\");\n      const boxCountEl = document.getElementById(\"boxCountEl\");\n      const resizeGrip = document.getElementById(\"resizeGrip\");\n\n      let activeColor = COLORS[0];\n      let circleEnabled = true;\n      let circleSize = 76;\n      let darkStage = false;\n      let boxes = [];\n      let drag = null;\n      let activeStream = null;\n      let frozen = false;\n      let hasBgImage = false;\n\n      function updateHaloStyle() {\n        pointerHalo.style.width = circleSize + \"px\";\n        pointerHalo.style.height = circleSize + \"px\";\n        pointerHalo.style.borderColor = activeColor.hex;\n        pointerHalo.style.backgroundColor = activeColor.haloFill;\n        pointerCore.style.backgroundColor = activeColor.hex;\n      }\n\n      function renderColorButtons() {\n        colorGroup.innerHTML = \"\";\n        COLORS.forEach(function (c) {\n          const btn = document.createElement(\"button\");\n          btn.type = \"button\";\n          btn.className = \"color-btn\" + (c.id === activeColor.id ? \" is-active\" : \"\");\n          btn.innerHTML = '<span class=\"swatch\" style=\"background:' + c.hex + ';\"><\/span><span>' + c.label + '<\/span>';\n          btn.addEventListener(\"click\", function () {\n            activeColor = c;\n            renderColorButtons();\n            updateHaloStyle();\n            statusMsg.textContent = \"Active color: \" + c.label + \" · Drag to draw highlighter box\";\n          });\n          colorGroup.appendChild(btn);\n        });\n      }\n\n      function updateStageMeta() {\n        const hasAnyBg = Boolean(activeStream) || hasBgImage;\n        stageHint.style.display = hasAnyBg || boxes.length > 0 ? \"none\" : \"block\";\n        undoBtn.disabled = boxes.length === 0;\n        clearBtn.disabled = boxes.length === 0;\n        boxCountEl.textContent = boxes.length + (boxes.length === 1 ? \" box\" : \" boxes\");\n      }\n\n      function renderBoxes() {\n        boxesLayer.innerHTML = \"\";\n        boxes.forEach(function (b, idx) {\n          const el = document.createElement(\"div\");\n          el.className = \"hl-box\";\n          el.style.left = b.x + \"px\";\n          el.style.top = b.y + \"px\";\n          el.style.width = b.w + \"px\";\n          el.style.height = b.h + \"px\";\n          el.style.borderColor = b.color.hex;\n          el.style.backgroundColor = b.color.fill;\n\n          const del = document.createElement(\"button\");\n          del.type = \"button\";\n          del.className = \"hl-box-del\";\n          del.textContent = \"×\";\n          del.title = \"Remove highlight box\";\n          del.addEventListener(\"pointerdown\", function (ev) { ev.stopPropagation(); });\n          del.addEventListener(\"click\", function (ev) {\n            ev.stopPropagation();\n            boxes.splice(idx, 1);\n            renderBoxes();\n          });\n          el.appendChild(del);\n          boxesLayer.appendChild(el);\n        });\n        updateStageMeta();\n      }\n\n      circleToggleBtn.addEventListener(\"click\", function () {\n        circleEnabled = !circleEnabled;\n        circleToggleBtn.classList.toggle(\"is-on\", circleEnabled);\n        circleToggleBtn.setAttribute(\"aria-pressed\", String(circleEnabled));\n        circleToggleBtn.textContent = circleEnabled ? \"Circle: On\" : \"Circle: Off\";\n        if (!circleEnabled) pointerHalo.style.display = \"none\";\n      });\n\n      circleSizeRange.addEventListener(\"input\", function (e) {\n        circleSize = Number(e.target.value) || 76;\n        circleSizeVal.textContent = circleSize + \"px\";\n        updateHaloStyle();\n      });\n\n      themeBtn.addEventListener(\"click\", function () {\n        darkStage = !darkStage;\n        stageEl.classList.toggle(\"is-dark\", darkStage);\n        themeBtn.textContent = darkStage ? \"Light Grid\" : \"Dark Grid\";\n      });\n\n      undoBtn.addEventListener(\"click\", function () {\n        if (!boxes.length) return;\n        boxes.pop();\n        renderBoxes();\n      });\n\n      clearBtn.addEventListener(\"click\", function () {\n        boxes = [];\n        renderBoxes();\n      });\n\n      function stopActiveStream() {\n        if (activeStream) {\n          activeStream.getTracks().forEach(function (t) { t.stop(); });\n          activeStream = null;\n        }\n        streamVideo.srcObject = null;\n        streamVideo.classList.remove(\"is-visible\");\n        frozen = false;\n        freezeBtn.style.display = \"none\";\n        stopStreamBtn.style.display = \"none\";\n        freezeBtn.textContent = \"Freeze Frame\";\n        updateStageMeta();\n      }\n\n      streamBtn.addEventListener(\"click\", async function () {\n        if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {\n          statusMsg.textContent = \"Screen sharing API unavailable here; draw directly or Ctrl+V paste an image.\";\n          return;\n        }\n        try {\n          stopActiveStream();\n          hasBgImage = false;\n          bgFrameImg.classList.remove(\"is-visible\");\n          const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });\n          activeStream = stream;\n          streamVideo.srcObject = stream;\n          streamVideo.classList.add(\"is-visible\");\n          freezeBtn.style.display = \"inline-flex\";\n          stopStreamBtn.style.display = \"inline-flex\";\n          stream.getVideoTracks()[0].addEventListener(\"ended\", stopActiveStream);\n          statusMsg.textContent = \"Live window attached · Drag highlighter boxes or move cursor spotlight.\";\n          updateStageMeta();\n        } catch (err) {\n          statusMsg.textContent = \"Stream selection cancelled.\";\n        }\n      });\n\n      freezeBtn.addEventListener(\"click\", function () {\n        if (!activeStream) return;\n        if (!frozen) {\n          const vw = streamVideo.videoWidth;\n          const vh = streamVideo.videoHeight;\n          if (vw && vh) {\n            const c = document.createElement(\"canvas\");\n            c.width = vw;\n            c.height = vh;\n            c.getContext(\"2d\").drawImage(streamVideo, 0, 0, vw, vh);\n            bgFrameImg.src = c.toDataURL(\"image/png\");\n            bgFrameImg.classList.add(\"is-visible\");\n            streamVideo.classList.remove(\"is-visible\");\n            hasBgImage = true;\n            frozen = true;\n            freezeBtn.textContent = \"Resume Live\";\n            statusMsg.textContent = \"Frame frozen for steady highlighting.\";\n          }\n        } else {\n          hasBgImage = false;\n          bgFrameImg.classList.remove(\"is-visible\");\n          streamVideo.classList.add(\"is-visible\");\n          frozen = false;\n          freezeBtn.textContent = \"Freeze Frame\";\n          statusMsg.textContent = \"Live window stream resumed.\";\n        }\n      });\n\n      stopStreamBtn.addEventListener(\"click\", function () {\n        stopActiveStream();\n        hasBgImage = false;\n        bgFrameImg.classList.remove(\"is-visible\");\n        statusMsg.textContent = \"Returned to clean highlighter stage.\";\n      });\n\n      document.addEventListener(\"paste\", function (e) {\n        const items = e.clipboardData && e.clipboardData.items;\n        if (!items) return;\n        for (let i = 0; i < items.length; i++) {\n          if (items[i].type.indexOf(\"image\") !== -1) {\n            const file = items[i].getAsFile();\n            if (!file) continue;\n            const reader = new FileReader();\n            reader.onload = function (ev) {\n              stopActiveStream();\n              bgFrameImg.src = ev.target.result;\n              bgFrameImg.classList.add(\"is-visible\");\n              hasBgImage = true;\n              updateStageMeta();\n              statusMsg.textContent = \"Pasted screenshot ready for highlighting.\";\n            };\n            reader.readAsDataURL(file);\n            break;\n          }\n        }\n      });\n\n      stageEl.addEventListener(\"pointermove\", function (e) {\n        const rect = stageEl.getBoundingClientRect();\n        const x = e.clientX - rect.left;\n        const y = e.clientY - rect.top;\n        if (circleEnabled) {\n          pointerHalo.style.display = \"block\";\n          pointerHalo.style.left = x + \"px\";\n          pointerHalo.style.top = y + \"px\";\n        }\n        if (drag) {\n          drag.cx = Math.max(0, Math.min(rect.width, x));\n          drag.cy = Math.max(0, Math.min(rect.height, y));\n          const bx = Math.min(drag.sx, drag.cx);\n          const by = Math.min(drag.sy, drag.cy);\n          const bw = Math.abs(drag.cx - drag.sx);\n          const bh = Math.abs(drag.cy - drag.sy);\n          if (bw > 2 && bh > 2) {\n            draftBox.style.display = \"block\";\n            draftBox.style.left = bx + \"px\";\n            draftBox.style.top = by + \"px\";\n            draftBox.style.width = bw + \"px\";\n            draftBox.style.height = bh + \"px\";\n            draftBox.style.borderColor = activeColor.hex;\n            draftBox.style.backgroundColor = activeColor.fill;\n          }\n        }\n      });\n\n      stageEl.addEventListener(\"pointerleave\", function () {\n        pointerHalo.style.display = \"none\";\n      });\n\n      stageEl.addEventListener(\"pointerdown\", function (e) {\n        if (e.button !== 0 || e.target.closest(\".hl-box-del\")) return;\n        const rect = stageEl.getBoundingClientRect();\n        const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));\n        const y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));\n        drag = { sx: x, sy: y, cx: x, cy: y };\n        draftBox.style.display = \"none\";\n      });\n\n      window.addEventListener(\"pointerup\", function () {\n        if (!drag) return;\n        const x = Math.min(drag.sx, drag.cx);\n        const y = Math.min(drag.sy, drag.cy);\n        const w = Math.abs(drag.cx - drag.sx);\n        const h = Math.abs(drag.cy - drag.sy);\n        drag = null;\n        draftBox.style.display = \"none\";\n        if (w >= 8 && h >= 8) {\n          boxes.push({ x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h), color: activeColor });\n          renderBoxes();\n        }\n      });\n\n      savePngBtn.addEventListener(\"click\", function () {\n        const rect = stageEl.getBoundingClientRect();\n        const w = Math.max(1, Math.round(rect.width));\n        const h = Math.max(1, Math.round(rect.height));\n        const out = document.createElement(\"canvas\");\n        out.width = w;\n        out.height = h;\n        const ctx = out.getContext(\"2d\");\n        ctx.fillStyle = darkStage ? \"#020617\" : \"#f8fafc\";\n        ctx.fillRect(0, 0, w, h);\n\n        function drawFitted(media, mw, mh) {\n          if (!mw || !mh) return;\n          const sc = Math.min(w / mw, h / mh);\n          const dw = mw * sc;\n          const dh = mh * sc;\n          ctx.drawImage(media, (w - dw) / 2, (h - dh) / 2, dw, dh);\n        }\n\n        if (activeStream && !frozen && streamVideo.videoWidth) {\n          drawFitted(streamVideo, streamVideo.videoWidth, streamVideo.videoHeight);\n        } else if (hasBgImage && bgFrameImg.naturalWidth) {\n          drawFitted(bgFrameImg, bgFrameImg.naturalWidth, bgFrameImg.naturalHeight);\n        }\n\n        boxes.forEach(function (b) {\n          ctx.save();\n          ctx.fillStyle = b.color.fill;\n          ctx.strokeStyle = b.color.hex;\n          ctx.lineWidth = 3;\n          ctx.fillRect(b.x, b.y, b.w, b.h);\n          ctx.strokeRect(b.x, b.y, b.w, b.h);\n          ctx.restore();\n        });\n\n        const stamp = new Date().toISOString().replace(/[:T]/g, \"-\").slice(0, 19);\n        const a = document.createElement(\"a\");\n        a.href = out.toDataURL(\"image/png\");\n        a.download = \"highlight-\" + stamp + \".png\";\n        document.body.appendChild(a);\n        a.click();\n        document.body.removeChild(a);\n        statusMsg.textContent = \"Saved annotated view as highlight-\" + stamp + \".png\";\n      });\n\n      let gripDrag = null;\n      resizeGrip.addEventListener(\"pointerdown\", function (e) {\n        e.preventDefault();\n        gripDrag = { sx: e.screenX, sy: e.screenY, ow: window.outerWidth, oh: window.outerHeight };\n      });\n      window.addEventListener(\"pointermove\", function (e) {\n        if (!gripDrag) return;\n        const nw = Math.max(540, gripDrag.ow + (e.screenX - gripDrag.sx));\n        const nh = Math.max(420, gripDrag.oh + (e.screenY - gripDrag.sy));\n        try { window.resizeTo(nw, nh); } catch (err) {}\n      });\n      window.addEventListener(\"pointerup\", function () { gripDrag = null; });\n\n      renderColorButtons();\n      updateHaloStyle();\n      updateStageMeta();\n    })();\n  <\/script>\n<\/body>\n<\/html>";
 
-    const popupHandles = { calc: null, snip: null };
+    const popupHandles = { calc: null, snip: null, highlight: null };
 
     function openSeparateWindow(key, html, name, features) {
       try {
@@ -1292,6 +1414,7 @@
         linear: '<svg viewBox="0 0 240 104"><line x1="20" y1="62" x2="220" y2="62" stroke="' + g + '"/><line x1="96" y1="12" x2="96" y2="92" stroke="' + g + '"/><line x1="44" y1="84" x2="196" y2="20" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/><line x1="44" y1="20" x2="196" y2="84" stroke="' + s + '" stroke-width="2" stroke-dasharray="5 3" stroke-linecap="round"/><circle cx="120" cy="52" r="7" fill="' + f + '" stroke="' + p + '" stroke-width="1.25"/><circle cx="120" cy="52" r="3.5" fill="' + p + '"/></svg>',
         projectile: '<svg viewBox="0 0 240 104"><line x1="24" y1="80" x2="216" y2="80" stroke="' + g + '" stroke-width="1.5" stroke-linecap="round"/><line x1="120" y1="26" x2="120" y2="80" stroke="' + g + '" stroke-dasharray="3 3"/><path d="M 42 80 Q 124 -12 204 80" fill="none" stroke="' + s + '" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/><path d="M 42 80 C 76 16, 146 18, 184 80" fill="none" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/><line x1="42" y1="80" x2="66" y2="38" stroke="' + p + '" stroke-width="2" stroke-linecap="round"/><polygon points="69,33 60,40 68,44" fill="' + p + '"/><circle cx="42" cy="80" r="3.2" fill="' + p + '"/><circle cx="80" cy="40" r="2.75" fill="' + f + '" stroke="' + p + '" stroke-width="1.5"/><circle cx="120" cy="30" r="3.2" fill="' + p + '"/><circle cx="156" cy="46" r="2.75" fill="' + f + '" stroke="' + p + '" stroke-width="1.5"/><circle cx="184" cy="80" r="3.2" fill="' + p + '"/></svg>',
         "reciprocal-trig": '<svg viewBox="0 0 240 104"><line x1="20" y1="52" x2="220" y2="52" stroke="' + g + '"/><line x1="24" y1="32" x2="216" y2="32" stroke="' + g + '" stroke-width="0.9"/><line x1="24" y1="72" x2="216" y2="72" stroke="' + g + '" stroke-width="0.9"/><line x1="40" y1="12" x2="40" y2="92" stroke="' + g + '" stroke-width="1.25" stroke-dasharray="3 3"/><line x1="120" y1="12" x2="120" y2="92" stroke="' + g + '" stroke-width="1.25" stroke-dasharray="3 3"/><line x1="200" y1="12" x2="200" y2="92" stroke="' + g + '" stroke-width="1.25" stroke-dasharray="3 3"/><path d="M 40 52 C 60 25, 100 25, 120 52 C 140 79, 180 79, 200 52" fill="none" stroke="' + s + '" stroke-width="1.75" stroke-dasharray="4 3" stroke-linecap="round"/><path d="M 52 14 Q 80 50 108 14" fill="none" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/><path d="M 132 90 Q 160 54 188 90" fill="none" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/><circle cx="80" cy="32" r="3.5" fill="' + p + '"/><circle cx="160" cy="72" r="3.5" fill="' + p + '"/></svg>',
+        collision: '<svg viewBox="0 0 240 104"><line x1="20" y1="52" x2="220" y2="52" stroke="' + g + '"/><line x1="36" y1="52" x2="80" y2="52" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/><polygon points="84,52 75,47 75,57" fill="' + p + '"/><line x1="204" y1="52" x2="164" y2="52" stroke="' + s + '" stroke-width="2" stroke-dasharray="4 3" stroke-linecap="round"/><polygon points="158,52 167,47 167,57" fill="' + s + '"/><circle cx="98" cy="52" r="14" fill="' + f + '" stroke="' + p + '" stroke-width="2.25"/><circle cx="142" cy="52" r="11" fill="' + c + '" stroke="' + p + '" stroke-width="2"/><path d="M 118 28 L 122 18 M 112 31 L 106 23 M 126 31 L 132 23 M 118 76 L 122 86 M 112 73 L 106 81 M 126 73 L 132 81" stroke="' + p + '" stroke-width="1.75" stroke-linecap="round"/></svg>',
         placeholder: '<svg viewBox="0 0 240 104"><line x1="28" y1="52" x2="212" y2="52" stroke="' + g + '"/><line x1="120" y1="14" x2="120" y2="90" stroke="' + g + '"/><rect x="84" y="24" width="72" height="56" rx="8" fill="' + f + '" stroke="' + s + '" stroke-width="1.5" stroke-dasharray="5 4"/><line x1="120" y1="40" x2="120" y2="64" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/><line x1="108" y1="52" x2="132" y2="52" stroke="' + p + '" stroke-width="2.25" stroke-linecap="round"/></svg>'
       };
       return map[motif] || map.placeholder;
@@ -1308,6 +1431,9 @@
       }
       if (motif === "utility-snip") {
         return '<svg viewBox="0 0 240 104"><line x1="36" y1="20" x2="204" y2="20" stroke="' + gr + '"/><line x1="36" y1="84" x2="204" y2="84" stroke="' + gr + '"/><rect x="64" y="22" width="112" height="60" rx="4" fill="' + fl + '" stroke="' + m + '" stroke-width="1.75" stroke-dasharray="5 3"/><rect x="61" y="19" width="6" height="6" fill="' + m + '"/><rect x="173" y="19" width="6" height="6" fill="' + m + '"/><rect x="61" y="79" width="6" height="6" fill="' + m + '"/><rect x="173" y="79" width="6" height="6" fill="' + m + '"/><line x1="120" y1="40" x2="120" y2="64" stroke="' + m + '" stroke-width="2" stroke-linecap="round"/><line x1="108" y1="52" x2="132" y2="52" stroke="' + m + '" stroke-width="2" stroke-linecap="round"/><circle cx="120" cy="52" r="9" fill="none" stroke="' + mu + '" stroke-width="1.25"/></svg>';
+      }
+      if (motif === "utility-highlight") {
+        return '<svg viewBox="0 0 240 104"><line x1="28" y1="30" x2="212" y2="30" stroke="' + gr + '"/><line x1="28" y1="52" x2="212" y2="52" stroke="' + gr + '"/><line x1="28" y1="74" x2="212" y2="74" stroke="' + gr + '"/><rect x="48" y="24" width="92" height="54" rx="5" fill="' + ch + '" stroke="' + m + '" stroke-width="2"/><rect x="45" y="21" width="6" height="6" fill="' + m + '"/><rect x="137" y="75" width="6" height="6" fill="' + m + '"/><circle cx="164" cy="54" r="22" fill="' + fl + '" stroke="' + m + '" stroke-width="1.75" stroke-dasharray="4 3"/><circle cx="164" cy="54" r="11" fill="none" stroke="' + mu + '" stroke-width="1.25"/><polygon points="162,48 162,65 167,61 171,68 174,66 170,59 176,58" fill="' + m + '"/></svg>';
       }
       return '<svg viewBox="0 0 240 104"><line x1="28" y1="52" x2="212" y2="52" stroke="' + gr + '"/><line x1="120" y1="14" x2="120" y2="90" stroke="' + gr + '"/><rect x="84" y="24" width="72" height="56" rx="8" fill="' + fl + '" stroke="' + mu + '" stroke-width="1.5" stroke-dasharray="5 4"/><line x1="120" y1="40" x2="120" y2="64" stroke="' + m + '" stroke-width="2.25" stroke-linecap="round"/><line x1="108" y1="52" x2="132" y2="52" stroke="' + m + '" stroke-width="2.25" stroke-linecap="round"/></svg>';
     }
@@ -1398,12 +1524,7 @@
 
         const isCalcActive = util.actionType === "calculator" && calcWinEl.classList.contains("is-open");
         const isSnipActive = util.actionType === "screen-capture" && snipWinEl.classList.contains("is-open");
-        const actionLabel =
-          util.actionType === "placeholder"
-            ? "Reserved"
-            : isCalcActive || isSnipActive
-              ? "Active"
-              : "Open Tool";
+        const isHlActive = util.actionType === "highlighter" && hlWinEl.classList.contains("is-open");
 
         btn.innerHTML =
           '<div class="tile-motif">' + getUtilityMotifSvg(util.motif) + '</div>' +
@@ -1413,7 +1534,7 @@
             '<p class="tile-summary" style="color:#475569;">' + util.summary + '</p>' +
             '<div class="tile-footer" style="border-top:1px solid rgba(203,213,225,0.85);">' +
               '<span class="tile-file" style="color:#64748b;">' + (util.actionType === "placeholder" ? util.name : "Separate Window") + '</span>' +
-              '<span class="tile-launch" style="color:' + util.borderHex + ';">' + (util.actionType === "placeholder" ? "Reserved" : isCalcActive || isSnipActive ? "Active" : "Pop Out") + ' &rarr;</span>' +
+              '<span class="tile-launch" style="color:' + util.borderHex + ';">' + (util.actionType === "placeholder" ? "Reserved" : isCalcActive || isSnipActive || isHlActive ? "Active" : "Pop Out") + ' &rarr;</span>' +
             '</div>' +
           '</div>';
 
@@ -1444,6 +1565,20 @@
             } else {
               openSnipWindow();
               utilityNoticeTextEl.textContent = "Popup blocked by browser; opened Screen Capture Tool inline instead.";
+              utilityNoticeEl.style.display = "flex";
+            }
+          } else if (util.actionType === "highlighter") {
+            const opened = openSeparateWindow(
+              "highlight",
+              HIGHLIGHTER_POPUP_HTML,
+              "askMrPhysicsHighlighter",
+              "popup=yes,width=920,height=660,resizable=yes,scrollbars=no"
+            );
+            if (opened) {
+              utilityNoticeEl.style.display = "none";
+            } else {
+              openHlWindow();
+              utilityNoticeTextEl.textContent = "Popup blocked by browser; opened Screen Highlighter inline instead.";
               utilityNoticeEl.style.display = "flex";
             }
           } else {
@@ -1523,6 +1658,7 @@
        ========================================================================= */
     const calcWinEl = document.getElementById("calcWindow");
     const snipWinEl = document.getElementById("snipWindow");
+    const hlWinEl = document.getElementById("hlWindow");
     const calcExprEl = document.getElementById("calcExpr");
     const calcValEl = document.getElementById("calcVal");
     const calcModeBadgeEl = document.getElementById("calcModeBadge");
@@ -1545,6 +1681,7 @@
     function bringToFront(winEl) {
       calcWinEl.style.zIndex = winEl === calcWinEl ? "55" : "45";
       snipWinEl.style.zIndex = winEl === snipWinEl ? "55" : "45";
+      hlWinEl.style.zIndex = winEl === hlWinEl ? "55" : "45";
     }
 
     function openCalcWindow() {
@@ -2096,6 +2233,145 @@
       renderUtilities();
     });
 
+    /* =========================================================================
+       INLINE FALLBACK SCREEN HIGHLIGHTER WINDOW
+       ========================================================================= */
+    const hlColorsEl = document.getElementById("hlColorsEl");
+    const hlCircleToggleEl = document.getElementById("hlCircleToggle");
+    const hlCircleSizeEl = document.getElementById("hlCircleSize");
+    const hlStageEl = document.getElementById("hlStage");
+    const hlBoxesEl = document.getElementById("hlBoxesEl");
+    const hlDraftBoxEl = document.getElementById("hlDraftBox");
+    const hlPointerHaloEl = document.getElementById("hlPointerHalo");
+
+    const HL_COLORS = [
+      { id: "yellow", label: "Yellow", hex: "#FACC15", fill: "rgba(250,204,21,0.28)", halo: "rgba(250,204,21,0.18)" },
+      { id: "blue", label: "Blue", hex: "#38BDF8", fill: "rgba(56,189,248,0.28)", halo: "rgba(56,189,248,0.18)" },
+      { id: "red", label: "Red", hex: "#FB7185", fill: "rgba(251,113,133,0.28)", halo: "rgba(251,113,133,0.18)" },
+      { id: "green", label: "Green", hex: "#4ADE80", fill: "rgba(74,222,128,0.28)", halo: "rgba(74,222,128,0.18)" },
+      { id: "gray", label: "Gray", hex: "#94A3B8", fill: "rgba(148,163,184,0.32)", halo: "rgba(148,163,184,0.22)" }
+    ];
+
+    let hlState = {
+      x: 96,
+      y: 76,
+      color: HL_COLORS[0],
+      circleOn: true,
+      circleSize: 76,
+      boxes: [],
+      draft: null
+    };
+
+    function openHlWindow() {
+      hlState.x = Math.min(Math.max(16, hlState.x), Math.max(16, window.innerWidth - 756));
+      hlState.y = Math.min(Math.max(16, hlState.y), Math.max(16, window.innerHeight - 516));
+      hlWinEl.style.left = hlState.x + "px";
+      hlWinEl.style.top = hlState.y + "px";
+      hlWinEl.classList.add("is-open");
+      bringToFront(hlWinEl);
+    }
+
+    function syncHlHalo() {
+      hlPointerHaloEl.style.width = hlState.circleSize + "px";
+      hlPointerHaloEl.style.height = hlState.circleSize + "px";
+      hlPointerHaloEl.style.borderColor = hlState.color.hex;
+      hlPointerHaloEl.style.backgroundColor = hlState.color.halo;
+    }
+
+    function renderHlColors() {
+      hlColorsEl.innerHTML = "";
+      HL_COLORS.forEach((c) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "hl-color-btn" + (c.id === hlState.color.id ? " is-active" : "");
+        btn.innerHTML = '<span class="hl-swatch" style="background:' + c.hex + ';"></span><span>' + c.label + '</span>';
+        btn.addEventListener("click", () => {
+          hlState.color = c;
+          renderHlColors();
+          syncHlHalo();
+        });
+        hlColorsEl.appendChild(btn);
+      });
+    }
+
+    function renderHlBoxes() {
+      hlBoxesEl.innerHTML = "";
+      hlState.boxes.forEach((b) => {
+        const div = document.createElement("div");
+        div.className = "hl-box-item";
+        div.style.left = b.x + "px";
+        div.style.top = b.y + "px";
+        div.style.width = b.w + "px";
+        div.style.height = b.h + "px";
+        div.style.borderColor = b.color.hex;
+        div.style.backgroundColor = b.color.fill;
+        hlBoxesEl.appendChild(div);
+      });
+    }
+
+    hlCircleToggleEl.addEventListener("click", () => {
+      hlState.circleOn = !hlState.circleOn;
+      hlCircleToggleEl.classList.toggle("is-on", hlState.circleOn);
+      hlCircleToggleEl.textContent = hlState.circleOn ? "Circle: On" : "Circle: Off";
+      if (!hlState.circleOn) hlPointerHaloEl.style.display = "none";
+    });
+
+    hlCircleSizeEl.addEventListener("input", (e) => {
+      hlState.circleSize = Number(e.target.value) || 76;
+      syncHlHalo();
+    });
+
+    document.getElementById("hlClearBtn").addEventListener("click", () => {
+      hlState.boxes = [];
+      renderHlBoxes();
+    });
+
+    hlStageEl.addEventListener("pointermove", (e) => {
+      const r = hlStageEl.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      if (hlState.circleOn) {
+        hlPointerHaloEl.style.display = "block";
+        hlPointerHaloEl.style.left = x + "px";
+        hlPointerHaloEl.style.top = y + "px";
+      }
+      if (hlState.draft) {
+        hlState.draft.cx = Math.max(0, Math.min(r.width, x));
+        hlState.draft.cy = Math.max(0, Math.min(r.height, y));
+        const bx = Math.min(hlState.draft.sx, hlState.draft.cx);
+        const by = Math.min(hlState.draft.sy, hlState.draft.cy);
+        const bw = Math.abs(hlState.draft.cx - hlState.draft.sx);
+        const bh = Math.abs(hlState.draft.cy - hlState.draft.sy);
+        if (bw > 2 && bh > 2) {
+          hlDraftBoxEl.style.display = "block";
+          hlDraftBoxEl.style.left = bx + "px";
+          hlDraftBoxEl.style.top = by + "px";
+          hlDraftBoxEl.style.width = bw + "px";
+          hlDraftBoxEl.style.height = bh + "px";
+          hlDraftBoxEl.style.borderColor = hlState.color.hex;
+          hlDraftBoxEl.style.backgroundColor = hlState.color.fill;
+        }
+      }
+    });
+
+    hlStageEl.addEventListener("pointerleave", () => {
+      hlPointerHaloEl.style.display = "none";
+    });
+
+    hlStageEl.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      const r = hlStageEl.getBoundingClientRect();
+      const x = Math.max(0, Math.min(r.width, e.clientX - r.left));
+      const y = Math.max(0, Math.min(r.height, e.clientY - r.top));
+      hlState.draft = { sx: x, sy: y, cx: x, cy: y };
+      hlDraftBoxEl.style.display = "none";
+    });
+
+    hlWinEl.addEventListener("pointerdown", () => bringToFront(hlWinEl));
+    document.getElementById("hlCloseBtn").addEventListener("click", () => {
+      hlWinEl.classList.remove("is-open");
+      renderUtilities();
+    });
+
     /* Shared Drag & Resize Pointer Controller */
     let activeDrag = null;
     document.getElementById("calcDragHandle").addEventListener("pointerdown", (e) => {
@@ -2113,6 +2389,11 @@
       bringToFront(snipWinEl);
       activeDrag = { kind: "snip-move", sx: e.clientX, sy: e.clientY, ox: snipState.x, oy: snipState.y };
     });
+    document.getElementById("hlDragHandle").addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button")) return;
+      bringToFront(hlWinEl);
+      activeDrag = { kind: "hl-move", sx: e.clientX, sy: e.clientY, ox: hlState.x, oy: hlState.y };
+    });
 
     window.addEventListener("pointermove", (e) => {
       if (!activeDrag) return;
@@ -2129,17 +2410,36 @@
         snipState.y = Math.min(Math.max(8, activeDrag.oy + (e.clientY - activeDrag.sy)), Math.max(8, window.innerHeight - 64));
         snipWinEl.style.left = snipState.x + "px";
         snipWinEl.style.top = snipState.y + "px";
+      } else if (activeDrag.kind === "hl-move") {
+        hlState.x = Math.min(Math.max(8, activeDrag.ox + (e.clientX - activeDrag.sx)), Math.max(8, window.innerWidth - 160));
+        hlState.y = Math.min(Math.max(8, activeDrag.oy + (e.clientY - activeDrag.sy)), Math.max(8, window.innerHeight - 64));
+        hlWinEl.style.left = hlState.x + "px";
+        hlWinEl.style.top = hlState.y + "px";
       }
     });
 
     window.addEventListener("pointerup", () => {
       activeDrag = null;
+      if (hlState.draft) {
+        const bx = Math.min(hlState.draft.sx, hlState.draft.cx);
+        const by = Math.min(hlState.draft.sy, hlState.draft.cy);
+        const bw = Math.abs(hlState.draft.cx - hlState.draft.sx);
+        const bh = Math.abs(hlState.draft.cy - hlState.draft.sy);
+        hlState.draft = null;
+        hlDraftBoxEl.style.display = "none";
+        if (bw >= 8 && bh >= 8) {
+          hlState.boxes.push({ x: Math.round(bx), y: Math.round(by), w: Math.round(bw), h: Math.round(bh), color: hlState.color });
+          renderHlBoxes();
+        }
+      }
     });
 
     syncFullscreenButton();
     renderFilters();
     renderGrid();
     renderCalcKeys();
+    renderHlColors();
+    syncHlHalo();
     renderUtilities();
   </script>
 </body>
