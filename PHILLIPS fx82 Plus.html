@@ -519,6 +519,27 @@
       gap: 6px 6px;
     }
 
+    /* On-Screen Menu Overlay */
+    .menu-screen {
+      position: absolute;
+      inset: 2px;
+      background: var(--lcd-bg);
+      color: var(--lcd-dark);
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 18px;
+      padding: 8px 6px;
+      overflow-y: auto;
+      z-index: 20;
+    }
+    .menu-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 1px 0;
+    }
+
     /* Context Color Change Menus */
     .custom-ctx-menu {
       position: fixed;
@@ -668,15 +689,16 @@
         </div>
 
         <!-- 3X Height Screen: History Tape -->
-        <div class="lcd-history-tape" id="historyTape" title="Click any item to copy expression">
-          <!-- Populated by engine -->
-        </div>
+        <div class="lcd-history-tape" id="historyTape" title="Click any item to copy expression"></div>
 
         <!-- Active Input & Result Area -->
         <div class="lcd-active-area">
           <div class="lcd-line1" id="line1">0<span class="cursor"></span></div>
           <div class="lcd-line2" id="line2"></div>
         </div>
+
+        <!-- Menus Overlay -->
+        <div class="menu-screen" id="menuOverlay" style="display:none;"></div>
       </div>
     </div>
 
@@ -727,11 +749,11 @@
           <button class="calc-btn btn-fun" id="k-sqrt">√■</button>
         </div>
         <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
+          <div class="key-labels"><span class="label-shift">x³</span><span></span></div>
           <button class="calc-btn btn-fun" id="k-sqr">x²</button>
         </div>
         <div class="key-cell">
-          <div class="key-labels"><span class="label-shift">x√</span><span></span></div>
+          <div class="key-labels"><span class="label-shift">ˣ√</span><span></span></div>
           <button class="calc-btn btn-fun" id="k-pow">x^■</button>
         </div>
         <div class="key-cell">
@@ -796,7 +818,7 @@
         </div>
       </div>
 
-      <!-- Main Grid (4 Rows x 5 Columns) - Every cell uniformly aligned -->
+      <!-- Main Grid (4 Rows x 5 Columns) - Every cell uniformly aligned with 14px spacer -->
       <div class="main-grid">
         <!-- Row 1: 7, 8, 9, DEL, AC -->
         <div class="key-cell">
@@ -808,7 +830,7 @@
           <button class="calc-btn btn-num" id="k-8">8</button>
         </div>
         <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
+          <div class="key-labels"><span class="label-shift">CLR</span><span></span></div>
           <button class="calc-btn btn-num" id="k-9">9</button>
         </div>
         <div class="key-cell">
@@ -830,7 +852,7 @@
           <button class="calc-btn btn-num" id="k-5">5</button>
         </div>
         <div class="key-cell">
-          <div class="key-labels"><span></span><span></span></div>
+          <div class="key-labels"><span class="label-shift">VERIFY</span><span></span></div>
           <button class="calc-btn btn-num" id="k-6">6</button>
         </div>
         <div class="key-cell">
@@ -882,7 +904,7 @@
           <button class="calc-btn btn-fun" id="k-ans">Ans</button>
         </div>
         <div class="key-cell">
-          <div class="key-labels"><span class="label-shift">VERIFY</span><span></span></div>
+          <div class="key-labels"><span class="label-shift"></span><span></span></div>
           <button class="calc-btn btn-num" style="background: linear-gradient(180deg, #d3dbe3 0%, #b8c1ca 100%);" id="k-eq">=</button>
         </div>
       </div>
@@ -904,7 +926,7 @@
 </div>
 
 <div class="screen-tip">
-  💡 <strong>Pro Tips:</strong> Use <strong>■/□</strong> to stack fractions • Use <strong>▲/▼/◀/▶</strong> to enter boxes • Right-click anywhere for independent color customization
+  💡 <strong>Pro Tips:</strong> Try <code>sin(30°) = 0.5</code> • Try <code>6 SHIFT × 3 = 120</code> (nPr) • Try <code>6 SHIFT ÷ 3 = 20</code> (nCr) • Right-click anywhere for Themes
 </div>
 
 <script>
@@ -1229,7 +1251,7 @@
     }
   });
 
-  // Natural V.P.A.M. Recursive Data Tree
+  // State Management
   const state = {
     power: true,
     tree: [], // Array of elements: string or { type: 'frac', num: [], den: [] }
@@ -1243,21 +1265,56 @@
     alpha: false,
     sto: false,
     rcl: false,
+    mode: 'COMP', // 'COMP', 'STAT', 'VERIF'
+    angleUnit: 'Deg', // 'Deg', 'Rad', 'Gra'
+    numFormat: 'Norm', // 'Norm', 'Fix', 'Sci'
+    fixVal: 3,
+    sciVal: 3,
+    normVal: 2,
+    sdToggleState: 0,
+    engOffset: 0,
+    factoredForm: null,
+    activeMenu: null,
     vars: { A:0, B:0, C:0, D:0, E:0, F:0, X:0, Y:0, M:0 }
   };
 
   const line1 = document.getElementById('line1');
   const line2 = document.getElementById('line2');
   const historyTape = document.getElementById('historyTape');
+  const menuOverlay = document.getElementById('menuOverlay');
   const indS = document.getElementById('ind-s');
   const indA = document.getElementById('ind-a');
+  const indM = document.getElementById('ind-m');
+  const indSto = document.getElementById('ind-sto');
+  const indRcl = document.getElementById('ind-rcl');
+  const indStat = document.getElementById('ind-stat');
+  const indAng = document.getElementById('ind-ang');
+  const indFix = document.getElementById('ind-fix');
+  const indSci = document.getElementById('ind-sci');
+  const indMath = document.getElementById('ind-math');
+  const indArrow = document.getElementById('ind-arrow');
 
   function updateIndicators() {
     indS.classList.toggle('active', state.shift);
     indA.classList.toggle('active', state.alpha);
+    indM.classList.toggle('active', state.vars.M !== 0);
+    indSto.classList.toggle('active', state.sto);
+    indRcl.classList.toggle('active', state.rcl);
+    indStat.classList.toggle('active', state.mode === 'STAT');
+    indAng.textContent = state.angleUnit === 'Deg' ? 'D' : (state.angleUnit === 'Rad' ? 'R' : 'G');
+    indFix.classList.toggle('active', state.numFormat === 'Fix');
+    indSci.classList.toggle('active', state.numFormat === 'Sci');
+    indMath.classList.add('active');
+    indArrow.classList.toggle('active', state.calcHistory.length > 0);
   }
 
-  // Returns array and target context container for active cursor path
+  function cleanFloat(n) {
+    if (Math.abs(n) < 1e-13) return 0;
+    let rounded = parseFloat(n.toPrecision(12));
+    if (Math.abs(rounded - Math.round(rounded)) < 1e-11) return Math.round(rounded);
+    return rounded;
+  }
+
   function getActiveContext(tree, path) {
     let curr = tree;
     for (let step of path) {
@@ -1267,7 +1324,6 @@
     return curr;
   }
 
-  // Recursive Renderer for Natural Stacked Fractions
   function renderTreeToHTML(treeList, currentPath, targetPath, isInsideActive) {
     let html = '';
     for (let i = 0; i < treeList.length; i++) {
@@ -1315,7 +1371,6 @@
     return true;
   }
 
-  // Convert recursive tree to executable JS expression
   function treeToFormula(treeList) {
     let out = '';
     for (let node of treeList) {
@@ -1336,6 +1391,23 @@
       line1.innerHTML = '';
       line2.innerHTML = '';
       historyTape.innerHTML = '';
+      menuOverlay.style.display = 'none';
+      syncPopoutScreen();
+      return;
+    }
+
+    if (state.activeMenu) {
+      renderActiveMenu();
+      menuOverlay.style.display = 'flex';
+      syncPopoutScreen();
+      return;
+    } else {
+      menuOverlay.style.display = 'none';
+    }
+
+    if (state.factoredForm) {
+      line1.textContent = treeToFormula(state.tree) || String(state.lastResult || '');
+      line2.textContent = state.factoredForm;
       syncPopoutScreen();
       return;
     }
@@ -1343,6 +1415,15 @@
     line1.innerHTML = renderTreeToHTML(state.tree, [], state.cursorPath, true) || '<span class="cursor"></span>';
     line2.textContent = state.lastResult !== null ? formatOutputNumber(state.lastResult) : '';
     syncPopoutScreen();
+  }
+
+  function renderActiveMenu() {
+    const m = state.activeMenu;
+    let html = `<div style="font-size:12px; margin-bottom:5px; border-bottom:1px solid currentColor; padding-bottom:3px;">${m.title}</div>`;
+    m.items.forEach(it => {
+      html += `<div class="menu-row"><span>${it.id}:${it.label}</span></div>`;
+    });
+    menuOverlay.innerHTML = html;
   }
 
   function syncPopoutScreen() {
@@ -1362,12 +1443,72 @@
 
   function formatOutputNumber(val) {
     if (typeof val === 'string') return val;
+    if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
     if (isNaN(val) || !isFinite(val)) return 'Math ERROR';
-    let s = parseFloat(val.toPrecision(10)).toString();
-    return s;
+
+    if (state.engOffset !== 0) {
+      let shifted = val / Math.pow(10, state.engOffset);
+      return cleanFloat(shifted) + '×10^' + state.engOffset;
+    }
+
+    if (state.sdToggleState === 1 || state.sdToggleState === 2) {
+      let frac = toFraction(val);
+      if (frac) {
+        if (state.sdToggleState === 2 && Math.abs(frac.n) >= frac.d) {
+          let whole = Math.trunc(frac.n / frac.d);
+          let rem = Math.abs(frac.n % frac.d);
+          return `${whole}⌟${rem}⌟${frac.d}`;
+        }
+        return `${frac.n}⌟${frac.d}`;
+      }
+    }
+
+    if (state.numFormat === 'Fix') return val.toFixed(state.fixVal);
+    if (state.numFormat === 'Sci') return val.toExponential(state.sciVal);
+    return cleanFloat(val).toString();
+  }
+
+  function toFraction(val, maxDenom = 10000) {
+    let sign = val < 0 ? -1 : 1;
+    val = Math.abs(val);
+    let bestN = 1, bestD = 1, bestErr = Math.abs(val - 1);
+    for (let d = 1; d <= maxDenom; d++) {
+      let n = Math.round(val * d);
+      let err = Math.abs(val - n / d);
+      if (err < 1e-10) return { n: sign * n, d: d };
+      if (err < bestErr) {
+        bestErr = err; bestN = n; bestD = d;
+      }
+    }
+    if (bestErr < 1e-5) return { n: sign * bestN, d: bestD };
+    return null;
+  }
+
+  function primeFactorize(n) {
+    n = Math.round(Number(n));
+    if (isNaN(n) || n <= 1 || n > 9999999999) return null;
+    let original = n;
+    let factors = {};
+    for (let d = 2; d * d <= n; d++) {
+      while (n % d === 0) {
+        factors[d] = (factors[d] || 0) + 1;
+        n /= d;
+      }
+    }
+    if (n > 1) {
+      if (n > 999 && n !== original) factors[`(${n})`] = 1;
+      else factors[n] = (factors[n] || 0) + 1;
+    }
+    let parts = [];
+    for (let k in factors) {
+      if (factors[k] > 1) parts.push(`${k}^${factors[k]}`);
+      else parts.push(`${k}`);
+    }
+    return parts.join('×');
   }
 
   function insertTokenAtCursor(token) {
+    state.factoredForm = null;
     const list = getActiveContext(state.tree, state.cursorPath);
     if (!list) return;
 
@@ -1391,6 +1532,7 @@
   }
 
   function deleteTokenAtCursor() {
+    state.factoredForm = null;
     const list = getActiveContext(state.tree, state.cursorPath);
     if (!list) return;
 
@@ -1415,32 +1557,293 @@
     renderScreen();
   }
 
+  // ==========================================
+  // MATHEMATICAL EVALUATION ENGINE
+  // ==========================================
+  function createMathContext() {
+    function toRadians(val) {
+      if (state.angleUnit === 'Deg') return val * Math.PI / 180;
+      if (state.angleUnit === 'Gra') return val * Math.PI / 200;
+      return val;
+    }
+    function fromRadians(rad) {
+      if (state.angleUnit === 'Deg') return rad * 180 / Math.PI;
+      if (state.angleUnit === 'Gra') return rad * 200 / Math.PI;
+      return rad;
+    }
+
+    return {
+      Math: Math,
+      A: state.vars.A, B: state.vars.B, C: state.vars.C,
+      D: state.vars.D, E: state.vars.E, F: state.vars.F,
+      X: state.vars.X, Y: state.vars.Y, M: state.vars.M,
+
+      degAngle: (d) => {
+        if (state.angleUnit === 'Deg') return Number(d);
+        if (state.angleUnit === 'Rad') return Number(d) * Math.PI / 180;
+        if (state.angleUnit === 'Gra') return Number(d) * 200 / 180;
+        return Number(d);
+      },
+      radAngle: (r) => {
+        if (state.angleUnit === 'Deg') return Number(r) * 180 / Math.PI;
+        if (state.angleUnit === 'Rad') return Number(r);
+        if (state.angleUnit === 'Gra') return Number(r) * 200 / Math.PI;
+        return Number(r);
+      },
+      graAngle: (g) => {
+        if (state.angleUnit === 'Deg') return Number(g) * 180 / 200;
+        if (state.angleUnit === 'Rad') return Number(g) * Math.PI / 200;
+        if (state.angleUnit === 'Gra') return Number(g);
+        return Number(g);
+      },
+      dms: (d, m, s) => {
+        let deg = Number(d) + (Number(m) || 0)/60 + (Number(s) || 0)/3600;
+        if (state.angleUnit === 'Deg') return deg;
+        if (state.angleUnit === 'Rad') return deg * Math.PI / 180;
+        if (state.angleUnit === 'Gra') return deg * 200 / 180;
+        return deg;
+      },
+
+      sin: (x) => cleanFloat(Math.sin(toRadians(x))),
+      cos: (x) => cleanFloat(Math.cos(toRadians(x))),
+      tan: (x) => {
+        let rad = toRadians(x);
+        if (Math.abs(Math.cos(rad)) < 1e-15) throw new Error("Math ERROR");
+        return cleanFloat(Math.tan(rad));
+      },
+      asin: (y) => {
+        if (y < -1 || y > 1) throw new Error("Math ERROR");
+        return cleanFloat(fromRadians(Math.asin(y)));
+      },
+      acos: (y) => {
+        if (y < -1 || y > 1) throw new Error("Math ERROR");
+        return cleanFloat(fromRadians(Math.acos(y)));
+      },
+      atan: (y) => cleanFloat(fromRadians(Math.atan(y))),
+
+      sinh: (x) => cleanFloat(Math.sinh(x)),
+      cosh: (x) => cleanFloat(Math.cosh(x)),
+      tanh: (x) => cleanFloat(Math.tanh(x)),
+      asinh: (x) => cleanFloat(Math.asinh(x)),
+      acosh: (x) => {
+        if (x < 1) throw new Error("Math ERROR");
+        return cleanFloat(Math.acosh(x));
+      },
+      atanh: (x) => {
+        if (Math.abs(x) >= 1) throw new Error("Math ERROR");
+        return cleanFloat(Math.atanh(x));
+      },
+
+      log: (x) => {
+        if (x <= 0) throw new Error("Math ERROR");
+        return cleanFloat(Math.log10(x));
+      },
+      ln: (x) => {
+        if (x <= 0) throw new Error("Math ERROR");
+        return cleanFloat(Math.log(x));
+      },
+
+      nPr: (n, r) => {
+        n = Math.round(Number(n));
+        r = Math.round(Number(r));
+        if (isNaN(n) || isNaN(r) || r < 0 || r > n) throw new Error("Math ERROR");
+        let p = 1;
+        for (let i = 0; i < r; i++) p *= (n - i);
+        return p;
+      },
+      nCr: (n, r) => {
+        n = Math.round(Number(n));
+        r = Math.round(Number(r));
+        if (isNaN(n) || isNaN(r) || r < 0 || r > n) throw new Error("Math ERROR");
+        if (r === 0 || r === n) return 1;
+        if (r > n / 2) r = n - r;
+        let c = 1;
+        for (let i = 1; i <= r; i++) c = (c * (n - i + 1)) / i;
+        return Math.round(c);
+      },
+      fact: (n) => {
+        n = Math.round(Number(n));
+        if (n < 0 || n > 69) throw new Error("Math ERROR");
+        let r = 1;
+        for (let i = 2; i <= n; i++) r *= i;
+        return r;
+      },
+
+      Pol: (x, y) => {
+        x = Number(x); y = Number(y);
+        let r = Math.hypot(x, y);
+        let th = fromRadians(Math.atan2(y, x));
+        state.vars.X = cleanFloat(r);
+        state.vars.Y = cleanFloat(th);
+        return `r=${cleanFloat(r)}, θ=${cleanFloat(th)}`;
+      },
+      Rec: (r, th) => {
+        r = Number(r); th = Number(th);
+        let thRad = toRadians(th);
+        let x = r * Math.cos(thRad);
+        let y = r * Math.sin(thRad);
+        state.vars.X = cleanFloat(x);
+        state.vars.Y = cleanFloat(y);
+        return `X=${cleanFloat(x)}, Y=${cleanFloat(y)}`;
+      },
+
+      GCD: (a, b) => {
+        a = Math.abs(Math.round(Number(a)));
+        b = Math.abs(Math.round(Number(b)));
+        while (b) { let t = b; b = a % b; a = t; }
+        return a;
+      },
+      LCM: (a, b) => {
+        a = Math.abs(Math.round(Number(a)));
+        b = Math.abs(Math.round(Number(b)));
+        if (a === 0 || b === 0) return 0;
+        let gcd = (x, y) => { while(y) { let t = y; y = x % y; x = t; } return x; };
+        return Math.abs(a * b) / gcd(a, b);
+      },
+
+      RanHash: () => Math.floor(Math.random() * 1000) / 1000,
+      RanIntHash: (a, b) => {
+        a = Math.round(Number(a));
+        b = Math.round(Number(b));
+        return Math.floor(Math.random() * (b - a + 1)) + a;
+      },
+
+      Rnd: (x) => {
+        if (state.numFormat === 'Fix') return Number(Number(x).toFixed(state.fixVal));
+        if (state.numFormat === 'Sci') return Number(Number(x).toExponential(state.sciVal));
+        return cleanFloat(Number(x));
+      }
+    };
+  }
+
+  function evaluateVerifyExpr(exprStr) {
+    let parts = exprStr.split(/\s*(=|≠|>|<|≧|≦)\s*/);
+    if (parts.length < 3) return false;
+    for (let i = 0; i < parts.length - 2; i += 2) {
+      let left = evaluateMathExpression(parts[i]);
+      let op = parts[i+1];
+      let right = evaluateMathExpression(parts[i+2]);
+      if (typeof left === 'string' || typeof right === 'string') return false;
+      let ok = false;
+      if (op === '=') ok = Math.abs(left - right) < 1e-11;
+      else if (op === '≠') ok = Math.abs(left - right) >= 1e-11;
+      else if (op === '>') ok = left > right;
+      else if (op === '<') ok = left < right;
+      else if (op === '≧') ok = left >= right - 1e-12;
+      else if (op === '≦') ok = left <= right + 1e-12;
+      if (!ok) return false;
+    }
+    return true;
+  }
+
+  function evaluateMathExpression(rawExpr) {
+    if (!rawExpr || rawExpr.trim() === '') return 0;
+
+    const relOps = [' ≧ ', ' ≦ ', ' ≠ ', ' = ', ' > ', ' < '];
+    for (let op of relOps) {
+      if (rawExpr.includes(op)) return evaluateVerifyExpr(rawExpr);
+    }
+
+    let expr = rawExpr;
+
+    // Auto-close missing parentheses
+    let openCount = (expr.match(/\(/g) || []).length;
+    let closeCount = (expr.match(/\)/g) || []).length;
+    while (openCount > closeCount) {
+      expr += ')';
+      closeCount++;
+    }
+
+    // Infix permutations: e.g. 6P3 -> nPr(6, 3)
+    expr = expr.replace(/(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)\s*P\s*(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)/g, 'nPr($1, $2)');
+    // Infix combinations: e.g. 6C3 -> nCr(6, 3)
+    expr = expr.replace(/(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)\s*C\s*(\d+(?:\.\d+)?|\b[A-FX-YM]\b|\bAns\b)/g, 'nCr($1, $2)');
+
+    // Degrees, Minutes, Seconds:
+    expr = expr.replace(/(\d+(?:\.\d+)?)\s*°\s*(\d+(?:\.\d+)?)\s*°\s*(\d+(?:\.\d+)?)\s*°/g, 'dms($1, $2, $3)');
+    expr = expr.replace(/(\d+(?:\.\d+)?)\s*°\s*(\d+(?:\.\d+)?)\s*°/g, 'dms($1, $2, 0)');
+    expr = expr.replace(/(\d+(?:\.\d+)?)\s*°/g, 'degAngle($1)');
+    expr = expr.replace(/(\d+(?:\.\d+)?)\s*ʳ/g, 'radAngle($1)');
+    expr = expr.replace(/(\d+(?:\.\d+)?)\s*ᵍ/g, 'graAngle($1)');
+
+    // Unary minus: '(-)' -> '-'
+    expr = expr.replace(/\(-\)/g, '-');
+
+    // Multiplications and divisions
+    expr = expr.replace(/×10\^/g, '*1e');
+    expr = expr.replace(/×/g, '*').replace(/÷/g, '/');
+
+    // Random functions
+    expr = expr.replace(/RanInt#\(/g, 'RanIntHash(');
+    expr = expr.replace(/Ran#/g, 'RanHash()');
+
+    // Constants
+    expr = expr.replace(/π/g, '(Math.PI)');
+    expr = expr.replace(/\be\b/g, '(Math.E)');
+    expr = expr.replace(/\bAns\b/g, '(' + (state.ans || 0) + ')');
+
+    // Powers
+    expr = expr.replace(/\^/g, '**');
+
+    // Factorials
+    expr = expr.replace(/(\d+)!/g, 'fact($1)');
+
+    // Percentages
+    expr = expr.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)');
+
+    // Roots
+    expr = expr.replace(/³√\(/g, 'Math.cbrt(');
+    expr = expr.replace(/√\(/g, 'Math.sqrt(');
+    expr = expr.replace(/(\d+(?:\.\d+)?)\s*ˣ√\(([^)]+)\)/g, 'Math.pow($2, 1/($1))');
+
+    // Inverse trigs
+    expr = expr.replace(/sin⁻¹\(/g, 'asin(');
+    expr = expr.replace(/cos⁻¹\(/g, 'acos(');
+    expr = expr.replace(/tan⁻¹\(/g, 'atan(');
+
+    // Hyperbolic inverses
+    expr = expr.replace(/sinh⁻¹\(/g, 'asinh(');
+    expr = expr.replace(/cosh⁻¹\(/g, 'acosh(');
+    expr = expr.replace(/tanh⁻¹\(/g, 'atanh(');
+
+    // Implicit multiplications
+    expr = expr.replace(/(\d+)\s*\(/g, '$1*(');
+    expr = expr.replace(/\)\s*\(/g, ')*(');
+    expr = expr.replace(/\)\s*(\d+)/g, ')*$1');
+    expr = expr.replace(/(\d+)\s*Math\./g, '$1*Math.');
+    expr = expr.replace(/(\d+)\s*(sin|cos|tan|log|ln|asin|acos|atan|sinh|cosh|tanh|asinh|acosh|atanh|nPr|nCr|fact|Pol|Rec|GCD|LCM)\(/g, '$1*$2(');
+
+    try {
+      const ctx = createMathContext();
+      let fn = Function('ctx', `with(ctx) { return (${expr}); }`);
+      let result = fn(ctx);
+
+      if (typeof result === 'number') {
+        if (isNaN(result) || !isFinite(result)) return 'Math ERROR';
+        return cleanFloat(result);
+      }
+      return result;
+    } catch(e) {
+      return 'Math ERROR';
+    }
+  }
+
   function evaluateCurrent() {
     const raw = treeToFormula(state.tree);
     if (!raw.trim()) return;
 
-    try {
-      let code = raw
-        .replace(/×/g, '*')
-        .replace(/÷/g, '/')
-        .replace(/π/g, 'Math.PI')
-        .replace(/\be\b/g, 'Math.E')
-        .replace(/\^/g, '**');
+    let res = evaluateMathExpression(raw);
+    state.lastResult = res;
+    if (typeof res === 'number') state.ans = res;
 
-      let res = Function(`return (${code})`)();
-      state.lastResult = res;
+    const renderedHistoryHtml = renderTreeToHTML(state.tree, [], [], false);
+    state.calcHistory.push({
+      tree: JSON.parse(JSON.stringify(state.tree)),
+      displayHtml: renderedHistoryHtml,
+      result: res
+    });
 
-      const renderedHistoryHtml = renderTreeToHTML(state.tree, [], [], false);
-      state.calcHistory.push({
-        tree: JSON.parse(JSON.stringify(state.tree)),
-        displayHtml: renderedHistoryHtml,
-        result: res
-      });
-
-      renderHistoryTape();
-    } catch(e) {
-      state.lastResult = 'Math ERROR';
-    }
+    renderHistoryTape();
     renderScreen();
   }
 
@@ -1458,6 +1861,7 @@
         state.tree = JSON.parse(JSON.stringify(item.tree));
         state.cursorPath = [];
         state.cursorCharPos = 0;
+        state.factoredForm = null;
         renderScreen();
       });
       historyTape.appendChild(el);
@@ -1488,30 +1892,37 @@
           state.cursorPath = [];
           state.cursorCharPos = 0;
           state.lastResult = null;
+          state.factoredForm = null;
+          state.activeMenu = null;
           renderScreen();
         }
       } else if (cmd === 'EQ') {
         evaluateCurrent();
-      } else if (cmd === 'SHIFT') {
-        state.shift = !state.shift;
-        state.alpha = false;
-        updateIndicators();
-      } else if (cmd === 'ALPHA') {
-        state.alpha = !state.alpha;
-        state.shift = false;
-        updateIndicators();
-      } else if (cmd === 'ON') {
-        state.power = true;
-        renderScreen();
       } else if (cmd === 'NAV_UP') {
         if (state.cursorPath.length > 0) {
           state.cursorPath[state.cursorPath.length - 1].part = 'num';
           state.cursorCharPos = 0;
           renderScreen();
+        } else if (state.calcHistory.length > 0) {
+          if (state.histIndex < state.calcHistory.length - 1) {
+            state.histIndex++;
+            const item = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
+            state.tree = JSON.parse(JSON.stringify(item.tree));
+            state.cursorPath = [];
+            state.cursorCharPos = 0;
+            renderScreen();
+          }
         }
       } else if (cmd === 'NAV_DOWN') {
         if (state.cursorPath.length > 0) {
           state.cursorPath[state.cursorPath.length - 1].part = 'den';
+          state.cursorCharPos = 0;
+          renderScreen();
+        } else if (state.histIndex > 0) {
+          state.histIndex--;
+          const item = state.calcHistory[state.calcHistory.length - 1 - state.histIndex];
+          state.tree = JSON.parse(JSON.stringify(item.tree));
+          state.cursorPath = [];
           state.cursorCharPos = 0;
           renderScreen();
         }
@@ -1534,75 +1945,415 @@
     }
   }
 
-  const keyActionMap = {
-    'k-0': () => routeCommand('CHAR:0'),
-    'k-1': () => routeCommand('CHAR:1'),
-    'k-2': () => routeCommand('CHAR:2'),
-    'k-3': () => routeCommand('CHAR:3'),
-    'k-4': () => routeCommand('CHAR:4'),
-    'k-5': () => routeCommand('CHAR:5'),
-    'k-6': () => routeCommand('CHAR:6'),
-    'k-7': () => routeCommand('CHAR:7'),
-    'k-8': () => routeCommand('CHAR:8'),
-    'k-9': () => routeCommand('CHAR:9'),
-    'k-dot': () => routeCommand('CHAR:.'),
-    'k-add': () => routeCommand('CHAR:+'),
-    'k-sub': () => routeCommand('CHAR:-'),
-    'k-mul': () => routeCommand('CHAR:×'),
-    'k-div': () => routeCommand('CHAR:÷'),
-    'k-lpar': () => routeCommand('CHAR:('),
-    'k-rpar': () => routeCommand('CHAR:)'),
-    'k-frac': () => routeCommand('FRAC'),
-    'k-del': () => routeCommand('DEL'),
-    'k-ac': () => routeCommand('AC'),
-    'k-eq': () => routeCommand('EQ'),
-    'k-shift': () => routeCommand('SHIFT'),
-    'k-alpha': () => routeCommand('ALPHA'),
-    'k-on': () => routeCommand('ON'),
-    'k-up': () => routeCommand('NAV_UP'),
-    'k-down': () => routeCommand('NAV_DOWN'),
-    'k-left': () => routeCommand('NAV_LEFT'),
-    'k-right': () => routeCommand('NAV_RIGHT'),
-    'k-sqr': () => routeCommand('CHAR:^2'),
-    'k-sqrt': () => routeCommand('CHAR:√('),
-    'k-pow': () => routeCommand('CHAR:^'),
-    'k-log': () => routeCommand('CHAR:log('),
-    'k-ln': () => routeCommand('CHAR:ln('),
-    'k-sin': () => routeCommand('CHAR:sin('),
-    'k-cos': () => routeCommand('CHAR:cos('),
-    'k-tan': () => routeCommand('CHAR:tan('),
-    'k-neg': () => routeCommand('CHAR:(-)')
-  };
+  // ==========================================
+  // DISPATCHER: NORMAL / SHIFT / ALPHA FOR EVERY KEY
+  // ==========================================
+  function handleKeypress(id) {
+    if (state.activeMenu) {
+      handleMenuInput(id);
+      return;
+    }
+
+    if (state.sto) {
+      handleStoreVar(id);
+      return;
+    }
+
+    if (state.rcl) {
+      handleRecallVar(id);
+      return;
+    }
+
+    const s = state.shift;
+    const a = state.alpha;
+
+    // Reset modifier states immediately after consumption (standard Casio behavior)
+    if (id !== 'k-shift' && id !== 'k-alpha') {
+      state.shift = false;
+      state.alpha = false;
+      updateIndicators();
+    }
+
+    switch(id) {
+      case 'k-shift':
+        state.shift = !state.shift;
+        state.alpha = false;
+        updateIndicators();
+        break;
+      case 'k-alpha':
+        state.alpha = !state.alpha;
+        state.shift = false;
+        updateIndicators();
+        break;
+      case 'k-on':
+        state.power = true;
+        renderScreen();
+        break;
+      case 'k-mode':
+        if (s) openSetupMenu(1);
+        else openModeMenu();
+        break;
+
+      // Function Grid Row 1
+      case 'k-frac':
+        routeCommand('FRAC');
+        break;
+      case 'k-sqrt':
+        if (s) routeCommand('CHAR:³√(');
+        else routeCommand('CHAR:√(');
+        break;
+      case 'k-sqr':
+        if (s) routeCommand('CHAR:^3');
+        else routeCommand('CHAR:^2');
+        break;
+      case 'k-pow':
+        if (s) routeCommand('CHAR:ˣ√(');
+        else routeCommand('CHAR:^(');
+        break;
+      case 'k-log':
+        if (s) routeCommand('CHAR:10^(');
+        else routeCommand('CHAR:log(');
+        break;
+      case 'k-ln':
+        if (s) routeCommand('CHAR:e^(');
+        else routeCommand('CHAR:ln(');
+        break;
+
+      // Function Grid Row 2
+      case 'k-neg':
+        if (a) routeCommand('CHAR:A');
+        else routeCommand('CHAR:(-)');
+        break;
+      case 'k-dms':
+        if (s) {
+          // FACT: Prime factorization on current calculation result
+          if (state.lastResult !== null && typeof state.lastResult === 'number') {
+            const fact = primeFactorize(state.lastResult);
+            if (fact) state.factoredForm = fact;
+          }
+          renderScreen();
+        } else if (a) {
+          routeCommand('CHAR:B');
+        } else {
+          routeCommand('CHAR:°');
+        }
+        break;
+      case 'k-hyp':
+        if (a) routeCommand('CHAR:C');
+        else openHypMenu();
+        break;
+      case 'k-sin':
+        if (s) routeCommand('CHAR:sin⁻¹(');
+        else if (a) routeCommand('CHAR:D');
+        else routeCommand('CHAR:sin(');
+        break;
+      case 'k-cos':
+        if (s) routeCommand('CHAR:cos⁻¹(');
+        else if (a) routeCommand('CHAR:E');
+        else routeCommand('CHAR:cos(');
+        break;
+      case 'k-tan':
+        if (s) routeCommand('CHAR:tan⁻¹(');
+        else if (a) routeCommand('CHAR:F');
+        else routeCommand('CHAR:tan(');
+        break;
+
+      // Function Grid Row 3
+      case 'k-rcl':
+        if (s) { state.sto = true; updateIndicators(); }
+        else { state.rcl = true; updateIndicators(); }
+        break;
+      case 'k-eng':
+        if (s) { state.engOffset -= 3; renderScreen(); }
+        else { state.engOffset += 3; renderScreen(); }
+        break;
+      case 'k-lpar':
+        routeCommand('CHAR:(');
+        break;
+      case 'k-rpar':
+        if (s) routeCommand('CHAR:,');
+        else if (a) routeCommand('CHAR:X');
+        else routeCommand('CHAR:)');
+        break;
+      case 'k-sd':
+        if (s) {
+          state.sdToggleState = (state.sdToggleState === 2 ? 0 : 2);
+        } else if (a) {
+          routeCommand('CHAR:Y');
+        } else {
+          state.sdToggleState = (state.sdToggleState === 1 ? 0 : 1);
+        }
+        renderScreen();
+        break;
+      case 'k-mplus':
+        if (s) {
+          // M-
+          let val = state.lastResult !== null ? state.lastResult : evaluateMathExpression(treeToFormula(state.tree));
+          if (typeof val === 'number') state.vars.M -= val;
+          renderScreen();
+        } else if (a) {
+          routeCommand('CHAR:M');
+        } else {
+          // M+
+          let val = state.lastResult !== null ? state.lastResult : evaluateMathExpression(treeToFormula(state.tree));
+          if (typeof val === 'number') state.vars.M += val;
+          renderScreen();
+        }
+        break;
+
+      // Main Grid Row 1
+      case 'k-7': routeCommand('CHAR:7'); break;
+      case 'k-8': routeCommand('CHAR:8'); break;
+      case 'k-9':
+        if (s) openClrMenu();
+        else routeCommand('CHAR:9');
+        break;
+      case 'k-del': routeCommand('DEL'); break;
+      case 'k-ac': routeCommand('AC'); break;
+
+      // Main Grid Row 2
+      case 'k-4': routeCommand('CHAR:4'); break;
+      case 'k-5': routeCommand('CHAR:5'); break;
+      case 'k-6':
+        if (s) openVerifyRelMenu();
+        else routeCommand('CHAR:6');
+        break;
+      case 'k-mul':
+        if (s) routeCommand('CHAR:P'); // nPr Permutations
+        else if (a) routeCommand('CHAR:GCD(');
+        else routeCommand('CHAR:×');
+        break;
+      case 'k-div':
+        if (s) routeCommand('CHAR:C'); // nCr Combinations
+        else if (a) routeCommand('CHAR:LCM(');
+        else routeCommand('CHAR:÷');
+        break;
+
+      // Main Grid Row 3
+      case 'k-1':
+        if (s) openStatMenu();
+        else routeCommand('CHAR:1');
+        break;
+      case 'k-2': routeCommand('CHAR:2'); break;
+      case 'k-3': routeCommand('CHAR:3'); break;
+      case 'k-add':
+        if (s) routeCommand('CHAR:Pol(');
+        else routeCommand('CHAR:+');
+        break;
+      case 'k-sub':
+        if (s) routeCommand('CHAR:Rec(');
+        else routeCommand('CHAR:-');
+        break;
+
+      // Main Grid Row 4
+      case 'k-0':
+        if (s) routeCommand('CHAR:Rnd(');
+        else routeCommand('CHAR:0');
+        break;
+      case 'k-dot':
+        if (s) routeCommand('CHAR:Ran#');
+        else if (a) routeCommand('CHAR:RanInt#(');
+        else routeCommand('CHAR:.');
+        break;
+      case 'k-exp':
+        if (s) routeCommand('CHAR:π');
+        else if (a) routeCommand('CHAR:e');
+        else routeCommand('CHAR:×10^');
+        break;
+      case 'k-ans':
+        if (s) openDrgMenu();
+        else if (a) routeCommand('CHAR:%');
+        else routeCommand('CHAR:Ans');
+        break;
+      case 'k-eq':
+        routeCommand('EQ');
+        break;
+
+      // Replay Navigation
+      case 'k-up': routeCommand('NAV_UP'); break;
+      case 'k-down': routeCommand('NAV_DOWN'); break;
+      case 'k-left': routeCommand('NAV_LEFT'); break;
+      case 'k-right': routeCommand('NAV_RIGHT'); break;
+    }
+  }
+
+  // Handle Menus
+  function openHypMenu() {
+    state.activeMenu = {
+      title: "Hyperbolic Functions",
+      items: [
+        { id: 1, label: "sinh", action: () => routeCommand('CHAR:sinh(') },
+        { id: 2, label: "cosh", action: () => routeCommand('CHAR:cosh(') },
+        { id: 3, label: "tanh", action: () => routeCommand('CHAR:tanh(') },
+        { id: 4, label: "sinh⁻¹", action: () => routeCommand('CHAR:sinh⁻¹(') },
+        { id: 5, label: "cosh⁻¹", action: () => routeCommand('CHAR:cosh⁻¹(') },
+        { id: 6, label: "tanh⁻¹", action: () => routeCommand('CHAR:tanh⁻¹(') }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openDrgMenu() {
+    state.activeMenu = {
+      title: "Angle Symbol",
+      items: [
+        { id: 1, label: "° (deg)", action: () => routeCommand('CHAR:°') },
+        { id: 2, label: "r (rad)", action: () => routeCommand('CHAR:ʳ') },
+        { id: 3, label: "g (grad)", action: () => routeCommand('CHAR:ᵍ') }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openModeMenu() {
+    state.activeMenu = {
+      title: "Calculation Mode",
+      items: [
+        { id: 1, label: "COMP", action: () => { state.mode = 'COMP'; } },
+        { id: 2, label: "STAT", action: () => { state.mode = 'STAT'; } },
+        { id: 3, label: "VERIF", action: () => { state.mode = 'VERIF'; } },
+        { id: 0, label: "Authenticity", action: () => { showAuthenticity(); } }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openSetupMenu(page = 1) {
+    if (page === 1) {
+      state.activeMenu = {
+        title: "Setup (1/2) ▼",
+        items: [
+          { id: 1, label: "MthIO", action: () => {} },
+          { id: 2, label: "LineIO", action: () => {} },
+          { id: 3, label: "Deg", action: () => { state.angleUnit = 'Deg'; } },
+          { id: 4, label: "Rad", action: () => { state.angleUnit = 'Rad'; } },
+          { id: 5, label: "Gra", action: () => { state.angleUnit = 'Gra'; } },
+          { id: 6, label: "Fix", action: () => { state.numFormat = 'Fix'; } },
+          { id: 7, label: "Sci", action: () => { state.numFormat = 'Sci'; } },
+          { id: 8, label: "Norm", action: () => { state.numFormat = 'Norm'; } }
+        ]
+      };
+    }
+    renderScreen();
+  }
+
+  function openClrMenu() {
+    state.activeMenu = {
+      title: "Reset / Clear",
+      items: [
+        { id: 1, label: "Setup", action: () => { state.angleUnit = 'Deg'; state.numFormat = 'Norm'; } },
+        { id: 2, label: "Memory", action: () => { for (let k in state.vars) state.vars[k] = 0; state.ans = 0; } },
+        { id: 3, label: "All", action: () => {
+          state.angleUnit = 'Deg'; state.numFormat = 'Norm';
+          for (let k in state.vars) state.vars[k] = 0; state.ans = 0;
+          state.tree = []; state.lastResult = null;
+        } }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openVerifyRelMenu() {
+    state.activeMenu = {
+      title: "VERIFY Relational",
+      items: [
+        { id: 1, label: "=", action: () => routeCommand('CHAR: = ') },
+        { id: 2, label: "≠", action: () => routeCommand('CHAR: ≠ ') },
+        { id: 3, label: ">", action: () => routeCommand('CHAR: > ') },
+        { id: 4, label: "<", action: () => routeCommand('CHAR: < ') },
+        { id: 5, label: "≧", action: () => routeCommand('CHAR: ≧ ') },
+        { id: 6, label: "≦", action: () => routeCommand('CHAR: ≦ ') }
+      ]
+    };
+    renderScreen();
+  }
+
+  function openStatMenu() {
+    state.activeMenu = {
+      title: "STAT Operations",
+      items: [
+        { id: 1, label: "1-VAR", action: () => {} },
+        { id: 2, label: "A+BX", action: () => {} }
+      ]
+    };
+    renderScreen();
+  }
+
+  function showAuthenticity() {
+    state.tree = ["ID: PHILLIPS-82AU-2026"];
+    state.lastResult = "phillips.com/calc/";
+  }
+
+  function handleMenuInput(id) {
+    const numMap = { 'k-0':0, 'k-1':1, 'k-2':2, 'k-3':3, 'k-4':4, 'k-5':5, 'k-6':6, 'k-7':7, 'k-8':8, 'k-9':9 };
+    if (id === 'k-ac') {
+      state.activeMenu = null;
+      renderScreen();
+      return;
+    }
+    if (numMap[id] !== undefined && state.activeMenu) {
+      const match = state.activeMenu.items.find(it => it.id === numMap[id]);
+      if (match && match.action) {
+        match.action();
+      }
+      state.activeMenu = null;
+      renderScreen();
+    }
+  }
+
+  function handleStoreVar(id) {
+    const varMap = { 'k-neg':'A', 'k-dms':'B', 'k-hyp':'C', 'k-sin':'D', 'k-cos':'E', 'k-tan':'F', 'k-rpar':'X', 'k-sd':'Y', 'k-mplus':'M' };
+    const varName = varMap[id];
+    if (varName) {
+      let val = state.lastResult !== null ? state.lastResult : evaluateMathExpression(treeToFormula(state.tree));
+      if (typeof val === 'number') state.vars[varName] = val;
+    }
+    state.sto = false;
+    updateIndicators();
+    renderScreen();
+  }
+
+  function handleRecallVar(id) {
+    const varMap = { 'k-neg':'A', 'k-dms':'B', 'k-hyp':'C', 'k-sin':'D', 'k-cos':'E', 'k-tan':'F', 'k-rpar':'X', 'k-sd':'Y', 'k-mplus':'M' };
+    const varName = varMap[id];
+    if (varName) {
+      routeCommand('CHAR:' + varName);
+    }
+    state.rcl = false;
+    updateIndicators();
+    renderScreen();
+  }
 
   function attachKeyListeners(rootElem) {
-    for (let id in keyActionMap) {
-      const btn = rootElem.querySelector('#' + id);
-      if (btn) {
-        btn.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          keyActionMap[id]();
-        };
-      }
-    }
+    rootElem.querySelectorAll('.calc-btn, .dpad-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleKeypress(btn.id);
+      };
+    });
   }
   attachKeyListeners(document);
 
   // Global Physical Keyboard Support
   window.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    if (e.key >= '0' && e.key <= '9') { e.preventDefault(); routeCommand('CHAR:' + e.key); }
-    else if (e.key === '+') { e.preventDefault(); routeCommand('CHAR:+'); }
-    else if (e.key === '-') { e.preventDefault(); routeCommand('CHAR:-'); }
-    else if (e.key === '*' || e.key === 'x') { e.preventDefault(); routeCommand('CHAR:×'); }
-    else if (e.key === '/') { e.preventDefault(); routeCommand('CHAR:÷'); }
-    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); routeCommand('EQ'); }
-    else if (e.key === 'Backspace') { e.preventDefault(); routeCommand('DEL'); }
-    else if (e.key === 'Escape') { e.preventDefault(); routeCommand('AC'); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); routeCommand('NAV_UP'); }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); routeCommand('NAV_DOWN'); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); routeCommand('NAV_LEFT'); }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); routeCommand('NAV_RIGHT'); }
+    if (e.key >= '0' && e.key <= '9') { e.preventDefault(); handleKeypress('k-' + e.key); }
+    else if (e.key === '+') { e.preventDefault(); handleKeypress('k-add'); }
+    else if (e.key === '-') { e.preventDefault(); handleKeypress('k-sub'); }
+    else if (e.key === '*' || e.key === 'x') { e.preventDefault(); handleKeypress('k-mul'); }
+    else if (e.key === '/') { e.preventDefault(); handleKeypress('k-div'); }
+    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); handleKeypress('k-eq'); }
+    else if (e.key === 'Backspace') { e.preventDefault(); handleKeypress('k-del'); }
+    else if (e.key === 'Escape') { e.preventDefault(); handleKeypress('k-ac'); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); handleKeypress('k-up'); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); handleKeypress('k-down'); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); handleKeypress('k-left'); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); handleKeypress('k-right'); }
+    else if (e.key === '(') { e.preventDefault(); handleKeypress('k-lpar'); }
+    else if (e.key === ')') { e.preventDefault(); handleKeypress('k-rpar'); }
+    else if (e.key === '.') { e.preventDefault(); handleKeypress('k-dot'); }
+    else if (e.key === ',') { e.preventDefault(); routeCommand('CHAR:,'); }
   });
 
   // POP-OUT SCREEN WINDOW
