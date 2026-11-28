@@ -1,0 +1,2838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Orbit Lab Pro — Standalone Simulator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Plus Jakarta Sans", sans-serif;
+    background: #07090E; color: #F1F5F9;
+  }
+  .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "JetBrains Mono", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .app { display: flex; flex-direction: column; width: 100%; height: 100%; }
+  .topbar {
+    height: 48px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; border-bottom: 1px solid var(--border); background: var(--surface); gap: 24px; flex-shrink: 0;
+  }
+  .brand { font-weight: 700; font-size: 16px; letter-spacing: -0.02em; white-space: nowrap; }
+  .row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
+  .mode-group {
+    display: flex; align-items: center; padding: 2px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--panel); gap: 2px;
+  }
+  .mode-btn {
+    border: none; background: transparent; color: var(--muted); font-size: 11.5px;
+    font-weight: 600; padding: 4px 10px; border-radius: 4px; text-transform: uppercase;
+  }
+  .mode-btn.active { background: var(--accent); color: #ffffff; }
+  .workspace { flex: 1; display: flex; min-height: 0; position: relative; overflow: hidden; }
+  .sidebar {
+    width: 330px; border-right: 1px solid var(--border); background: var(--surface);
+    overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;
+  }
+  .sidebar.right { border-right: none; width: 360px; }
+  .sidebar.hidden { display: none; }
+  .lab-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+  .lab-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .splitter {
+    width: 6px; cursor: col-resize; background: var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; opacity: 0.75; transition: opacity .15s, background .15s;
+  }
+  .splitter:hover, .splitter.active { opacity: 1; background: var(--accent); }
+  .splitter::after { content: ""; width: 2px; height: 38px; border-radius: 2px; background: var(--muted); }
+  .splitter.hidden { display: none; }
+  .stage { flex: 1; position: relative; min-width: 0; overflow: hidden; background: var(--canvas-bg); }
+  canvas#simCanvas { display: block; width: 100%; height: 100%; }
+  .nav-hint {
+    pointer-events: none; position: absolute; top: 12px; left: 12px;
+    padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--panel); opacity: 0.85; color: var(--muted); font-size: 11px; z-index: 10;
+  }
+  .place-banner {
+    pointer-events: none; position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    padding: 6px 12px; border-radius: 6px; border: 1px solid var(--accent);
+    background: var(--panel); color: var(--text); font-size: 12px; font-weight: 500; z-index: 18;
+    display: none; white-space: nowrap;
+  }
+  .dock {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 7px 12px; display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 15; max-width: 96%; overflow-x: auto;
+  }
+  .dock-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .card-hdr { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .card-title { font-size: 12px; font-weight: 600; color: var(--text); margin: 0; }
+  .muted { color: var(--muted); }
+  button, select, input[type="text"], input[type="number"] {
+    font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 8px; font-size: 12px; outline: none;
+  }
+  button { cursor: pointer; font-weight: 500; white-space: nowrap; transition: opacity .15s; }
+  button:hover { opacity: 0.85; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); font-size: 12px; font-weight: 500; line-height: 1.1; flex-shrink: 0;
+  }
+  .icon-btn.dock-btn { background: var(--surface); gap: 4px; padding: 6px 8px; }
+  .icon-btn.dock-btn.center-btn { padding: 6px 10px; }
+  .icon-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; padding: 6px 12px; }
+  .svg-ico {
+    width: 14px; height: 14px; flex-shrink: 0; stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block;
+  }
+  .svg-ico-sm { width: 12px; height: 12px; }
+  input[type="color"] {
+    width: 28px; height: 28px; padding: 2px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface); cursor: pointer; flex-shrink: 0;
+  }
+  .field { display: flex; flex-direction: column; gap: 3px; margin-bottom: 7px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  input[type="range"] {
+    width: 100%; height: 4px; accent-color: var(--accent); cursor: pointer; margin: 2px 0;
+  }
+  .body-list { max-height: 148px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; padding-right: 2px; }
+  .body-item {
+    display: flex; align-items: center; justify-content: space-between; padding: 6px 9px;
+    border-radius: 6px; border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; font-size: 12px; transition: border-color .15s, background .15s;
+  }
+  .body-item.selected { border-color: var(--accent); background: rgba(56, 189, 248, 0.12); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .divider-top { padding-top: 9px; margin-top: 8px; border-top: 1px solid var(--border); }
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between; font-size: 12px;
+    padding: 4px 0; cursor: pointer; user-select: none;
+  }
+  .switch-btn {
+    width: 36px; height: 20px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface); padding: 0; position: relative; transition: background .15s, border-color .15s;
+    flex-shrink: 0;
+  }
+  .switch-btn[aria-checked="true"] { background: var(--accent); border-color: var(--accent); }
+  .switch-knob {
+    display: block; width: 14px; height: 14px; border-radius: 50%; background: #ffffff;
+    transition: transform .15s; transform: translateX(2px);
+  }
+  .switch-btn[aria-checked="true"] .switch-knob { transform: translateX(18px); }
+  .telem-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px;
+    font-size: 11px;
+  }
+  .telem-cell { display: flex; justify-content: space-between; gap: 4px; }
+  .chart-hdr { display: flex; justify-content: space-between; font-size: 10.5px; margin-bottom: 5px; flex-shrink: 0; }
+  .chart-ftr { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; flex-shrink: 0; }
+  .chart-mount { width: 100%; }
+  .chart-svg { width: 100%; height: auto; display: block; }
+  .popout {
+    position: fixed; z-index: 40; width: 410px; height: 270px; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 14px 36px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column; overflow: hidden; resize: both;
+  }
+  .popout-hdr {
+    display: flex; align-items: center; justify-content: space-between; padding: 8px 12px;
+    background: var(--surface); border-bottom: 1px solid var(--border); cursor: move; font-size: 12px; font-weight: 600;
+    user-select: none; flex-shrink: 0;
+  }
+  .popout-body { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  @media (max-width: 980px) { .sidebar { width: 265px; } .sidebar.right { width: 275px; } }
+</style>
+</head>
+<body>
+<div class="app" id="appRoot">
+  <header class="topbar">
+    <div class="row">
+      <span class="brand">Orbit Lab Pro</span>
+      <div class="mode-group" id="modeSwitch">
+        <button type="button" class="mode-btn" data-mode="2d">2D Mode</button>
+        <button type="button" class="mode-btn" data-mode="3d">3D Mode</button>
+      </div>
+      <select id="presetSelect" title="Orbital Preset" style="max-width:225px;"></select>
+      <select id="themeSelect" title="Color Preset" style="max-width:180px;"></select>
+    </div>
+    <div class="row">
+      <button type="button" id="toggleLeftBtn" class="icon-btn" title="Hide Controls Panel">
+        <svg id="toggleLeftIcon" class="svg-ico" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+        <span>Controls</span>
+      </button>
+      <button type="button" id="toggleRightBtn" class="icon-btn" title="Hide Telemetry Graphs">
+        <svg id="toggleRightIcon" class="svg-ico" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="m8 9 3 3-3 3"/></svg>
+        <span>Graphs</span>
+      </button>
+      <button type="button" id="fullscreenBtn" class="icon-btn" title="Toggle Fullscreen (F)">
+        <svg id="fullscreenIcon" class="svg-ico" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        <span id="fullscreenText">Fullscreen</span>
+      </button>
+      <button type="button" id="downloadHtmlBtn" class="icon-btn primary" title="Download self-contained standalone HTML file">
+        <svg class="svg-ico" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+        <span>Download HTML</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- Left Controls Sidebar -->
+    <aside class="sidebar lab-scroll" id="leftPanel">
+      <!-- 1. Preset Summary -->
+      <div class="card" id="presetSummaryCard">
+        <div id="presetTitle" style="font-size:12.5px; font-weight:600; margin-bottom:2px;"></div>
+        <div id="presetSubtitle" class="mono" style="font-size:11px; color:var(--accent); margin-bottom:6px;"></div>
+        <div id="presetDesc" class="muted" style="font-size:11.5px; line-height:1.48;"></div>
+      </div>
+
+      <!-- 2. Orbital Bodies & Add Mass -->
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-title row" style="gap:6px;">
+            <svg class="svg-ico" style="color:var(--accent);" viewBox="0 0 24 24"><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/><circle cx="12" cy="12" r="10"/></svg>
+            <span id="bodiesCountTitle">Orbital Bodies</span>
+          </span>
+          <button type="button" id="zeroMomBtn" style="font-size:10.5px; padding:2px 7px;" title="Subtract net system momentum so barycenter stays stationary">Zero CoM Drift</button>
+        </div>
+        <div class="body-list lab-scroll" id="bodyList"></div>
+        <div class="divider-top" style="display:flex; flex-direction:column; gap:7px;">
+          <div class="row" style="gap:6px;">
+            <input type="text" id="newBodyName" value="Probe 1" placeholder="New body name" style="flex:1; min-width:0;" />
+            <select id="newBodyKind" style="padding:5px;">
+              <option value="planet">Planet</option>
+              <option value="star">Star</option>
+              <option value="gas-giant">Gas Giant</option>
+              <option value="moon">Moon</option>
+              <option value="spacecraft">Craft</option>
+              <option value="asteroid">Comet</option>
+            </select>
+            <input type="color" id="newBodyColor" value="#34D399" title="Body color" />
+          </div>
+          <div class="row" style="gap:6px;">
+            <button type="button" id="addBodyBtn" class="icon-btn dock-btn" style="flex:1; justify-content:center;">
+              <svg class="svg-ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
+              <span id="addBodyText">Click to Place</span>
+            </button>
+            <button type="button" id="addOrbitBtn" class="icon-btn primary" style="padding:6px 10px; gap:4px;">
+              <svg class="svg-ico" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              <span>Add Orbit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Inspector: Selected Body -->
+      <div class="card" id="inspectorCard">
+        <div class="card-hdr">
+          <span class="card-title row" style="gap:6px; min-width:0;">
+            <svg class="svg-ico" style="color:var(--accent);" viewBox="0 0 24 24"><path d="M10 8h4"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M17 16h4"/><path d="M19 12V3"/><path d="M19 21v-5"/><path d="M3 14h4"/><path d="M5 10V3"/><path d="M5 21v-7"/></svg>
+            <span id="inspectorTitle" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Inspector</span>
+          </span>
+          <button type="button" id="deleteBodyBtn" style="padding:4px; color:#FB7185; display:inline-flex; align-items:center;" title="Remove selected body">
+            <svg class="svg-ico" viewBox="0 0 24 24"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+        <div class="row" style="gap:6px; margin-bottom:8px;">
+          <input type="text" id="inpName" style="flex:1; min-width:0;" />
+          <input type="color" id="inpColor" title="Selected body color" />
+        </div>
+        <div class="field">
+          <label><span id="lblMass">Mass</span><span class="mono" id="valMass">1.0</span></label>
+          <input type="range" id="rngMass" step="any" />
+        </div>
+
+        <div class="divider-top">
+          <div class="muted" id="lblPosHeader" style="font-size:11px; font-weight:500; margin-bottom:5px;">Position — or drag body</div>
+          <div class="field">
+            <label><span>X</span><span class="mono" id="valPosX">0</span></label>
+            <input type="range" id="rngPosX" step="any" />
+          </div>
+          <div class="field">
+            <label><span>Y</span><span class="mono" id="valPosY">0</span></label>
+            <input type="range" id="rngPosY" step="any" />
+          </div>
+          <div class="field" id="posZWrap">
+            <label><span>Z (Elevation)</span><span class="mono" id="valPosZ">0</span></label>
+            <input type="range" id="rngPosZ" step="any" />
+          </div>
+        </div>
+
+        <div class="divider-top">
+          <div class="muted" id="lblVelHeader" style="font-size:11px; font-weight:500; margin-bottom:5px;">Velocity — or drag arrow tip</div>
+          <div class="field">
+            <label><span id="lblSpeedMag" style="font-weight:600;">Speed |v|</span><span class="mono" id="valSpeedMag">0</span></label>
+            <input type="range" id="rngSpeed" step="any" />
+          </div>
+          <div class="field">
+            <label><span>Vx</span><span class="mono" id="valVelX">0</span></label>
+            <input type="range" id="rngVelX" step="any" />
+          </div>
+          <div class="field">
+            <label><span>Vy</span><span class="mono" id="valVelY">0</span></label>
+            <input type="range" id="rngVelY" step="any" />
+          </div>
+          <div class="field" id="velZWrap">
+            <label><span>Vz</span><span class="mono" id="valVelZ">0</span></label>
+            <input type="range" id="rngVelZ" step="any" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Display & Annotations -->
+      <div class="card">
+        <div class="card-title row" style="gap:6px; margin-bottom:8px;">
+          <svg class="svg-ico" style="color:var(--accent);" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Display &amp; Annotations</span>
+        </div>
+
+        <div class="toggle-row" data-switch="chkGrid">
+          <span id="gridToggleLabel">Grid Background</span>
+          <button type="button" role="switch" id="chkGrid" class="switch-btn" aria-checked="true"><span class="switch-knob"></span></button>
+        </div>
+        <div class="toggle-row" data-switch="chkPred">
+          <span>Predicted Orbits (Dashed)</span>
+          <button type="button" role="switch" id="chkPred" class="switch-btn" aria-checked="true"><span class="switch-knob"></span></button>
+        </div>
+        <div class="field" id="predLenWrap" style="padding-left:10px; margin-top:2px; margin-bottom:6px;">
+          <label><span>Predicted Path Length</span><span class="mono" id="valPredLen" style="color:var(--accent); font-weight:600;">100%</span></label>
+          <input type="range" id="rngPredLen" min="0" max="100" step="1" value="100" />
+        </div>
+        <div class="toggle-row" data-switch="chkTrails">
+          <span>Orbit Trails</span>
+          <button type="button" role="switch" id="chkTrails" class="switch-btn" aria-checked="true"><span class="switch-knob"></span></button>
+        </div>
+        <div class="toggle-row" data-switch="chkVel">
+          <span>Velocity Vectors &amp; Handles</span>
+          <button type="button" role="switch" id="chkVel" class="switch-btn" aria-checked="true"><span class="switch-knob"></span></button>
+        </div>
+        <div class="toggle-row" data-switch="chkForce">
+          <span>Gravitational Force Vectors</span>
+          <button type="button" role="switch" id="chkForce" class="switch-btn" aria-checked="false"><span class="switch-knob"></span></button>
+        </div>
+        <div class="toggle-row" data-switch="chkLagrange">
+          <span>Lagrange Points (L1–L5)</span>
+          <button type="button" role="switch" id="chkLagrange" class="switch-btn" aria-checked="false"><span class="switch-knob"></span></button>
+        </div>
+        <div class="toggle-row" data-switch="chkBary">
+          <span>Center of Mass (CoM)</span>
+          <button type="button" role="switch" id="chkBary" class="switch-btn" aria-checked="true"><span class="switch-knob"></span></button>
+        </div>
+        <div class="toggle-row" data-switch="chkMoons">
+          <span>Planetary Moons (Solar Sys)</span>
+          <button type="button" role="switch" id="chkMoons" class="switch-btn" aria-checked="true"><span class="switch-knob"></span></button>
+        </div>
+        <div class="toggle-row" data-switch="chkDetails">
+          <span>Detailed Mass/Speed Labels</span>
+          <button type="button" role="switch" id="chkDetails" class="switch-btn" aria-checked="true"><span class="switch-knob"></span></button>
+        </div>
+
+        <div class="divider-top field" style="margin-bottom:6px;">
+          <label><span>Annotation Text Size</span><span class="mono" id="valAnno" style="color:var(--accent); font-weight:600;">1.5×</span></label>
+          <input type="range" id="rngAnno" min="0.6" max="2.5" step="0.1" value="1.5" />
+        </div>
+
+        <div class="divider-top field" style="margin-bottom:6px;">
+          <label><span>Camera Reference Frame</span></label>
+          <select id="followSelect" style="width:100%;"></select>
+        </div>
+
+        <div class="row" style="justify-content:space-between; font-size:12px; padding-top:4px;">
+          <span class="muted">Close Encounter</span>
+          <select id="collisionSelect">
+            <option value="pass">Pass-through (Softened)</option>
+            <option value="merge">Inelastic Merge</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 5. Active Lagrange Equilibria Reference -->
+      <div class="card" id="lagrangeRefCard" style="display:none;">
+        <div class="card-title" id="lagrangeRefTitle" style="margin-bottom:6px;">Active Lagrange Equilibria</div>
+        <div id="lagrangeRefList" style="display:flex; flex-direction:column; gap:4px; font-size:11px;"></div>
+      </div>
+    </aside>
+
+    <!-- Center Viewport -->
+    <main class="stage" id="stageContainer">
+      <canvas id="simCanvas"></canvas>
+      <div class="nav-hint mono" id="navHint">Scroll: Zoom · Right-Drag: Pan · Left-Drag: Move Mass / Velocity Tip</div>
+      <div class="place-banner" id="placeBanner">Click anywhere to place body — drag before releasing to set velocity vector</div>
+
+      <div class="dock">
+        <div class="row" style="gap:6px; flex-shrink:0;">
+          <button type="button" id="playBtn" class="icon-btn primary">
+            <svg id="playIcon" class="svg-ico" viewBox="0 0 24 24"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></svg>
+            <span id="playText">Pause</span>
+          </button>
+          <button type="button" id="stepBtn" class="icon-btn dock-btn" title="Advance 1 RK4 integration step">
+            <svg class="svg-ico" viewBox="0 0 24 24"><path d="M21 4v16"/><path d="M6.029 4.285A2 2 0 0 0 3 6v12a2 2 0 0 0 3.029 1.715l9.997-5.998a2 2 0 0 0 .003-3.432z"/></svg>
+            <span>Step</span>
+          </button>
+          <button type="button" id="resetBtn" class="icon-btn dock-btn" title="Reset simulation (R)">
+            <svg class="svg-ico" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Reset</span>
+          </button>
+        </div>
+        <div class="dock-sep"></div>
+        <div class="row" style="gap:4px; flex-shrink:0;">
+          <span class="muted" style="font-size:11px; margin-right:2px;">Speed</span>
+          <button type="button" class="spd-btn mono" data-spd="0.1">0.1×</button>
+          <button type="button" class="spd-btn mono" data-spd="0.25">0.25×</button>
+          <button type="button" class="spd-btn mono" data-spd="0.5">0.5×</button>
+          <button type="button" class="spd-btn mono active" data-spd="1">1×</button>
+          <button type="button" class="spd-btn mono" data-spd="2">2×</button>
+          <button type="button" class="spd-btn mono" data-spd="5">5×</button>
+          <button type="button" class="spd-btn mono" data-spd="10">10×</button>
+        </div>
+        <div class="dock-sep"></div>
+        <div class="row" style="gap:8px; flex-shrink:0;">
+          <div style="display:flex; flex-direction:column; line-height:1.15;">
+            <span class="muted" style="font-size:10px;">Elapsed Time</span>
+            <span class="mono" style="font-size:12px; font-weight:600; white-space:nowrap;">
+              <span id="timeVal">0.0</span>
+              <span id="timeUnit" style="color:var(--accent);">hrs</span>
+              <span id="timeSec" class="muted" style="font-size:10px; margin-left:4px;">(0.00 d)</span>
+            </span>
+          </div>
+          <select id="timeUnitSelect" aria-label="Time Units" style="font-size:11px; padding:3px 6px;">
+            <option value="auto">Auto</option>
+            <option value="hours">Hours</option>
+            <option value="days">Days</option>
+            <option value="months">Months</option>
+            <option value="years">Years</option>
+          </select>
+        </div>
+        <div class="dock-sep"></div>
+        <button type="button" id="resetViewBtn" class="icon-btn dock-btn center-btn" title="Reset camera zoom &amp; centering">
+          <svg class="svg-ico" viewBox="0 0 24 24"><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/><circle cx="12" cy="12" r="10"/></svg>
+          <span>Center</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- Draggable Splitter & Right Telemetry Sidebar -->
+    <div class="splitter" id="rightSplitter" title="Drag to resize telemetry graphs (up to 1/3 width)"></div>
+    <aside class="sidebar right lab-scroll" id="rightPanel">
+      <!-- Selected Body Telemetry Summary -->
+      <div class="card" id="selectedTelemetryCard">
+        <div class="card-hdr">
+          <div class="row" style="gap:7px; min-width:0;">
+            <span class="dot" id="telemDot"></span>
+            <span class="card-title" id="telemTitle" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Telemetry</span>
+          </div>
+          <span class="mono" id="telemStatus" style="font-size:11px; white-space:nowrap;">● Bound</span>
+        </div>
+        <div class="telem-grid mono">
+          <div class="telem-cell"><span class="muted">Dist r</span><span id="telemR">—</span></div>
+          <div class="telem-cell"><span class="muted">Speed v</span><span id="telemV">—</span></div>
+          <div class="telem-cell"><span class="muted">Force F</span><span id="telemF">—</span></div>
+          <div class="telem-cell"><span class="muted">Eccent e</span><span id="telemE">—</span></div>
+          <div class="telem-cell"><span class="muted">Semi-Maj a</span><span id="telemA">—</span></div>
+          <div class="telem-cell"><span class="muted">Period T</span><span id="telemT">—</span></div>
+        </div>
+      </div>
+
+      <!-- Graph 1: Force vs Distance -->
+      <div class="card" id="cardForce">
+        <div class="card-hdr">
+          <div>
+            <div class="card-title">Force vs. Distance</div>
+            <div class="mono muted" style="font-size:10px;">F(r) ∝ 1/r²</div>
+          </div>
+          <button type="button" class="pop-btn icon-btn dock-btn" data-graph="force" data-title="Force vs. Distance" data-sub="F(r) ∝ 1/r²" style="font-size:11px; padding:4px 8px; gap:4px;"><svg class="svg-ico svg-ico-sm" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/><path d="M9 21H3v-6"/></svg><span class="pop-text">Pop Out</span></button>
+        </div>
+        <div id="chartForceMount" class="chart-mount"></div>
+      </div>
+
+      <!-- Graph 2: System Energy -->
+      <div class="card" id="cardEnergy">
+        <div class="card-hdr">
+          <div>
+            <div class="card-title">System Energy</div>
+            <div class="mono muted" style="font-size:10px;">E_tot = K + U</div>
+          </div>
+          <button type="button" class="pop-btn icon-btn dock-btn" data-graph="energy" data-title="System Energy" data-sub="E_tot = K + U" style="font-size:11px; padding:4px 8px; gap:4px;"><svg class="svg-ico svg-ico-sm" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/><path d="M9 21H3v-6"/></svg><span class="pop-text">Pop Out</span></button>
+        </div>
+        <div id="chartEnergyMount" class="chart-mount"></div>
+      </div>
+
+      <!-- Graph 3: Velocity & Kinetic Energy -->
+      <div class="card" id="cardKin">
+        <div class="card-hdr">
+          <div>
+            <div class="card-title">Velocity &amp; Kinetic Energy</div>
+            <div class="mono muted" style="font-size:10px;">v(t) · KEᵢ(t)</div>
+          </div>
+          <button type="button" class="pop-btn icon-btn dock-btn" data-graph="kinematics" data-title="Velocity &amp; Kinetic Energy" data-sub="v(t) · KEᵢ(t)" style="font-size:11px; padding:4px 8px; gap:4px;"><svg class="svg-ico svg-ico-sm" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/><path d="M9 21H3v-6"/></svg><span class="pop-text">Pop Out</span></button>
+        </div>
+        <div id="chartKinMount" class="chart-mount"></div>
+      </div>
+
+      <!-- Graph 4: Phase Portrait & Elements -->
+      <div class="card" id="cardPhase">
+        <div class="card-hdr">
+          <div>
+            <div class="card-title">Phase Portrait &amp; Elements</div>
+            <div class="mono muted" style="font-size:10px;">r vs v · e, a, T</div>
+          </div>
+          <button type="button" class="pop-btn icon-btn dock-btn" data-graph="phase" data-title="Phase Portrait &amp; Elements" data-sub="r vs v · e, a, T" style="font-size:11px; padding:4px 8px; gap:4px;"><svg class="svg-ico svg-ico-sm" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/><path d="M9 21H3v-6"/></svg><span class="pop-text">Pop Out</span></button>
+        </div>
+        <div id="chartPhaseMount" class="chart-mount"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/*__BS_START__*/const BOOTSTRAP = {"initialViewMode":"2d","initialPresetId":"sun-earth-moon-2d","initialThemeId":"deep-space-obsidian","initialSettings":{"showGridOrBox":true,"showPredictedTrajectories":true,"predictionLengthPct":100,"showTrails":true,"showVelocityVectors":true,"showForceVectors":false,"showLagrangePoints":false,"showBarycenter":true,"showDetailedAnnotations":true,"showMoons":true,"annotationScale":1.5,"speedMultiplier":1,"timeUnitPref":"auto","collisionBehavior":"pass","followTargetId":"sun","trailLength":320},"initialSelectedId":"earth","initialBodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0.0010269932331789515,"y":0.00006163498242821819,"z":0},"velocity":{"x":-0.0004234891040141431,"y":0.003195958791282518,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.085},{"id":"earth","name":"Earth","mass":0.0005,"position":{"x":-0.9935509240824751,"y":-0.1306930932200127,"z":0},"velocity":{"x":0.7966810668796419,"y":-6.212790861078287,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.032},{"id":"moon","name":"Moon","mass":0.000015,"position":{"x":-0.9925180758466381,"y":-0.15464456254500852,"z":0},"velocity":{"x":1.676571371622446,"y":-6.234557382889765,"z":0},"color":"#E2E8F0","kind":"moon","fixedVisualRadius":0.015}],"presets":[{"id":"earth-moon-2d","name":"Earth – Moon System","category":"2d","subtitle":"2-Body · Real Scale (10⁵ km)","description":"True-scale Newtonian Earth–Moon system. Moon orbits at 384,400 km with a 27.32-day sidereal period and 1.02 km/s orbital velocity.","G":2.975536,"softening":0.02,"daysPerSimTime":1,"simTimePerRealSecond":4.5,"substepsPerFrame":8,"distanceLabel":"10⁵ km","massLabel":"M⊕","velocityLabel":"km/s","velocityDisplayFactor":1.1574074074074074,"defaultViewRadius":5.5,"minBodyRadiusWorld":0.14,"bodyScaleFactor":0.16,"velocityVectorScale":1.4,"defaultFollowId":"earth","lagrangePairIds":["earth","moon"],"predictionDuration":28,"predictionSteps":140,"massRange":[0.001,5],"positionRange":8,"velocityRange":3,"bodies":[{"id":"earth","name":"Earth","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":-0.01069,"z":0},"color":"#38BDF8","kind":"planet"},{"id":"moon","name":"Moon","mass":0.0123,"position":{"x":3.844,"y":0,"z":0},"velocity":{"x":0,"y":0.8798,"z":0},"color":"#CBD5E1","kind":"moon"}]},{"id":"sun-earth-moon-2d","name":"Sun – Earth – Moon","category":"2d","subtitle":"3-Body Hierarchical Orbit","description":"Moon orbiting Earth while the Earth–Moon barycenter completes a heliocentric orbit around the Sun. Lock camera to Earth to inspect lunar motion.","G":39.47841760435743,"softening":0.001,"daysPerSimTime":365.25,"simTimePerRealSecond":0.14,"substepsPerFrame":16,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.45,"minBodyRadiusWorld":0.016,"bodyScaleFactor":0.055,"velocityVectorScale":0.05,"defaultFollowId":"sun","lagrangePairIds":["sun","earth"],"secondaryLagrangePairIds":["earth","moon"],"predictionDuration":0.85,"predictionSteps":160,"massRange":[0.00001,2.5],"positionRange":2.5,"velocityRange":14,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":-0.00324,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.085},{"id":"earth","name":"Earth","mass":0.0005,"position":{"x":1,"y":0,"z":0},"velocity":{"x":0,"y":6.2545,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.032},{"id":"moon","name":"Moon","mass":0.000015,"position":{"x":1.022,"y":0,"z":0},"velocity":{"x":0,"y":7.253,"z":0},"color":"#E2E8F0","kind":"moon","fixedVisualRadius":0.015}]},{"id":"lagrange-sun-earth-moon-2d","name":"Lagrange Points (Sun–Earth–Moon)","category":"2d","subtitle":"Special Mode · L1–L5 Equilibria","description":"Displays all five Sun–Earth Lagrange points (L1–L5) dynamically co-rotating with Earth as the Moon orbits Earth, plus an L4 Trojan probe.","G":39.47841760435743,"softening":0.001,"daysPerSimTime":365.25,"simTimePerRealSecond":0.12,"substepsPerFrame":16,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.55,"minBodyRadiusWorld":0.016,"bodyScaleFactor":0.055,"velocityVectorScale":0.05,"defaultFollowId":"sun","showLagrangeByDefault":true,"lagrangePairIds":["sun","earth"],"secondaryLagrangePairIds":["earth","moon"],"predictionDuration":0.9,"predictionSteps":160,"massRange":[0.00001,2.5],"positionRange":2.5,"velocityRange":14,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":-0.00974,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.088},{"id":"earth","name":"Earth","mass":0.0015,"position":{"x":1,"y":0,"z":0},"velocity":{"x":0,"y":6.238,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.036},{"id":"moon","name":"Moon","mass":0.000045,"position":{"x":1.03,"y":0,"z":0},"velocity":{"x":0,"y":7.69,"z":0},"color":"#E2E8F0","kind":"moon","fixedVisualRadius":0.015},{"id":"trojan-l4","name":"L4 Probe","mass":1e-7,"position":{"x":0.4985,"y":0.8660254037844386,"z":0},"velocity":{"x":-5.44556773899655,"y":3.144,"z":0},"color":"#34D399","kind":"spacecraft","fixedVisualRadius":0.016}]},{"id":"slingshot-2d","name":"Gravitational Slingshot","category":"2d","subtitle":"Gravity Assist · Kinetic Energy Gain","description":"A spacecraft crosses behind an orbiting gas giant, stealing orbital momentum to accelerate dramatically and boost its heliocentric kinetic energy.","G":39.47841760435743,"softening":0.006,"daysPerSimTime":365.25,"simTimePerRealSecond":0.14,"substepsPerFrame":14,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.9,"minBodyRadiusWorld":0.022,"bodyScaleFactor":0.07,"velocityVectorScale":0.055,"defaultFollowId":"sun","lagrangePairIds":["sun","jupiter"],"predictionDuration":0.55,"predictionSteps":160,"massRange":[0.00001,2.5],"positionRange":3.5,"velocityRange":20,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":-0.097,"y":-0.097,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.09},{"id":"jupiter","name":"Giant Planet","mass":0.025,"position":{"x":0.9192,"y":-0.9192,"z":0},"velocity":{"x":3.888,"y":3.888,"z":0},"color":"#FB923C","kind":"gas-giant","fixedVisualRadius":0.058},{"id":"spacecraft","name":"Voyager Probe","mass":1e-7,"position":{"x":0.7,"y":-0.88,"z":0},"velocity":{"x":4.5,"y":1.5,"z":0},"color":"#22D3EE","kind":"spacecraft","fixedVisualRadius":0.022}]},{"id":"binary-star-2d","name":"Binary Stars + Exoplanet","category":"2d","subtitle":"3-Body · Circumbinary System","description":"Two stars of unequal mass orbit their common barycenter while a circumbinary planet orbits outside the inner binary pair.","G":39.47841760435743,"softening":0.008,"daysPerSimTime":365.25,"simTimePerRealSecond":0.16,"substepsPerFrame":14,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":2,"minBodyRadiusWorld":0.025,"bodyScaleFactor":0.075,"velocityVectorScale":0.055,"defaultFollowId":"barycenter","lagrangePairIds":["star-a","star-b"],"predictionDuration":0.9,"predictionSteps":160,"massRange":[0.0001,3],"positionRange":3.5,"velocityRange":18,"bodies":[{"id":"star-a","name":"Alpha Star","mass":0.7,"position":{"x":-0.176,"y":0,"z":0},"velocity":{"x":0,"y":-3.868,"z":0},"color":"#FBBF24","kind":"star","fixedVisualRadius":0.072},{"id":"star-b","name":"Beta Star","mass":0.45,"position":{"x":0.274,"y":0,"z":0},"velocity":{"x":0,"y":6.017,"z":0},"color":"#38BDF8","kind":"star","fixedVisualRadius":0.058},{"id":"planet","name":"Kepler-16b","mass":0.001,"position":{"x":1.55,"y":0,"z":0},"velocity":{"x":0,"y":5.41,"z":0},"color":"#A78BFA","kind":"planet","fixedVisualRadius":0.034}]},{"id":"figure-8-2d","name":"Figure-8 Three-Body","category":"2d","subtitle":"Periodic 3-Body Choreography","description":"Chenciner–Montgomery periodic solution where three equal masses chase each other indefinitely along a shared figure-eight curve.","G":1,"softening":0.0005,"daysPerSimTime":30,"simTimePerRealSecond":0.85,"substepsPerFrame":12,"distanceLabel":"unit","massLabel":"M₀","velocityLabel":"u/t","velocityDisplayFactor":1,"defaultViewRadius":1.65,"minBodyRadiusWorld":0.055,"bodyScaleFactor":0.04,"velocityVectorScale":0.35,"defaultFollowId":"barycenter","predictionDuration":6.326,"predictionSteps":180,"massRange":[0.1,3],"positionRange":2.5,"velocityRange":3,"bodies":[{"id":"body-1","name":"Body A","mass":1,"position":{"x":-0.97000436,"y":0.24308753,"z":0},"velocity":{"x":0.466203685,"y":0.43236573,"z":0},"color":"#38BDF8","kind":"star","fixedVisualRadius":0.06},{"id":"body-2","name":"Body B","mass":1,"position":{"x":0.97000436,"y":-0.24308753,"z":0},"velocity":{"x":0.466203685,"y":0.43236573,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.06},{"id":"body-3","name":"Body C","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":-0.93240737,"y":-0.86473146,"z":0},"color":"#FB7185","kind":"star","fixedVisualRadius":0.06}]},{"id":"elliptical-comet-2d","name":"Elliptical Comet (Kepler II)","category":"2d","subtitle":"High Eccentricity · e = 0.72","description":"Demonstrates Kepler’s Second Law and inverse-square gravitational force: the comet accelerates sharply at perihelion and coasts slowly at aphelion.","G":39.47841760435743,"softening":0.002,"daysPerSimTime":365.25,"simTimePerRealSecond":0.16,"substepsPerFrame":14,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":2.1,"minBodyRadiusWorld":0.02,"bodyScaleFactor":0.065,"velocityVectorScale":0.04,"defaultFollowId":"sun","predictionDuration":1.15,"predictionSteps":160,"massRange":[0.00001,2.5],"positionRange":3.5,"velocityRange":25,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":0,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.088},{"id":"earth","name":"Reference Planet","mass":0.000003,"position":{"x":1,"y":0,"z":0},"velocity":{"x":0,"y":6.283185,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.032},{"id":"comet","name":"Halley-type Comet","mass":1e-7,"position":{"x":0.3,"y":0,"z":0},"velocity":{"x":0,"y":15.044,"z":0},"color":"#67E8F9","kind":"asteroid","fixedVisualRadius":0.022}]},{"id":"solar-system-2d","name":"Inner Solar System","category":"2d","subtitle":"Sun · Mercury · Venus · Earth · Mars","description":"Real astronomical semi-major axes and orbital velocities for the four inner terrestrial planets.","G":39.47841760435743,"softening":0.001,"daysPerSimTime":365.25,"simTimePerRealSecond":0.14,"substepsPerFrame":12,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.85,"minBodyRadiusWorld":0.018,"bodyScaleFactor":0.06,"velocityVectorScale":0.04,"defaultFollowId":"sun","lagrangePairIds":["sun","earth"],"predictionDuration":1.2,"predictionSteps":160,"massRange":[1e-7,2.5],"positionRange":3,"velocityRange":20,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":0,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.082},{"id":"mercury","name":"Mercury","mass":1.66e-7,"position":{"x":0.387,"y":0,"z":0},"velocity":{"x":0,"y":10.1,"z":0},"color":"#94A3B8","kind":"moon","fixedVisualRadius":0.02},{"id":"venus","name":"Venus","mass":0.00000245,"position":{"x":0,"y":0.723,"z":0},"velocity":{"x":-7.388,"y":0,"z":0},"color":"#FDE68A","kind":"planet","fixedVisualRadius":0.028},{"id":"earth","name":"Earth","mass":0.000003,"position":{"x":-1,"y":0,"z":0},"velocity":{"x":0,"y":-6.283,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.03},{"id":"mars","name":"Mars","mass":3.23e-7,"position":{"x":0,"y":-1.524,"z":0},"velocity":{"x":5.089,"y":0,"z":0},"color":"#FB7185","kind":"planet","fixedVisualRadius":0.024}]},{"id":"full-solar-system-2d","name":"Complete Solar System (Sun–Pluto)","category":"2d","subtitle":"Sun · 8 Planets · Asteroid Belt · Pluto · Moons","description":"Full Solar System from Mercury to Pluto, including Ceres, Vesta, Pallas, Hygiea, Earth’s Moon, Jupiter’s Galilean moons, and Saturn’s major moons. Zoom in or lock camera onto any planet to inspect its moons.","G":39.47841760435743,"softening":0.0004,"daysPerSimTime":365.25,"simTimePerRealSecond":0.22,"substepsPerFrame":20,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":34,"minBodyRadiusWorld":0.001,"bodyScaleFactor":0.015,"velocityVectorScale":0.45,"defaultFollowId":"sun","lagrangePairIds":["sun","jupiter"],"predictionDuration":12,"predictionSteps":140,"massRange":[1e-8,2.5],"positionRange":45,"velocityRange":15,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":0,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.16,"minScreenRadiusPx":9.5},{"id":"mercury","name":"Mercury","mass":1.66e-7,"position":{"x":0.35074111358318355,"y":0.1635532672936507,"z":0},"velocity":{"x":-4.2684744019270155,"y":9.153772894950384,"z":0},"color":"#94A3B8","kind":"moon","fixedVisualRadius":0.001,"minScreenRadiusPx":3.6},{"id":"venus","name":"Venus","mass":0.00000245,"position":{"x":-0.46473544180336795,"y":0.5538501323750211,"z":0},"velocity":{"x":-5.660635859836828,"y":-4.749837462217967,"z":0},"color":"#FDE68A","kind":"planet","fixedVisualRadius":0.0014,"minScreenRadiusPx":4.4},{"id":"earth","name":"Earth","mass":0.000003003,"position":{"x":-0.7071067811865477,"y":-0.7071067811865475,"z":0},"velocity":{"x":4.44288960914209,"y":-4.442889609142091,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.0015,"minScreenRadiusPx":4.8},{"id":"mars","name":"Mars","mass":3.23e-7,"position":{"x":1.0776307345282983,"y":-1.0776307345282987,"z":0},"velocity":{"x":3.5989221901020456,"y":3.598922190102044,"z":0},"color":"#FB7185","kind":"planet","fixedVisualRadius":0.0012,"minScreenRadiusPx":4},{"id":"vesta","name":"Vesta (Belt)","mass":1.3e-10,"position":{"x":0.9982243342315321,"y":2.140698992980567,"z":0},"velocity":{"x":-3.7052339373747034,"y":1.7277789602536227,"z":0},"color":"#A8A29E","kind":"asteroid","fixedVisualRadius":0.0008,"minScreenRadiusPx":2.6},{"id":"ceres","name":"Ceres (Belt)","mass":4.7e-10,"position":{"x":-2.7574669243179515,"y":0.2412470959255191,"z":0},"velocity":{"x":-0.3291492227558305,"y":-3.7621928315123667,"z":0},"color":"#CBD5E1","kind":"asteroid","fixedVisualRadius":0.0009,"minScreenRadiusPx":2.9},{"id":"pallas","name":"Pallas (Belt)","mass":1e-10,"position":{"x":0.4815263966703968,"y":-2.730871899102853,"z":0},"velocity":{"x":3.715834755848075,"y":0.6552019233102656,"z":0},"color":"#94A3B8","kind":"asteroid","fixedVisualRadius":0.0008,"minScreenRadiusPx":2.6},{"id":"hygiea","name":"Hygiea (Belt)","mass":4.4e-11,"position":{"x":3.1300437414042643,"y":-0.27384334371314245,"z":0},"velocity":{"x":0.308939035492467,"y":3.531189334043535,"z":0},"color":"#78716C","kind":"asteroid","fixedVisualRadius":0.0008,"minScreenRadiusPx":2.5},{"id":"jupiter","name":"Jupiter","mass":0.0009548,"position":{"x":3.8673256717843594,"y":3.482155675491498,"z":0},"velocity":{"x":-1.8438659857572948,"y":2.0478206394499177,"z":0},"color":"#FB923C","kind":"gas-giant","fixedVisualRadius":0.012,"minScreenRadiusPx":7.2},{"id":"saturn","name":"Saturn","mass":0.0002858,"position":{"x":-9.004134692370574,"y":3.2772370133465594,"z":0},"velocity":{"x":-0.6943293465596521,"y":-1.9076542013373259,"z":0},"color":"#FBBF24","kind":"gas-giant","fixedVisualRadius":0.01,"minScreenRadiusPx":6.4},{"id":"uranus","name":"Uranus","mass":0.00004366,"position":{"x":-4.973984408780241,"y":-18.563162529623316,"z":0},"velocity":{"x":1.3844556001830248,"y":-0.3709637600257866,"z":0},"color":"#67E8F9","kind":"gas-giant","fixedVisualRadius":0.008,"minScreenRadiusPx":5.4},{"id":"neptune","name":"Neptune","mass":0.00005151,"position":{"x":26.07602490794944,"y":-15.055000000000014,"z":0},"velocity":{"x":0.572539797285445,"y":0.9916680182535751,"z":0},"color":"#60A5FA","kind":"gas-giant","fixedVisualRadius":0.008,"minScreenRadiusPx":5.4},{"id":"pluto","name":"Pluto","mass":6.58e-9,"position":{"x":-7.674238847592034,"y":28.64064928863229,"z":0},"velocity":{"x":-1.245619293650326,"y":-0.33376268381023044,"z":0},"color":"#E2E8F0","kind":"asteroid","fixedVisualRadius":0.002,"minScreenRadiusPx":3.5},{"id":"moon","name":"Moon","mass":3.69e-8,"position":{"x":-0.7041369327055642,"y":-0.704136932705564,"z":0},"velocity":{"x":4.323361548242903,"y":-4.323361548242904,"z":0},"color":"#E2E8F0","kind":"moon","fixedVisualRadius":0.0006,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"earth"},{"id":"io","name":"Io","mass":4.49e-8,"position":{"x":3.8963034465730315,"y":3.489920246844574,"z":0},"velocity":{"x":-2.133988804289345,"y":3.1305737386466133,"z":0},"color":"#FDE047","kind":"moon","fixedVisualRadius":0.0022,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"jupiter"},{"id":"europa","name":"Europa","mass":2.41e-8,"position":{"x":3.8509087049047275,"y":3.5272609212892214,"z":0},"velocity":{"x":-2.676600858601145,"y":1.7447299326993053,"z":0},"color":"#E0F2FE","kind":"moon","fixedVisualRadius":0.0021,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"jupiter"},{"id":"ganymede","name":"Ganymede","mass":7.45e-8,"position":{"x":3.8023737665005264,"y":3.444655675491498,"z":0},"velocity":{"x":-1.4893854537542335,"y":1.43384234772657,"z":0},"color":"#CBD5E1","kind":"moon","fixedVisualRadius":0.0026,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"jupiter"},{"id":"callisto","name":"Callisto","mass":5.41e-8,"position":{"x":3.9390227263282402,"y":3.379761669955374,"z":0},"velocity":{"x":-1.3940261728282601,"y":2.362801867449673,"z":0},"color":"#94A3B8","kind":"moon","fixedVisualRadius":0.0024,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"jupiter"},{"id":"enceladus","name":"Enceladus","mass":5.4e-11,"position":{"x":-8.98421753684948,"y":3.2939494911984095,"z":0},"velocity":{"x":-1.117769310872384,"y":-1.4030181026196633,"z":0},"color":"#F8FAFC","kind":"moon","fixedVisualRadius":0.0018,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"saturn"},{"id":"rhea","name":"Rhea","mass":1.16e-9,"position":{"x":-9.05049913203245,"y":3.28966032751148,"z":0},"velocity":{"x":-0.8198130922232431,"y":-2.375965915677898,"z":0},"color":"#CBD5E1","kind":"moon","fixedVisualRadius":0.002,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"saturn"},{"id":"titan","name":"Titan","mass":6.76e-8,"position":{"x":-8.995593429581303,"y":3.1796099329335683,"z":0},"velocity":{"x":-0.3562695511407039,"y":-1.878077801644275,"z":0},"color":"#F59E0B","kind":"moon","fixedVisualRadius":0.0028,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"saturn"}]},{"id":"hohmann-transfer-2d","name":"Hohmann Transfer Orbit","category":"2d","subtitle":"Orbital Maneuver · r₁ → r₂ Ellipse","description":"Spacecraft injected onto an elliptical Hohmann transfer bridging an inner circular orbit (0.65 AU) to an outer target orbit (1.55 AU).","G":39.47841760435743,"softening":0.001,"daysPerSimTime":365.25,"simTimePerRealSecond":0.14,"substepsPerFrame":12,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.85,"minBodyRadiusWorld":0.02,"bodyScaleFactor":0.06,"velocityVectorScale":0.045,"defaultFollowId":"sun","predictionDuration":1.2,"predictionSteps":160,"massRange":[0.00001,2.5],"positionRange":3,"velocityRange":20,"bodies":[{"id":"sun","name":"Primary Star","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":0,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.085},{"id":"inner","name":"Departure Orbit","mass":0.000001,"position":{"x":0.65,"y":0,"z":0},"velocity":{"x":0,"y":7.7933,"z":0},"color":"#94A3B8","kind":"planet","fixedVisualRadius":0.026},{"id":"outer","name":"Target Planet","mass":0.000002,"position":{"x":-1.49,"y":0.427,"z":0},"velocity":{"x":-1.39,"y":-4.85,"z":0},"color":"#A78BFA","kind":"planet","fixedVisualRadius":0.034},{"id":"craft","name":"Transfer Craft","mass":1e-7,"position":{"x":0.65,"y":0,"z":0},"velocity":{"x":0,"y":9.2555,"z":0},"color":"#34D399","kind":"spacecraft","fixedVisualRadius":0.02}]},{"id":"custom-2d","name":"Custom 2D Sandbox","category":"2d","subtitle":"Build Your Own System","description":"Starter two-body system. Click \"Add Body\" or drag any mass and its green velocity handle to craft custom orbital dynamics.","G":39.47841760435743,"softening":0.005,"daysPerSimTime":365.25,"simTimePerRealSecond":0.14,"substepsPerFrame":12,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.8,"minBodyRadiusWorld":0.025,"bodyScaleFactor":0.065,"velocityVectorScale":0.05,"defaultFollowId":"none","predictionDuration":1.1,"predictionSteps":140,"massRange":[0.0001,4],"positionRange":3.5,"velocityRange":20,"bodies":[{"id":"primary","name":"Central Star","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":0,"z":0},"color":"#F59E0B","kind":"star"},{"id":"orbiter","name":"Planet 1","mass":0.01,"position":{"x":1,"y":0,"z":0},"velocity":{"x":0,"y":6.314,"z":0},"color":"#38BDF8","kind":"planet"}]},{"id":"full-solar-system-3d","name":"3D Complete Solar System (Sun–Pluto)","category":"3d","subtitle":"3D · Inclined Planets · Belt · Pluto · Moons","description":"Full 3D Solar System with authentic orbital inclinations (including Pallas at 34.8° and Pluto at 17.2°), Main Asteroid Belt, Earth’s Moon, Galilean moons, and Saturn’s moons.","G":39.47841760435743,"softening":0.0004,"daysPerSimTime":365.25,"simTimePerRealSecond":0.22,"substepsPerFrame":20,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":34,"minBodyRadiusWorld":0.001,"bodyScaleFactor":0.015,"velocityVectorScale":0.45,"defaultFollowId":"sun","lagrangePairIds":["sun","jupiter"],"predictionDuration":12,"predictionSteps":140,"massRange":[1e-8,2.5],"positionRange":45,"velocityRange":15,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":0,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.16,"minScreenRadiusPx":9.5},{"id":"mercury","name":"Mercury","mass":1.66e-7,"position":{"x":0.35074111358318355,"y":0.1635532672936507,"z":0},"velocity":{"x":-4.2366578410121525,"y":9.085542059881647,"z":1.2308890074033174},"color":"#94A3B8","kind":"moon","fixedVisualRadius":0.001,"minScreenRadiusPx":3.6},{"id":"venus","name":"Venus","mass":0.00000245,"position":{"x":-0.46473544180336795,"y":0.5538501323750211,"z":0},"velocity":{"x":-5.6507306733575104,"y":-4.74152602389643,"z":0.43695317489329183},"color":"#FDE68A","kind":"planet","fixedVisualRadius":0.0014,"minScreenRadiusPx":4.4},{"id":"earth","name":"Earth","mass":0.000003003,"position":{"x":-0.7071067811865477,"y":-0.7071067811865475,"z":0},"velocity":{"x":4.44288960914209,"y":-4.442889609142091,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.0015,"minScreenRadiusPx":4.8},{"id":"mars","name":"Mars","mass":3.23e-7,"position":{"x":1.0776307345282983,"y":-1.0776307345282987,"z":0},"velocity":{"x":3.59704631930756,"y":3.5970463193075584,"z":0.164308899118946},"color":"#FB7185","kind":"planet","fixedVisualRadius":0.0012,"minScreenRadiusPx":4},{"id":"vesta","name":"Vesta (Belt)","mass":1.3e-10,"position":{"x":0.9982243342315321,"y":2.140698992980567,"z":0},"velocity":{"x":-3.676501352359923,"y":1.714380735822641,"z":0.5081487625727463},"color":"#A8A29E","kind":"asteroid","fixedVisualRadius":0.0008,"minScreenRadiusPx":2.6},{"id":"ceres","name":"Ceres (Belt)","mass":4.7e-10,"position":{"x":-2.7574669243179515,"y":0.2412470959255191,"z":0},"velocity":{"x":-0.3235429687866011,"y":-3.698113055421512,"z":0.694056113721021},"color":"#CBD5E1","kind":"asteroid","fixedVisualRadius":0.0009,"minScreenRadiusPx":2.9},{"id":"pallas","name":"Pallas (Belt)","mass":1e-10,"position":{"x":0.4815263966703968,"y":-2.730871899102853,"z":0},"velocity":{"x":3.05014396878433,"y":0.537822676741874,"z":2.155014160312822},"color":"#94A3B8","kind":"asteroid","fixedVisualRadius":0.0008,"minScreenRadiusPx":2.6},{"id":"hygiea","name":"Hygiea (Belt)","mass":4.4e-11,"position":{"x":3.1300437414042643,"y":-0.27384334371314245,"z":0},"velocity":{"x":0.30824545414348964,"y":3.5232616629485043,"z":0.2373887842992083},"color":"#78716C","kind":"asteroid","fixedVisualRadius":0.0008,"minScreenRadiusPx":2.5},{"id":"jupiter","name":"Jupiter","mass":0.0009548,"position":{"x":3.8673256717843594,"y":3.482155675491498,"z":0},"velocity":{"x":-1.8433840626343394,"y":2.047285409598378,"z":0.06299836554315666},"color":"#FB923C","kind":"gas-giant","fixedVisualRadius":0.012,"minScreenRadiusPx":7.2},{"id":"saturn","name":"Saturn","mass":0.0002858,"position":{"x":-9.004134692370574,"y":3.2772370133465594,"z":0},"velocity":{"x":-0.6936737742500082,"y":-1.9058530312197597,"z":0.08819700494975025},"color":"#FBBF24","kind":"gas-giant","fixedVisualRadius":0.01,"minScreenRadiusPx":6.4},{"id":"uranus","name":"Uranus","mass":0.00004366,"position":{"x":-4.973984408780241,"y":-18.563162529623316,"z":0},"velocity":{"x":1.3843305804158372,"y":-0.37093026108013083,"z":0.01926150750034556},"color":"#67E8F9","kind":"gas-giant","fixedVisualRadius":0.008,"minScreenRadiusPx":5.4},{"id":"neptune","name":"Neptune","mass":0.00005151,"position":{"x":26.07602490794944,"y":-15.055000000000014,"z":0},"velocity":{"x":0.5722666213661136,"y":0.9911948636818888,"z":0.03536854794144737},"color":"#60A5FA","kind":"gas-giant","fixedVisualRadius":0.008,"minScreenRadiusPx":5.4},{"id":"pluto","name":"Pluto","mass":6.58e-9,"position":{"x":-7.674238847592034,"y":28.64064928863229,"z":0},"velocity":{"x":-1.1901700182587935,"y":-0.31890509524817834,"z":0.3804731550067085},"color":"#E2E8F0","kind":"asteroid","fixedVisualRadius":0.002,"minScreenRadiusPx":3.5},{"id":"moon","name":"Moon","mass":3.69e-8,"position":{"x":-0.7041369327055642,"y":-0.704136932705564,"z":0},"velocity":{"x":4.323842198932617,"y":-4.323842198932617,"z":0.015144072420402778},"color":"#E2E8F0","kind":"moon","fixedVisualRadius":0.0006,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"earth"},{"id":"io","name":"Io","mass":4.49e-8,"position":{"x":3.8963034465730315,"y":3.489920246844574,"z":0},"velocity":{"x":-2.1335067706958157,"y":3.130038096513281,"z":0.063976577516285},"color":"#FDE047","kind":"moon","fixedVisualRadius":0.0022,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"jupiter"},{"id":"europa","name":"Europa","mass":2.41e-8,"position":{"x":3.8509087049047275,"y":3.5272609212892214,"z":0},"velocity":{"x":-2.6760909182754835,"y":1.744204900275598,"z":0.07026764375578343},"color":"#E0F2FE","kind":"moon","fixedVisualRadius":0.0021,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"jupiter"},{"id":"ganymede","name":"Ganymede","mass":7.45e-8,"position":{"x":3.8023737665005264,"y":3.444655675491498,"z":0},"velocity":{"x":-1.4889056902479858,"y":1.433310858440893,"z":0.06547310148456816},"color":"#CBD5E1","kind":"moon","fixedVisualRadius":0.0026,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"jupiter"},{"id":"callisto","name":"Callisto","mass":5.41e-8,"position":{"x":3.9390227263282402,"y":3.379761669955374,"z":0},"velocity":{"x":-1.3935496212331053,"y":2.362262876413876,"z":0.06568202274824725},"color":"#94A3B8","kind":"moon","fixedVisualRadius":0.0024,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"jupiter"},{"id":"enceladus","name":"Enceladus","mass":5.4e-11,"position":{"x":-8.98421753684948,"y":3.2939494911984095,"z":0},"velocity":{"x":-1.1171137127653026,"y":-1.401216963246286,"z":0.0884269540433647},"color":"#F8FAFC","kind":"moon","fixedVisualRadius":0.0018,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"saturn"},{"id":"rhea","name":"Rhea","mass":1.16e-9,"position":{"x":-9.05049913203245,"y":3.28966032751148,"z":0},"velocity":{"x":-0.8191551786681214,"y":-2.3741560079132555,"z":0.09115865645516093},"color":"#CBD5E1","kind":"moon","fixedVisualRadius":0.002,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"saturn"},{"id":"titan","name":"Titan","mass":6.76e-8,"position":{"x":-8.995593429581303,"y":3.1796099329335683,"z":0},"velocity":{"x":-0.35562028626923126,"y":-1.8762771833560445,"z":0.09026997013934794},"color":"#F59E0B","kind":"moon","fixedVisualRadius":0.0028,"minScreenRadiusPx":2.6,"isMoon":true,"parentId":"saturn"}]},{"id":"solar-system-3d","name":"3D Inclined Solar System","category":"3d","subtitle":"3D · Multi-Plane Orbits + Comet","description":"Inner planets with orbital inclinations plus a steeply inclined 26° comet sweeping through the 3D ecliptic volume.","G":39.47841760435743,"softening":0.002,"daysPerSimTime":365.25,"simTimePerRealSecond":0.14,"substepsPerFrame":12,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":2,"minBodyRadiusWorld":0.025,"bodyScaleFactor":0.06,"velocityVectorScale":0.045,"defaultFollowId":"sun","lagrangePairIds":["sun","earth"],"predictionDuration":1.2,"predictionSteps":160,"massRange":[0.000001,2.5],"positionRange":3.5,"velocityRange":20,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":0,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.11},{"id":"mercury","name":"Mercury (7°)","mass":1.66e-7,"position":{"x":0.387,"y":0,"z":0},"velocity":{"x":0,"y":10.024716131577351,"z":1.2308803683919896},"color":"#94A3B8","kind":"moon","fixedVisualRadius":0.032},{"id":"venus","name":"Venus (3.4°)","mass":0.00000245,"position":{"x":0,"y":0.723,"z":0},"velocity":{"x":-7.374995848700778,"y":0,"z":0.43815548797920445},"color":"#FDE68A","kind":"planet","fixedVisualRadius":0.044},{"id":"earth","name":"Earth (0°)","mass":0.000003,"position":{"x":-1,"y":0,"z":0},"velocity":{"x":0,"y":-6.283,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.048},{"id":"mars","name":"Mars (1.85°)","mass":3.23e-7,"position":{"x":0,"y":-1.524,"z":0},"velocity":{"x":5.08634745405183,"y":0,"z":-0.16428809044016635},"color":"#FB7185","kind":"planet","fixedVisualRadius":0.038},{"id":"comet","name":"Inclined Comet (28°)","mass":1e-7,"position":{"x":0.45,"y":0,"z":0},"velocity":{"x":0,"y":10.065602558591769,"z":5.351975815759156},"color":"#22D3EE","kind":"asteroid","fixedVisualRadius":0.03}]},{"id":"sun-earth-moon-3d","name":"3D Sun–Earth–Moon (Inclined)","category":"3d","subtitle":"3D · 8° Lunar Plane + Lagrange","description":"Moon orbits Earth in an inclined orbital plane as Earth circles the Sun, with dynamic 3D Sun–Earth Lagrange points.","G":39.47841760435743,"softening":0.001,"daysPerSimTime":365.25,"simTimePerRealSecond":0.12,"substepsPerFrame":16,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.5,"minBodyRadiusWorld":0.02,"bodyScaleFactor":0.06,"velocityVectorScale":0.05,"defaultFollowId":"sun","showLagrangeByDefault":true,"lagrangePairIds":["sun","earth"],"predictionDuration":0.9,"predictionSteps":160,"massRange":[0.00001,2.5],"positionRange":2.5,"velocityRange":14,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":-0.0094,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.11},{"id":"earth","name":"Earth","mass":0.0015,"position":{"x":1,"y":0,"z":0},"velocity":{"x":0,"y":6.238,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.052},{"id":"moon","name":"Moon","mass":0.000045,"position":{"x":1.032,"y":0,"z":0},"velocity":{"x":0,"y":7.587843689012653,"z":0.28691813332850785},"color":"#E2E8F0","kind":"moon","fixedVisualRadius":0.025}]},{"id":"orbital-shells-3d","name":"3D Orbital Shells (Polar & Molniya)","category":"3d","subtitle":"3D · Orthogonal Satellite Planes","description":"Equatorial geostationary, 90° polar reconnaissance, and 63.4° inclined eccentric satellites orbiting a central planet.","G":2.975536,"softening":0.02,"daysPerSimTime":1,"simTimePerRealSecond":2.5,"substepsPerFrame":10,"distanceLabel":"10⁵ km","massLabel":"M⊕","velocityLabel":"km/s","velocityDisplayFactor":1.1574074074074074,"defaultViewRadius":4.5,"minBodyRadiusWorld":0.08,"bodyScaleFactor":0.18,"velocityVectorScale":1.2,"defaultFollowId":"planet","predictionDuration":18,"predictionSteps":160,"massRange":[0.0001,5],"positionRange":8,"velocityRange":4,"bodies":[{"id":"planet","name":"Central Planet","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":0,"z":0},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.36},{"id":"sat-eq","name":"Equatorial Relay","mass":0.00001,"position":{"x":2.4,"y":0,"z":0},"velocity":{"x":0,"y":1.1134660599527346,"z":0},"color":"#34D399","kind":"spacecraft","fixedVisualRadius":0.09},{"id":"sat-polar","name":"Polar Orbiter","mass":0.00001,"position":{"x":0,"y":2.9,"z":0},"velocity":{"x":0,"y":0,"z":1.0129397299700136},"color":"#F59E0B","kind":"spacecraft","fixedVisualRadius":0.09},{"id":"sat-inclined","name":"Inclined Elliptical","mass":0.00001,"position":{"x":0,"y":0,"z":-1.8},"velocity":{"x":1.2451111073192676,"y":0.87183618325359,"z":0},"color":"#FB7185","kind":"spacecraft","fixedVisualRadius":0.09}]},{"id":"binary-3d","name":"3D Binary + Tilted Exoplanet","category":"3d","subtitle":"3D · Non-Coplanar Circumbinary","description":"A pair of orbiting stars accompanied by an exoplanet tilted 32° relative to the binary plane, showcasing 3D nodal precession.","G":39.47841760435743,"softening":0.008,"daysPerSimTime":365.25,"simTimePerRealSecond":0.16,"substepsPerFrame":14,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":2.1,"minBodyRadiusWorld":0.03,"bodyScaleFactor":0.075,"velocityVectorScale":0.05,"defaultFollowId":"barycenter","lagrangePairIds":["star-a","star-b"],"predictionDuration":0.95,"predictionSteps":160,"massRange":[0.0001,3],"positionRange":3.5,"velocityRange":18,"bodies":[{"id":"star-a","name":"Alpha Star","mass":0.65,"position":{"x":-0.18,"y":0,"z":0},"velocity":{"x":0,"y":-4.05,"z":0},"color":"#FBBF24","kind":"star","fixedVisualRadius":0.1},{"id":"star-b","name":"Beta Star","mass":0.45,"position":{"x":0.26,"y":0,"z":0},"velocity":{"x":0,"y":5.85,"z":0},"color":"#38BDF8","kind":"star","fixedVisualRadius":0.082},{"id":"exoplanet","name":"Tilted Exoplanet (32°)","mass":0.001,"position":{"x":1.55,"y":0,"z":0},"velocity":{"x":0,"y":4.486174428667494,"z":2.803272907793654},"color":"#C084FC","kind":"planet","fixedVisualRadius":0.052}]},{"id":"slingshot-3d","name":"3D Slingshot Plane Change","category":"3d","subtitle":"3D · Out-of-Plane Gravity Assist","description":"A probe approaches an orbiting gas giant from below the ecliptic plane, undergoing both a kinetic energy boost and a 3D inclination deflection.","G":39.47841760435743,"softening":0.008,"daysPerSimTime":365.25,"simTimePerRealSecond":0.13,"substepsPerFrame":14,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.9,"minBodyRadiusWorld":0.028,"bodyScaleFactor":0.07,"velocityVectorScale":0.055,"defaultFollowId":"sun","lagrangePairIds":["sun","jupiter"],"predictionDuration":0.55,"predictionSteps":160,"massRange":[0.00001,2.5],"positionRange":3.5,"velocityRange":20,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":-0.097,"y":-0.097,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.11},{"id":"jupiter","name":"Giant Planet","mass":0.025,"position":{"x":0.9192,"y":-0.9192,"z":0},"velocity":{"x":3.888,"y":3.888,"z":0},"color":"#FB923C","kind":"gas-giant","fixedVisualRadius":0.078},{"id":"spacecraft","name":"Ulysses Probe","mass":1e-7,"position":{"x":0.7,"y":-0.88,"z":-0.11},"velocity":{"x":4.5,"y":1.5,"z":0.55},"color":"#22D3EE","kind":"spacecraft","fixedVisualRadius":0.036}]},{"id":"lagrange-trojans-3d","name":"3D Lagrange Trojan Cluster","category":"3d","subtitle":"3D · L4/L5 Tadpole Orbits","description":"Sun–Planet system with Trojan bodies librating in 3D around the stable L4 and L5 triangular Lagrange points.","G":39.47841760435743,"softening":0.002,"daysPerSimTime":365.25,"simTimePerRealSecond":0.12,"substepsPerFrame":14,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.65,"minBodyRadiusWorld":0.02,"bodyScaleFactor":0.06,"velocityVectorScale":0.05,"defaultFollowId":"sun","showLagrangeByDefault":true,"lagrangePairIds":["sun","planet"],"predictionDuration":0.95,"predictionSteps":160,"massRange":[0.000001,2.5],"positionRange":3,"velocityRange":16,"bodies":[{"id":"sun","name":"Sun","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":-0.0125,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.11},{"id":"planet","name":"Gas Giant","mass":0.002,"position":{"x":1,"y":0,"z":0},"velocity":{"x":0,"y":6.277,"z":0},"color":"#FB923C","kind":"gas-giant","fixedVisualRadius":0.062},{"id":"trojan-1","name":"Greek L4","mass":1e-7,"position":{"x":0.5,"y":0.866,"z":0.08},"velocity":{"x":-5.44,"y":3.14,"z":-0.55},"color":"#34D399","kind":"asteroid","fixedVisualRadius":0.028},{"id":"trojan-2","name":"Trojan L5","mass":1e-7,"position":{"x":0.5,"y":-0.866,"z":-0.08},"velocity":{"x":5.44,"y":3.14,"z":0.55},"color":"#22D3EE","kind":"asteroid","fixedVisualRadius":0.028}]},{"id":"custom-3d","name":"Custom 3D Sandbox","category":"3d","subtitle":"Build in Full 3D Space","description":"Starter 3D system. Add bodies with X/Y/Z coordinates and 3D velocity vectors to explore inclined orbits and perturbations.","G":39.47841760435743,"softening":0.005,"daysPerSimTime":365.25,"simTimePerRealSecond":0.14,"substepsPerFrame":12,"distanceLabel":"AU","massLabel":"M☉","velocityLabel":"km/s","velocityDisplayFactor":4.7405,"defaultViewRadius":1.9,"minBodyRadiusWorld":0.03,"bodyScaleFactor":0.07,"velocityVectorScale":0.05,"defaultFollowId":"none","predictionDuration":1.1,"predictionSteps":140,"massRange":[0.0001,4],"positionRange":3.5,"velocityRange":20,"bodies":[{"id":"primary","name":"Central Star","mass":1,"position":{"x":0,"y":0,"z":0},"velocity":{"x":0,"y":0,"z":0},"color":"#F59E0B","kind":"star","fixedVisualRadius":0.11},{"id":"orbiter","name":"Inclined Planet","mass":0.01,"position":{"x":1.05,"y":0,"z":0},"velocity":{"x":0,"y":5.5,"z":2.6},"color":"#38BDF8","kind":"planet","fixedVisualRadius":0.055}]}],"themes":[{"id":"deep-space-obsidian","name":"Deep Space Obsidian","isDark":true,"canvasBg":"#07090E","canvasBgSecondary":"#0D121C","gridMajor":"rgba(148, 163, 184, 0.16)","gridMinor":"rgba(148, 163, 184, 0.06)","axisColor":"rgba(56, 189, 248, 0.35)","boxWireframe":"#38BDF8","textPrimary":"#F1F5F9","textMuted":"#94A3B8","accent":"#06B6D4","accentSecondary":"#F59E0B","lagrangeColor":"#22D3EE","velocityVectorColor":"#34D399","forceVectorColor":"#F43F5E","barycenterColor":"#FBBF24","uiSurface":"#0B0F17","uiPanel":"#111827","uiBorder":"#1E293B","uiText":"#F1F5F9","uiTextMuted":"#94A3B8","defaultBodyPalette":["#F59E0B","#38BDF8","#E2E8F0","#FB7185","#A78BFA","#34D399"]},{"id":"observatory-daylight","name":"Observatory Daylight","isDark":false,"canvasBg":"#F8FAFC","canvasBgSecondary":"#FFFFFF","gridMajor":"rgba(15, 23, 42, 0.14)","gridMinor":"rgba(15, 23, 42, 0.05)","axisColor":"rgba(37, 99, 235, 0.35)","boxWireframe":"#2563EB","textPrimary":"#0F172A","textMuted":"#475569","accent":"#2563EB","accentSecondary":"#D97706","lagrangeColor":"#0284C7","velocityVectorColor":"#059669","forceVectorColor":"#DC2626","barycenterColor":"#D97706","uiSurface":"#F1F5F9","uiPanel":"#FFFFFF","uiBorder":"#E2E8F0","uiText":"#0F172A","uiTextMuted":"#64748B","defaultBodyPalette":["#D97706","#2563EB","#475569","#DC2626","#7C3AED","#059669"]},{"id":"blueprint-cyanotype","name":"Blueprint Cyanotype","isDark":true,"canvasBg":"#081830","canvasBgSecondary":"#0C2344","gridMajor":"rgba(125, 211, 252, 0.24)","gridMinor":"rgba(125, 211, 252, 0.09)","axisColor":"rgba(255, 255, 255, 0.45)","boxWireframe":"#7DD3FC","textPrimary":"#F0F9FF","textMuted":"#BAE6FD","accent":"#38BDF8","accentSecondary":"#FDE047","lagrangeColor":"#FDE047","velocityVectorColor":"#6EE7B7","forceVectorColor":"#FDA4AF","barycenterColor":"#FDE047","uiSurface":"#071428","uiPanel":"#0B1F3A","uiBorder":"#1E3A5F","uiText":"#F0F9FF","uiTextMuted":"#93C5FD","defaultBodyPalette":["#FDE047","#FFFFFF","#7DD3FC","#FCA5A5","#A5F3FC","#C4B5FD"]},{"id":"infrared-thermal","name":"Infrared Thermal","isDark":true,"canvasBg":"#110614","canvasBgSecondary":"#1C0B22","gridMajor":"rgba(244, 114, 182, 0.18)","gridMinor":"rgba(244, 114, 182, 0.07)","axisColor":"rgba(251, 146, 60, 0.4)","boxWireframe":"#FB923C","textPrimary":"#FDF4FF","textMuted":"#E9D5FF","accent":"#FB923C","accentSecondary":"#EC4899","lagrangeColor":"#FACC15","velocityVectorColor":"#2DD4BF","forceVectorColor":"#F43F5E","barycenterColor":"#FACC15","uiSurface":"#130717","uiPanel":"#1D0C24","uiBorder":"#3B1847","uiText":"#FDF4FF","uiTextMuted":"#D8B4FE","defaultBodyPalette":["#FACC15","#FB923C","#F472B6","#C084FC","#2DD4BF","#FB7185"]},{"id":"solar-corona-amber","name":"Solar Corona Amber","isDark":true,"canvasBg":"#120C06","canvasBgSecondary":"#1D140A","gridMajor":"rgba(245, 158, 11, 0.17)","gridMinor":"rgba(245, 158, 11, 0.06)","axisColor":"rgba(251, 191, 36, 0.38)","boxWireframe":"#F59E0B","textPrimary":"#FEF3C7","textMuted":"#D6B88A","accent":"#F59E0B","accentSecondary":"#38BDF8","lagrangeColor":"#38BDF8","velocityVectorColor":"#4ADE80","forceVectorColor":"#FB7185","barycenterColor":"#FDE68A","uiSurface":"#140E07","uiPanel":"#1F160B","uiBorder":"#3B2A16","uiText":"#FEF3C7","uiTextMuted":"#D6B88A","defaultBodyPalette":["#FBBF24","#38BDF8","#E7E5E4","#FB923C","#A3E635","#F472B6"]},{"id":"phosphor-oscilloscope","name":"Phosphor Oscilloscope","isDark":true,"canvasBg":"#030D07","canvasBgSecondary":"#07170D","gridMajor":"rgba(52, 211, 153, 0.22)","gridMinor":"rgba(52, 211, 153, 0.08)","axisColor":"rgba(110, 231, 183, 0.45)","boxWireframe":"#10B981","textPrimary":"#D1FAE5","textMuted":"#6EE7B7","accent":"#10B981","accentSecondary":"#A3E635","lagrangeColor":"#A3E635","velocityVectorColor":"#34D399","forceVectorColor":"#FBBF24","barycenterColor":"#FDE047","uiSurface":"#041009","uiPanel":"#081A10","uiBorder":"#133824","uiText":"#ECFDF5","uiTextMuted":"#6EE7B7","defaultBodyPalette":["#A3E635","#34D399","#6EE7B7","#FDE047","#2DD4BF","#86EFAC"]},{"id":"chalkboard-physics","name":"Chalkboard Physics","isDark":true,"canvasBg":"#19241F","canvasBgSecondary":"#202E27","gridMajor":"rgba(241, 245, 249, 0.16)","gridMinor":"rgba(241, 245, 249, 0.05)","axisColor":"rgba(253, 224, 71, 0.42)","boxWireframe":"#E2E8F0","textPrimary":"#F8FAFC","textMuted":"#CBD5E1","accent":"#FBBF24","accentSecondary":"#67E8F9","lagrangeColor":"#FDE047","velocityVectorColor":"#86EFAC","forceVectorColor":"#FDA4AF","barycenterColor":"#FDE047","uiSurface":"#151F1A","uiPanel":"#1E2B24","uiBorder":"#31443A","uiText":"#F8FAFC","uiTextMuted":"#CBD5E1","defaultBodyPalette":["#FDE68A","#93C5FD","#E2E8F0","#FCA5A5","#A7F3D0","#DDD6FE"]},{"id":"arctic-alabaster","name":"Arctic Alabaster","isDark":false,"canvasBg":"#EEF2F7","canvasBgSecondary":"#F8FAFC","gridMajor":"rgba(51, 65, 85, 0.14)","gridMinor":"rgba(51, 65, 85, 0.05)","axisColor":"rgba(14, 116, 144, 0.35)","boxWireframe":"#0E7490","textPrimary":"#0F172A","textMuted":"#475569","accent":"#0E7490","accentSecondary":"#EA580C","lagrangeColor":"#0369A1","velocityVectorColor":"#0D9488","forceVectorColor":"#E11D48","barycenterColor":"#EA580C","uiSurface":"#E2E8F0","uiPanel":"#F8FAFC","uiBorder":"#CBD5E1","uiText":"#0F172A","uiTextMuted":"#475569","defaultBodyPalette":["#EA580C","#0284C7","#334155","#E11D48","#6D28D9","#0D9488"]},{"id":"cobalt-telemetry","name":"Cobalt Telemetry","isDark":true,"canvasBg":"#071126","canvasBgSecondary":"#0C1A38","gridMajor":"rgba(96, 165, 250, 0.19)","gridMinor":"rgba(96, 165, 250, 0.07)","axisColor":"rgba(249, 115, 22, 0.42)","boxWireframe":"#60A5FA","textPrimary":"#EFF6FF","textMuted":"#93C5FD","accent":"#F97316","accentSecondary":"#38BDF8","lagrangeColor":"#38BDF8","velocityVectorColor":"#22C55E","forceVectorColor":"#FB7185","barycenterColor":"#FACC15","uiSurface":"#060E1F","uiPanel":"#0B1730","uiBorder":"#1B2E59","uiText":"#EFF6FF","uiTextMuted":"#93C5FD","defaultBodyPalette":["#FACC15","#38BDF8","#E2E8F0","#F97316","#34D399","#C084FC"]},{"id":"high-contrast-monograph","name":"High-Contrast Monograph","isDark":true,"canvasBg":"#000000","canvasBgSecondary":"#0A0A0A","gridMajor":"rgba(255, 255, 255, 0.2)","gridMinor":"rgba(255, 255, 255, 0.08)","axisColor":"rgba(255, 255, 255, 0.5)","boxWireframe":"#FFFFFF","textPrimary":"#FFFFFF","textMuted":"#D4D4D8","accent":"#FACC15","accentSecondary":"#FFFFFF","lagrangeColor":"#FACC15","velocityVectorColor":"#4ADE80","forceVectorColor":"#F87171","barycenterColor":"#FACC15","uiSurface":"#050505","uiPanel":"#111111","uiBorder":"#27272A","uiText":"#FFFFFF","uiTextMuted":"#A1A1AA","defaultBodyPalette":["#FFFFFF","#FACC15","#38BDF8","#F87171","#4ADE80","#E879F9"]}]};/*__BS_END__*/
+
+(function() {
+  const PRISTINE_HTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function formatSci(num, decimals) {
+    const d = decimals === undefined ? 3 : decimals;
+    if (!isFinite(num)) return '0';
+    const abs = Math.abs(num);
+    if (abs === 0) return '0';
+    if (abs >= 1e4 || abs < 1e-3) return num.toExponential(2);
+    return num.toFixed(d);
+  }
+
+  function formatSimTimeParts(totalDays, pref) {
+    const absDays = Math.abs(totalDays);
+    let chosen = pref || 'auto';
+    if (chosen === 'auto') {
+      if (absDays < 2) chosen = 'hours';
+      else if (absDays < 60) chosen = 'days';
+      else if (absDays < 730) chosen = 'months';
+      else chosen = 'years';
+    }
+    if (chosen === 'hours') {
+      return { value: (totalDays * 24).toFixed(1), unit: 'hrs', secondary: totalDays.toFixed(2) + ' d' };
+    }
+    if (chosen === 'days') {
+      return { value: totalDays.toFixed(2), unit: 'days', secondary: (totalDays / 365.25).toFixed(3) + ' yr' };
+    }
+    if (chosen === 'months') {
+      return { value: (totalDays / 30.4375).toFixed(2), unit: 'mo', secondary: totalDays.toFixed(1) + ' d' };
+    }
+    return { value: (totalDays / 365.25).toFixed(3), unit: 'yrs', secondary: totalDays.toFixed(0) + ' d' };
+  }
+
+  function shadeHex(hex, factor) {
+    const clean = String(hex || '#38BDF8').replace('#', '');
+    if (clean.length !== 6) return hex;
+    const r = Math.min(255, Math.max(0, Math.round(parseInt(clean.slice(0, 2), 16) * factor)));
+    const g = Math.min(255, Math.max(0, Math.round(parseInt(clean.slice(2, 4), 16) * factor)));
+    const b = Math.min(255, Math.max(0, Math.round(parseInt(clean.slice(4, 6), 16) * factor)));
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  function niceGridStep(worldSpan) {
+    const raw = worldSpan / 8;
+    const pow10 = Math.pow(10, Math.floor(Math.log10(Math.max(raw, 1e-6))));
+    const frac = raw / pow10;
+    const nice = frac < 1.5 ? 1 : frac < 3.5 ? 2 : frac < 7.5 ? 5 : 10;
+    return nice * pow10;
+  }
+
+  const state = {
+    viewMode: BOOTSTRAP.initialViewMode,
+    preset: JSON.parse(JSON.stringify(BOOTSTRAP.presets.find(p => p.id === BOOTSTRAP.initialPresetId) || BOOTSTRAP.presets[0])),
+    theme: BOOTSTRAP.themes.find(t => t.id === BOOTSTRAP.initialThemeId) || BOOTSTRAP.themes[0],
+    settings: Object.assign({
+      showGridOrBox: true,
+      showPredictedTrajectories: true,
+      predictionLengthPct: 100,
+      showTrails: true,
+      showVelocityVectors: true,
+      showForceVectors: false,
+      showLagrangePoints: false,
+      showBarycenter: true,
+      showMoons: true,
+      showDetailedAnnotations: true,
+      annotationScale: 1.5,
+      speedMultiplier: 1,
+      timeUnitPref: 'auto',
+      collisionBehavior: 'pass',
+      followTargetId: 'none',
+      trailLength: 320
+    }, BOOTSTRAP.initialSettings),
+    bodies: BOOTSTRAP.initialBodies.map(b => Object.assign({}, b, { trail: [] })),
+    selectedId: BOOTSTRAP.initialSelectedId,
+    running: true,
+    simTime: 0,
+    isAdding: false,
+    telemetry: [],
+    initialE: null,
+    popped: {}
+  };
+
+  if (!state.bodies.some(b => b.id === state.selectedId)) {
+    state.selectedId = state.bodies[1] ? state.bodies[1].id : (state.bodies[0] ? state.bodies[0].id : null);
+  }
+
+  // Deterministic 3D background starfield directions
+  const bgStars = [];
+  for (let i = 0; i < 220; i++) {
+    const th = (i * 2.3999632) % (Math.PI * 2);
+    const ph = Math.acos(1 - 2 * ((i + 0.5) / 220));
+    const rad = 180 + (i % 7) * 28;
+    bgStars.push({
+      x: rad * Math.sin(ph) * Math.cos(th),
+      y: rad * Math.sin(ph) * Math.sin(th),
+      z: rad * Math.cos(ph),
+      s: 0.7 + (i % 3) * 0.45
+    });
+  }
+
+  let cam2d = { ppu: 220, panX: 0, panY: 0 };
+  let cam3d = { yaw: 0.65, pitch: 0.48, dist: 3.6, panX: 0, panY: 0, panZ: 0 };
+  let hoverWorld = null;
+  let newPlacePreview = null;
+
+  const canvas = document.getElementById('simCanvas');
+  const ctx = canvas.getContext('2d');
+  const stage = document.getElementById('stageContainer');
+
+  function applyThemeVars() {
+    const t = state.theme;
+    const r = document.documentElement.style;
+    r.setProperty('--canvas-bg', t.canvasBg);
+    r.setProperty('--surface', t.uiSurface);
+    r.setProperty('--panel', t.uiPanel);
+    r.setProperty('--border', t.uiBorder);
+    r.setProperty('--text', t.uiText);
+    r.setProperty('--muted', t.uiTextMuted);
+    r.setProperty('--accent', t.accent);
+    r.setProperty('--accent2', t.accentSecondary);
+    r.setProperty('--lagrange', t.lagrangeColor);
+    document.body.style.background = t.uiSurface;
+    document.body.style.color = t.uiText;
+    document.getElementById('presetSubtitle').style.color = t.accent;
+    document.getElementById('lblSpeedMag').style.color = t.velocityVectorColor;
+    document.getElementById('lagrangeRefTitle').style.color = t.lagrangeColor;
+  }
+
+  function resetCamera() {
+    const w = stage.clientWidth || 800;
+    const h = stage.clientHeight || 600;
+    cam2d.ppu = (Math.max(240, Math.min(w, h)) * 0.44) / state.preset.defaultViewRadius;
+    cam2d.panX = 0; cam2d.panY = 0;
+    cam3d.dist = state.preset.defaultViewRadius * 3.55;
+    cam3d.yaw = 0.65; cam3d.pitch = 0.48;
+    cam3d.panX = 0; cam3d.panY = 0; cam3d.panZ = 0;
+  }
+
+  function getBodyRadius(b) {
+    if (b.fixedVisualRadius !== undefined) return b.fixedVisualRadius;
+    const m = Math.max(b.mass, 1e-12);
+    return state.preset.minBodyRadiusWorld + state.preset.bodyScaleFactor * (Math.cbrt(m) * 0.65 + Math.max(0, Math.log10(m * 1e6 + 1)) * 0.08);
+  }
+
+  // RK4 Integrator
+  function derivs(x, y, z, vx, vy, vz, m, G, softSq) {
+    const n = m.length;
+    const dvx = new Array(n).fill(0), dvy = new Array(n).fill(0), dvz = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const rx = x[j] - x[i], ry = y[j] - y[i], rz = z[j] - z[i];
+        const d2 = rx*rx + ry*ry + rz*rz + softSq;
+        const inv = 1 / Math.sqrt(d2);
+        const f = G * inv * inv * inv;
+        dvx[i] += m[j]*f*rx; dvy[i] += m[j]*f*ry; dvz[i] += m[j]*f*rz;
+        dvx[j] -= m[i]*f*rx; dvy[j] -= m[i]*f*ry; dvz[j] -= m[i]*f*rz;
+      }
+    }
+    return { dx: vx.slice(), dy: vy.slice(), dz: vz.slice(), dvx, dvy, dvz };
+  }
+
+  function stepRK4(bodies, G, dt, soft) {
+    const n = bodies.length;
+    if (!n || dt === 0) return bodies;
+    const s2 = soft * soft;
+    const m = bodies.map(b => b.mass);
+    const x0 = bodies.map(b => b.position.x), y0 = bodies.map(b => b.position.y), z0 = bodies.map(b => b.position.z);
+    const vx0 = bodies.map(b => b.velocity.x), vy0 = bodies.map(b => b.velocity.y), vz0 = bodies.map(b => b.velocity.z);
+    const k1 = derivs(x0, y0, z0, vx0, vy0, vz0, m, G, s2);
+    const h = 0.5 * dt;
+    const x1 = x0.map((v,i)=>v+h*k1.dx[i]), y1 = y0.map((v,i)=>v+h*k1.dy[i]), z1 = z0.map((v,i)=>v+h*k1.dz[i]);
+    const vx1 = vx0.map((v,i)=>v+h*k1.dvx[i]), vy1 = vy0.map((v,i)=>v+h*k1.dvy[i]), vz1 = vz0.map((v,i)=>v+h*k1.dvz[i]);
+    const k2 = derivs(x1, y1, z1, vx1, vy1, vz1, m, G, s2);
+    const x2 = x0.map((v,i)=>v+h*k2.dx[i]), y2 = y0.map((v,i)=>v+h*k2.dy[i]), z2 = z0.map((v,i)=>v+h*k2.dz[i]);
+    const vx2 = vx0.map((v,i)=>v+h*k2.dvx[i]), vy2 = vy0.map((v,i)=>v+h*k2.dvy[i]), vz2 = vz0.map((v,i)=>v+h*k2.dvz[i]);
+    const k3 = derivs(x2, y2, z2, vx2, vy2, vz2, m, G, s2);
+    const x3 = x0.map((v,i)=>v+dt*k3.dx[i]), y3 = y0.map((v,i)=>v+dt*k3.dy[i]), z3 = z0.map((v,i)=>v+dt*k3.dz[i]);
+    const vx3 = vx0.map((v,i)=>v+dt*k3.dvx[i]), vy3 = vy0.map((v,i)=>v+dt*k3.dvy[i]), vz3 = vz0.map((v,i)=>v+dt*k3.dvz[i]);
+    const k4 = derivs(x3, y3, z3, vx3, vy3, vz3, m, G, s2);
+    const d6 = dt / 6;
+    return bodies.map((b, i) => Object.assign({}, b, {
+      position: {
+        x: x0[i] + d6*(k1.dx[i] + 2*k2.dx[i] + 2*k3.dx[i] + k4.dx[i]),
+        y: y0[i] + d6*(k1.dy[i] + 2*k2.dy[i] + 2*k3.dy[i] + k4.dy[i]),
+        z: z0[i] + d6*(k1.dz[i] + 2*k2.dz[i] + 2*k3.dz[i] + k4.dz[i])
+      },
+      velocity: {
+        x: vx0[i] + d6*(k1.dvx[i] + 2*k2.dvx[i] + 2*k3.dvx[i] + k4.dvx[i]),
+        y: vy0[i] + d6*(k1.dvy[i] + 2*k2.dvy[i] + 2*k3.dvy[i] + k4.dvy[i]),
+        z: vz0[i] + d6*(k1.dvz[i] + 2*k2.dvz[i] + 2*k3.dvz[i] + k4.dvz[i])
+      }
+    }));
+  }
+
+  function resolveCollisions(bodies) {
+    if (bodies.length < 2) return bodies;
+    const merged = new Set();
+    const res = [];
+    for (let i = 0; i < bodies.length; i++) {
+      if (merged.has(i)) continue;
+      let cur = bodies[i];
+      for (let j = i + 1; j < bodies.length; j++) {
+        if (merged.has(j)) continue;
+        const o = bodies[j];
+        const dist = Math.hypot(o.position.x - cur.position.x, o.position.y - cur.position.y, o.position.z - cur.position.z);
+        const minSep = (getBodyRadius(cur) + getBodyRadius(o)) * 0.55;
+        if (dist < minSep) {
+          merged.add(j);
+          const tot = cur.mass + o.mass;
+          const heavier = cur.mass >= o.mass ? cur : o;
+          cur = Object.assign({}, heavier, {
+            mass: tot,
+            position: {
+              x: (cur.position.x*cur.mass + o.position.x*o.mass)/tot,
+              y: (cur.position.y*cur.mass + o.position.y*o.mass)/tot,
+              z: (cur.position.z*cur.mass + o.position.z*o.mass)/tot
+            },
+            velocity: {
+              x: (cur.velocity.x*cur.mass + o.velocity.x*o.mass)/tot,
+              y: (cur.velocity.y*cur.mass + o.velocity.y*o.mass)/tot,
+              z: (cur.velocity.z*cur.mass + o.velocity.z*o.mass)/tot
+            }
+          });
+        }
+      }
+      res.push(cur);
+    }
+    return res;
+  }
+
+  function computeMetrics() {
+    let K = 0, U = 0, M = 0, cx = 0, cy = 0, cz = 0, px = 0, py = 0, pz = 0;
+    const s2 = state.preset.softening * state.preset.softening;
+    for (let i = 0; i < state.bodies.length; i++) {
+      const b = state.bodies[i];
+      K += 0.5 * b.mass * (b.velocity.x**2 + b.velocity.y**2 + b.velocity.z**2);
+      M += b.mass;
+      cx += b.mass * b.position.x; cy += b.mass * b.position.y; cz += b.mass * b.position.z;
+      px += b.mass * b.velocity.x; py += b.mass * b.velocity.y; pz += b.mass * b.velocity.z;
+      for (let j = i + 1; j < state.bodies.length; j++) {
+        const o = state.bodies[j];
+        const r = Math.sqrt((o.position.x-b.position.x)**2 + (o.position.y-b.position.y)**2 + (o.position.z-b.position.z)**2 + s2);
+        U -= (state.preset.G * b.mass * o.mass) / r;
+      }
+    }
+    return { K, U, E: K + U, bary: M > 0 ? { x: cx/M, y: cy/M, z: cz/M } : { x:0, y:0, z:0 }, netMom: { x: px, y: py, z: pz } };
+  }
+
+  function computeForceVectors(bodies, G, soft) {
+    const map = new Map();
+    bodies.forEach(b => map.set(b.id, { x: 0, y: 0, z: 0 }));
+    const s2 = soft * soft;
+    for (let i = 0; i < bodies.length; i++) {
+      for (let j = i + 1; j < bodies.length; j++) {
+        const a = bodies[i], b = bodies[j];
+        const rx = b.position.x - a.position.x, ry = b.position.y - a.position.y, rz = b.position.z - a.position.z;
+        const inv = 1 / Math.sqrt(rx*rx + ry*ry + rz*rz + s2);
+        const f = G * a.mass * b.mass * inv * inv * inv;
+        const fx = f * rx, fy = f * ry, fz = f * rz;
+        const fa = map.get(a.id), fb = map.get(b.id);
+        fa.x += fx; fa.y += fy; fa.z += fz;
+        fb.x -= fx; fb.y -= fy; fb.z -= fz;
+      }
+    }
+    return map;
+  }
+
+  function computeOrbitalElements(body, primary, G, soft, daysPerSimTime) {
+    const speed = Math.hypot(body.velocity.x, body.velocity.y, body.velocity.z);
+    if (!primary || primary.id === body.id) {
+      return {
+        distance: Math.hypot(body.position.x, body.position.y, body.position.z),
+        speed, force: 0, kineticEnergy: 0.5 * body.mass * speed * speed, potentialEnergy: 0,
+        specificEnergy: 0, semiMajorAxis: null, eccentricity: null, periodDays: null, escapeVelocity: 0, bound: false
+      };
+    }
+    const rx = body.position.x - primary.position.x, ry = body.position.y - primary.position.y, rz = body.position.z - primary.position.z;
+    const vx = body.velocity.x - primary.velocity.x, vy = body.velocity.y - primary.velocity.y, vz = body.velocity.z - primary.velocity.z;
+    const r = Math.sqrt(rx*rx + ry*ry + rz*rz + soft*soft);
+    const vRelSq = vx*vx + vy*vy + vz*vz, vRel = Math.sqrt(vRelSq);
+    const mu = G * (primary.mass + body.mass);
+    const force = (G * primary.mass * body.mass) / (r * r);
+    const potentialEnergy = -(G * primary.mass * body.mass) / r;
+    const kineticEnergy = 0.5 * body.mass * speed * speed;
+    const specificEnergy = 0.5 * vRelSq - mu / r;
+    const escapeVelocity = Math.sqrt((2 * mu) / r);
+    const bound = specificEnergy < 0;
+    let semiMajorAxis = null, eccentricity = null, periodDays = null;
+    if (Math.abs(specificEnergy) > 1e-12) {
+      semiMajorAxis = -mu / (2 * specificEnergy);
+      const hx = ry*vz - rz*vy, hy = rz*vx - rx*vz, hz = rx*vy - ry*vx;
+      const h2 = hx*hx + hy*hy + hz*hz;
+      eccentricity = Math.sqrt(Math.max(0, 1 + (2 * specificEnergy * h2) / (mu * mu)));
+      if (semiMajorAxis > 0) periodDays = 2 * Math.PI * Math.sqrt(Math.pow(semiMajorAxis, 3) / mu) * daysPerSimTime;
+    }
+    return { distance: r, speed: vRel, force, kineticEnergy, potentialEnergy, specificEnergy, semiMajorAxis, eccentricity, periodDays, escapeVelocity, bound };
+  }
+
+  function solveCollinear(mu, guess) {
+    let x = guess, omu = 1 - mu;
+    for (let k = 0; k < 20; k++) {
+      const d1 = x + mu, d2 = x - omu;
+      if (Math.abs(d1) < 1e-9 || Math.abs(d2) < 1e-9) break;
+      const f = x - omu*Math.sign(d1)/(d1*d1) - mu*Math.sign(d2)/(d2*d2);
+      const df = 1 + 2*omu/(Math.abs(d1)**3) + 2*mu/(Math.abs(d2)**3);
+      const st = f / df; x -= st;
+      if (Math.abs(st) < 1e-11) break;
+    }
+    return x;
+  }
+
+  function computeLagrangePair(p1Raw, p2Raw) {
+    if (!p1Raw || !p2Raw || p1Raw.id === p2Raw.id) return [];
+    const tot = p1Raw.mass + p2Raw.mass;
+    if (tot <= 0 || p1Raw.mass <= 0 || p2Raw.mass <= 0) return [];
+    const p1 = p1Raw.mass >= p2Raw.mass ? p1Raw : p2Raw;
+    const p2 = p1Raw.mass >= p2Raw.mass ? p2Raw : p1Raw;
+    const mu = p2.mass / tot;
+    const rx = p2.position.x - p1.position.x, ry = p2.position.y - p1.position.y, rz = p2.position.z - p1.position.z;
+    const R = Math.hypot(rx, ry, rz); if (R < 1e-9) return [];
+    const ux = rx/R, uy = ry/R, uz = rz/R;
+    const dvx = p2.velocity.x - p1.velocity.x, dvy = p2.velocity.y - p1.velocity.y, dvz = p2.velocity.z - p1.velocity.z;
+    let nx = ry*dvz - rz*dvy, ny = rz*dvx - rx*dvz, nz = rx*dvy - ry*dvx;
+    const nl = Math.hypot(nx, ny, nz);
+    if (nl > 1e-12) { nx/=nl; ny/=nl; nz/=nl; } else { nx=0; ny=0; nz=1; }
+    const tx = ny*uz - nz*uy, ty = nz*ux - nx*uz, tz = nx*uy - ny*ux;
+    const bx = (p1.mass*p1.position.x + p2.mass*p2.position.x)/tot;
+    const by = (p1.mass*p1.position.y + p2.mass*p2.position.y)/tot;
+    const bz = (p1.mass*p1.position.z + p2.mass*p2.position.z)/tot;
+    const h = Math.cbrt(mu/3);
+    const defs = [
+      ['L1', solveCollinear(mu, 1-mu-h), 0, false, 'Inner collinear equilibrium (between primary & secondary)'],
+      ['L2', solveCollinear(mu, 1-mu+h), 0, false, 'Outer collinear equilibrium (beyond secondary, JWST zone)'],
+      ['L3', solveCollinear(mu, -1-5*mu/12), 0, false, 'Opposite collinear equilibrium (behind primary)'],
+      ['L4', 0.5-mu, Math.sqrt(3)/2, true, 'Leading triangular equilibrium (+60° Trojan zone)'],
+      ['L5', 0.5-mu, -Math.sqrt(3)/2, true, 'Trailing triangular equilibrium (-60° Trojan zone)']
+    ];
+    return defs.map(c => ({
+      label: c[0], stable: c[3], description: c[4],
+      position: { x: bx + R*(c[1]*ux + c[2]*tx), y: by + R*(c[1]*uy + c[2]*ty), z: bz + R*(c[1]*uz + c[2]*tz) }
+    }));
+  }
+
+  function getLagrangeSets() {
+    if (!state.settings.showLagrangePoints || state.bodies.length < 2) return { primary: [], secondary: [] };
+    const pair = state.preset.lagrangePairIds;
+    let p1 = pair ? state.bodies.find(b => b.id === pair[0]) : null;
+    let p2 = pair ? state.bodies.find(b => b.id === pair[1]) : null;
+    if (!p1 || !p2) {
+      const sorted = [...state.bodies].sort((a,b) => b.mass - a.mass);
+      p1 = sorted[0]; p2 = sorted[1];
+    }
+    const primary = computeLagrangePair(p1, p2);
+    let secondary = [];
+    if (state.preset.secondaryLagrangePairIds) {
+      const sp1 = state.bodies.find(b => b.id === state.preset.secondaryLagrangePairIds[0]);
+      const sp2 = state.bodies.find(b => b.id === state.preset.secondaryLagrangePairIds[1]);
+      if (sp1 && sp2) secondary = computeLagrangePair(sp1, sp2);
+    }
+    return { primary, secondary };
+  }
+
+  function findDominantAttractor(body, bodies, G) {
+    if (body.parentId) {
+      const p = bodies.find(x => x.id === body.parentId);
+      if (p) return p;
+    }
+    let best = null, bestAccel = -1;
+    for (let i = 0; i < bodies.length; i++) {
+      const o = bodies[i];
+      if (o.id === body.id) continue;
+      const dx = o.position.x - body.position.x, dy = o.position.y - body.position.y, dz = o.position.z - body.position.z;
+      const accel = (G * o.mass) / Math.max(dx*dx + dy*dy + dz*dz, 1e-4);
+      if (accel > bestAccel) { bestAccel = accel; best = o; }
+    }
+    return best;
+  }
+
+  // === Cached True Full-System N-Body RK4 Trajectory Predictor ===
+  let predCache = null;
+
+  function computeFastAccel(n, x, y, z, m, G, softSq, ax, ay, az) {
+    ax.fill(0); ay.fill(0); az.fill(0);
+    for (let i = 0; i < n; i++) {
+      const xi = x[i], yi = y[i], zi = z[i], mi = m[i];
+      for (let j = i + 1; j < n; j++) {
+        const rx = x[j] - xi, ry = y[j] - yi, rz = z[j] - zi;
+        const inv = 1 / Math.sqrt(rx*rx + ry*ry + rz*rz + softSq);
+        const factor = G * inv * inv * inv;
+        const fx = factor * rx, fy = factor * ry, fz = factor * rz, mj = m[j];
+        ax[i] += mj * fx; ay[i] += mj * fy; az[i] += mj * fz;
+        ax[j] -= mi * fx; ay[j] -= mi * fy; az[j] -= mi * fz;
+      }
+    }
+  }
+
+  function runTypedRK4Rollout(bodyIndices, initX, initY, initZ, initVx, initVy, initVz, masses, G, softening, startTime, dtStep, numSteps, sampleStride, denseInitialSteps) {
+    const n = bodyIndices.length;
+    const x = Float64Array.from(initX), y = Float64Array.from(initY), z = Float64Array.from(initZ);
+    const vx = Float64Array.from(initVx), vy = Float64Array.from(initVy), vz = Float64Array.from(initVz);
+    const tx = new Float64Array(n), ty = new Float64Array(n), tz = new Float64Array(n);
+    const tvx = new Float64Array(n), tvy = new Float64Array(n), tvz = new Float64Array(n);
+    const k1x = new Float64Array(n), k1y = new Float64Array(n), k1z = new Float64Array(n);
+    const k2x = new Float64Array(n), k2y = new Float64Array(n), k2z = new Float64Array(n);
+    const k3x = new Float64Array(n), k3y = new Float64Array(n), k3z = new Float64Array(n);
+    const a1x = new Float64Array(n), a1y = new Float64Array(n), a1z = new Float64Array(n);
+    const a2x = new Float64Array(n), a2y = new Float64Array(n), a2z = new Float64Array(n);
+    const a3x = new Float64Array(n), a3y = new Float64Array(n), a3z = new Float64Array(n);
+    const a4x = new Float64Array(n), a4y = new Float64Array(n), a4z = new Float64Array(n);
+    const stride = Math.max(1, sampleStride);
+    const denseCount = Math.min(numSteps, Math.max(0, denseInitialSteps || 0));
+    const maxSamples = denseCount + Math.floor(Math.max(0, numSteps - denseCount) / stride) + 4;
+    const times = new Float64Array(maxSamples);
+    const px = new Float64Array(maxSamples * n), py = new Float64Array(maxSamples * n), pz = new Float64Array(maxSamples * n);
+    let sampleCount = 0;
+    function recordSample(t) {
+      if (sampleCount >= maxSamples) return;
+      times[sampleCount] = t;
+      const base = sampleCount * n;
+      for (let i = 0; i < n; i++) { px[base+i] = x[i]; py[base+i] = y[i]; pz[base+i] = z[i]; }
+      sampleCount++;
+    }
+    recordSample(startTime);
+    const softSq = softening * softening, halfDt = 0.5 * dtStep, dt6 = dtStep / 6;
+    for (let s = 1; s <= numSteps; s++) {
+      computeFastAccel(n, x, y, z, masses, G, softSq, a1x, a1y, a1z);
+      for (let i = 0; i < n; i++) {
+        k1x[i] = vx[i]; k1y[i] = vy[i]; k1z[i] = vz[i];
+        tx[i] = x[i] + halfDt * k1x[i]; ty[i] = y[i] + halfDt * k1y[i]; tz[i] = z[i] + halfDt * k1z[i];
+        tvx[i] = vx[i] + halfDt * a1x[i]; tvy[i] = vy[i] + halfDt * a1y[i]; tvz[i] = vz[i] + halfDt * a1z[i];
+      }
+      computeFastAccel(n, tx, ty, tz, masses, G, softSq, a2x, a2y, a2z);
+      for (let i = 0; i < n; i++) {
+        k2x[i] = tvx[i]; k2y[i] = tvy[i]; k2z[i] = tvz[i];
+        tx[i] = x[i] + halfDt * k2x[i]; ty[i] = y[i] + halfDt * k2y[i]; tz[i] = z[i] + halfDt * k2z[i];
+        tvx[i] = vx[i] + halfDt * a2x[i]; tvy[i] = vy[i] + halfDt * a2y[i]; tvz[i] = vz[i] + halfDt * a2z[i];
+      }
+      computeFastAccel(n, tx, ty, tz, masses, G, softSq, a3x, a3y, a3z);
+      for (let i = 0; i < n; i++) {
+        k3x[i] = tvx[i]; k3y[i] = tvy[i]; k3z[i] = tvz[i];
+        tx[i] = x[i] + dtStep * k3x[i]; ty[i] = y[i] + dtStep * k3y[i]; tz[i] = z[i] + dtStep * k3z[i];
+        tvx[i] = vx[i] + dtStep * a3x[i]; tvy[i] = vy[i] + dtStep * a3y[i]; tvz[i] = vz[i] + dtStep * a3z[i];
+      }
+      computeFastAccel(n, tx, ty, tz, masses, G, softSq, a4x, a4y, a4z);
+      for (let i = 0; i < n; i++) {
+        x[i] += dt6 * (k1x[i] + 2*k2x[i] + 2*k3x[i] + tvx[i]);
+        y[i] += dt6 * (k1y[i] + 2*k2y[i] + 2*k3y[i] + tvy[i]);
+        z[i] += dt6 * (k1z[i] + 2*k2z[i] + 2*k3z[i] + tvz[i]);
+        vx[i] += dt6 * (a1x[i] + 2*a2x[i] + 2*a3x[i] + a4x[i]);
+        vy[i] += dt6 * (a1y[i] + 2*a2y[i] + 2*a3y[i] + a4y[i]);
+        vz[i] += dt6 * (a1z[i] + 2*a2z[i] + 2*a3z[i] + a4z[i]);
+      }
+      if (s <= denseCount || s % stride === 0 || s === numSteps) {
+        recordSample(startTime + s * dtStep);
+      }
+    }
+    return {
+      stream: {
+        bodyIndices: bodyIndices,
+        times: times.subarray(0, sampleCount),
+        px: px.subarray(0, sampleCount * n),
+        py: py.subarray(0, sampleCount * n),
+        pz: pz.subarray(0, sampleCount * n),
+        numSamples: sampleCount,
+        maxAdvanceTime: startTime + numSteps * dtStep
+      },
+      endX: x, endY: y, endZ: z, endVx: vx, endVy: vy, endVz: vz
+    };
+  }
+
+  function sampleStreamBodyAtTime(stream, localIdx, t) {
+    const times = stream.times, count = stream.numSamples, n = stream.bodyIndices.length;
+    if (count === 0) return { x: 0, y: 0, z: 0 };
+    if (t <= times[0]) return { x: stream.px[localIdx], y: stream.py[localIdx], z: stream.pz[localIdx] };
+    if (t >= times[count - 1]) {
+      const base = (count - 1) * n + localIdx;
+      return { x: stream.px[base], y: stream.py[base], z: stream.pz[base] };
+    }
+    let lo = 0, hi = count - 1;
+    while (lo + 1 < hi) {
+      const mid = (lo + hi) >> 1;
+      if (times[mid] <= t) lo = mid; else hi = mid;
+    }
+    const t0 = times[lo], t1 = times[hi], alpha = t1 > t0 ? (t - t0) / (t1 - t0) : 0;
+    const b0 = lo * n + localIdx, b1 = hi * n + localIdx;
+    return {
+      x: stream.px[b0] + (stream.px[b1] - stream.px[b0]) * alpha,
+      y: stream.py[b0] + (stream.py[b1] - stream.py[b0]) * alpha,
+      z: stream.pz[b0] + (stream.pz[b1] - stream.pz[b0]) * alpha
+    };
+  }
+
+  function buildNBodyPredictionCache(bodies, G, softening, duration, simTime) {
+    const n = bodies.length;
+    const idToIdx = new Map();
+    bodies.forEach((b, i) => idToIdx.set(b.id, i));
+    const maxMass = Math.max(...bodies.map(b => b.mass), 1e-12);
+    const comparableIndices = [];
+    bodies.forEach((b, i) => { if (b.mass > maxMass * 0.25) comparableIndices.push(i); });
+    const isChoreography = comparableIndices.length >= 3;
+    const binaryPairIndices = comparableIndices.length === 2 ? [comparableIndices[0], comparableIndices[1]] : null;
+    const attractorIdx = new Int32Array(n).fill(-1);
+    const estPeriod = new Float64Array(n).fill(duration);
+    const isBound = new Uint8Array(n).fill(0);
+    let minMoonPeriod = Infinity, maxMoonPeriod = 0, minNonMoonPeriod = Infinity, maxNonMoonPeriod = 0;
+    for (let i = 0; i < n; i++) {
+      const b = bodies[i];
+      if (binaryPairIndices && i !== binaryPairIndices[0] && i !== binaryPairIndices[1]) {
+        const b1 = bodies[binaryPairIndices[0]], b2 = bodies[binaryPairIndices[1]], mBin = b1.mass + b2.mass;
+        const bx = (b1.mass*b1.position.x + b2.mass*b2.position.x)/mBin, by = (b1.mass*b1.position.y + b2.mass*b2.position.y)/mBin, bz = (b1.mass*b1.position.z + b2.mass*b2.position.z)/mBin;
+        const bvx = (b1.mass*b1.velocity.x + b2.mass*b2.velocity.x)/mBin, bvy = (b1.mass*b1.velocity.y + b2.mass*b2.velocity.y)/mBin, bvz = (b1.mass*b1.velocity.z + b2.mass*b2.velocity.z)/mBin;
+        const r = Math.hypot(b.position.x-bx, b.position.y-by, b.position.z-bz);
+        const vx = b.velocity.x-bvx, vy = b.velocity.y-bvy, vz = b.velocity.z-bvz;
+        const mu = G * (mBin + b.mass);
+        const eps = 0.5*(vx*vx+vy*vy+vz*vz) - mu/Math.max(r, 1e-6);
+        attractorIdx[i] = -2;
+        if (eps < -1e-9) {
+          const a = -mu/(2*eps), T = 2*Math.PI*Math.sqrt((a*a*a)/mu);
+          if (isFinite(T) && T > 0) {
+            estPeriod[i] = T; isBound[i] = 1;
+            if (T < minNonMoonPeriod) minNonMoonPeriod = T;
+            if (T > maxNonMoonPeriod) maxNonMoonPeriod = T;
+          }
+        }
+        continue;
+      }
+      const attr = findDominantAttractor(b, bodies, G);
+      if (!attr) continue;
+      attractorIdx[i] = idToIdx.has(attr.id) ? idToIdx.get(attr.id) : -1;
+      const rx = b.position.x-attr.position.x, ry = b.position.y-attr.position.y, rz = b.position.z-attr.position.z;
+      const vx = b.velocity.x-attr.velocity.x, vy = b.velocity.y-attr.velocity.y, vz = b.velocity.z-attr.velocity.z;
+      const r = Math.hypot(rx, ry, rz), mu = G * (b.mass + attr.mass);
+      if (r > 1e-8 && mu > 0) {
+        const eps = 0.5*(vx*vx+vy*vy+vz*vz) - mu/r;
+        if (eps < -1e-9) {
+          const a = -mu/(2*eps), T = 2*Math.PI*Math.sqrt((a*a*a)/mu);
+          if (isFinite(T) && T > 0) {
+            estPeriod[i] = T; isBound[i] = 1;
+            if (b.isMoon) { if (T < minMoonPeriod) minMoonPeriod = T; if (T > maxMoonPeriod) maxMoonPeriod = T; }
+            else { if (T < minNonMoonPeriod) minNonMoonPeriod = T; if (T > maxNonMoonPeriod) maxNonMoonPeriod = T; }
+          }
+        }
+      }
+    }
+    const hasStiffMoons = bodies.some(b => b.isMoon) && isFinite(minMoonPeriod) && (maxNonMoonPeriod / minMoonPeriod > 60);
+    const streamForBody = new Array(n).fill('macro');
+    if (!hasStiffMoons) {
+      const allIdx = bodies.map((_, i) => i);
+      const mArr = Float64Array.from(bodies.map(b => b.mass));
+      const xArr = Float64Array.from(bodies.map(b => b.position.x)), yArr = Float64Array.from(bodies.map(b => b.position.y)), zArr = Float64Array.from(bodies.map(b => b.position.z));
+      const vxArr = Float64Array.from(bodies.map(b => b.velocity.x)), vyArr = Float64Array.from(bodies.map(b => b.velocity.y)), vzArr = Float64Array.from(bodies.map(b => b.velocity.z));
+      const maxP = Math.max(maxNonMoonPeriod, maxMoonPeriod, 0);
+      const minP = Math.min(isFinite(minNonMoonPeriod) ? minNonMoonPeriod : Infinity, isFinite(minMoonPeriod) ? minMoonPeriod : Infinity);
+      const baseHorizon = isChoreography ? duration : (maxP > 0 ? Math.min(Math.max(duration*3.5, (isFinite(minP)?minP:duration)*28), maxP) : duration);
+      const bufferHorizon = baseHorizon * 1.42;
+      const minNeededStep = isFinite(minP) ? minP / 40 : bufferHorizon / 450;
+      const dtStep = Math.max(bufferHorizon / 2400, Math.min(bufferHorizon / 320, minNeededStep));
+      const numSteps = Math.max(240, Math.min(2400, Math.ceil(bufferHorizon / dtStep)));
+      const stride = Math.max(1, Math.floor(numSteps / 400));
+      const res = runTypedRK4Rollout(allIdx, xArr, yArr, zArr, vxArr, vyArr, vzArr, mArr, G, softening, simTime, dtStep, numSteps, stride, 0);
+      res.stream.maxAdvanceTime = simTime + Math.max(0.2 * bufferHorizon, (isFinite(minP) ? minP : baseHorizon) * 0.3);
+      return { G, softening, bodyIdsKey: bodies.map(b=>b.id).join('|'), masses: mArr, baseTime: simTime, isChoreography, choreoDuration: duration, streamForBody, attractorIdx, binaryPairIndices, estPeriod, isBound, moonStream: null, macroStream: res.stream, outerStream: null };
+    }
+    const allIdx = bodies.map((_, i) => i);
+    const fullM = Float64Array.from(bodies.map(b => b.mass));
+    const fullX = Float64Array.from(bodies.map(b => b.position.x)), fullY = Float64Array.from(bodies.map(b => b.position.y)), fullZ = Float64Array.from(bodies.map(b => b.position.z));
+    const fullVx = Float64Array.from(bodies.map(b => b.velocity.x)), fullVy = Float64Array.from(bodies.map(b => b.velocity.y)), fullVz = Float64Array.from(bodies.map(b => b.velocity.z));
+    const moonHorizon = Math.max(maxMoonPeriod * 1.5, minMoonPeriod * 4);
+    const moonDt = Math.max(moonHorizon / 1200, minMoonPeriod / 48);
+    const moonSteps = Math.max(200, Math.min(1200, Math.ceil(moonHorizon / moonDt)));
+    const moonRes = runTypedRK4Rollout(allIdx, fullX, fullY, fullZ, fullVx, fullVy, fullVz, fullM, G, softening, simTime, moonDt, moonSteps, Math.max(1, Math.floor(moonSteps/450)), Math.min(moonSteps, 120));
+    moonRes.stream.maxAdvanceTime = simTime + maxMoonPeriod * 0.35;
+
+    const macroIndices = [], origToMacro = new Map();
+    bodies.forEach((b, i) => {
+      if (!b.isMoon) { origToMacro.set(i, macroIndices.length); macroIndices.push(i); }
+      else { streamForBody[i] = 'moon'; }
+    });
+    const mMacro = new Float64Array(macroIndices.length), xMacro = new Float64Array(macroIndices.length), yMacro = new Float64Array(macroIndices.length), zMacro = new Float64Array(macroIndices.length);
+    const vxMacro = new Float64Array(macroIndices.length), vyMacro = new Float64Array(macroIndices.length), vzMacro = new Float64Array(macroIndices.length);
+    macroIndices.forEach((oi, mi) => {
+      const b = bodies[oi]; mMacro[mi] = b.mass;
+      xMacro[mi] = b.position.x; yMacro[mi] = b.position.y; zMacro[mi] = b.position.z;
+      vxMacro[mi] = b.velocity.x; vyMacro[mi] = b.velocity.y; vzMacro[mi] = b.velocity.z;
+    });
+    bodies.forEach(b => {
+      if (b.isMoon && b.parentId) {
+        const pOrig = idToIdx.get(b.parentId), pMacro = pOrig !== undefined ? origToMacro.get(pOrig) : undefined;
+        if (pMacro !== undefined) {
+          const tot = mMacro[pMacro] + b.mass;
+          xMacro[pMacro] = (xMacro[pMacro]*mMacro[pMacro] + b.position.x*b.mass)/tot;
+          yMacro[pMacro] = (yMacro[pMacro]*mMacro[pMacro] + b.position.y*b.mass)/tot;
+          zMacro[pMacro] = (zMacro[pMacro]*mMacro[pMacro] + b.position.z*b.mass)/tot;
+          vxMacro[pMacro] = (vxMacro[pMacro]*mMacro[pMacro] + b.velocity.x*b.mass)/tot;
+          vyMacro[pMacro] = (vyMacro[pMacro]*mMacro[pMacro] + b.velocity.y*b.mass)/tot;
+          vzMacro[pMacro] = (vzMacro[pMacro]*mMacro[pMacro] + b.velocity.z*b.mass)/tot;
+          mMacro[pMacro] = tot;
+        }
+      }
+    });
+    const phase1CutoffPeriod = Math.min(maxNonMoonPeriod * 1.15, (isFinite(minNonMoonPeriod) ? minNonMoonPeriod : 1) * 58);
+    const phase1Dt = Math.max(phase1CutoffPeriod / 2600, (isFinite(minNonMoonPeriod) ? minNonMoonPeriod : 1) / 48);
+    const phase1Steps = Math.max(240, Math.min(2600, Math.ceil(phase1CutoffPeriod / phase1Dt)));
+    const phase1 = runTypedRK4Rollout(macroIndices, xMacro, yMacro, zMacro, vxMacro, vyMacro, vzMacro, mMacro, G, softening, simTime, phase1Dt, phase1Steps, Math.max(1, Math.floor(phase1Steps/650)), Math.min(phase1Steps, 360));
+    phase1.stream.maxAdvanceTime = simTime + Math.max((isFinite(minNonMoonPeriod)?minNonMoonPeriod:1)*0.25, phase1CutoffPeriod*0.15);
+
+    let outerStream = null;
+    if (maxNonMoonPeriod * 1.08 > phase1CutoffPeriod) {
+      const outerOrigIndices = []; let absorbedMass = 0, sunOuterIdx = -1, fastestRemainingOuter = Infinity;
+      macroIndices.forEach((origIdx, mi) => {
+        const isPrimary = bodies[origIdx].mass >= maxMass * 0.5, period = estPeriod[origIdx];
+        if (isPrimary || bodies[origIdx].mass >= maxMass * 1e-4 || period >= phase1CutoffPeriod * 0.65) {
+          if (isPrimary) sunOuterIdx = outerOrigIndices.length;
+          else if (period < fastestRemainingOuter) fastestRemainingOuter = period;
+          outerOrigIndices.push(mi);
+        } else { absorbedMass += mMacro[mi]; }
+      });
+      if (outerOrigIndices.length >= 2) {
+        const oLen = outerOrigIndices.length;
+        const mOut = new Float64Array(oLen), xOut = new Float64Array(oLen), yOut = new Float64Array(oLen), zOut = new Float64Array(oLen), vxOut = new Float64Array(oLen), vyOut = new Float64Array(oLen), vzOut = new Float64Array(oLen);
+        outerOrigIndices.forEach((mi, oi) => {
+          mOut[oi] = mMacro[mi]; xOut[oi] = phase1.endX[mi]; yOut[oi] = phase1.endY[mi]; zOut[oi] = phase1.endZ[mi];
+          vxOut[oi] = phase1.endVx[mi]; vyOut[oi] = phase1.endVy[mi]; vzOut[oi] = phase1.endVz[mi];
+        });
+        if (sunOuterIdx >= 0) mOut[sunOuterIdx] += absorbedMass;
+        const remH = maxNonMoonPeriod * 1.15 - phase1CutoffPeriod;
+        const minOutT = isFinite(fastestRemainingOuter) ? fastestRemainingOuter : remH / 10;
+        const outDt = Math.max(remH / 900, minOutT / 30);
+        const outSteps = Math.max(120, Math.min(900, Math.ceil(remH / outDt)));
+        const outerBodyOrigIndices = outerOrigIndices.map(mi => macroIndices[mi]);
+        outerStream = runTypedRK4Rollout(outerBodyOrigIndices, xOut, yOut, zOut, vxOut, vyOut, vzOut, mOut, G, softening, simTime + phase1Steps * phase1Dt, outDt, outSteps, Math.max(1, Math.floor(outSteps/220)), 0).stream;
+      }
+    }
+    return { G, softening, bodyIdsKey: bodies.map(b=>b.id).join('|'), masses: fullM, baseTime: simTime, isChoreography, choreoDuration: duration, streamForBody, attractorIdx, binaryPairIndices, estPeriod, isBound, moonStream: moonRes.stream, macroStream: phase1.stream, outerStream };
+  }
+
+  function isPredCacheValid(cache, bodies, G, softening, simTime, driftTol) {
+    if (!cache || cache.G !== G || cache.softening !== softening || bodies.length !== cache.masses.length) return false;
+    if (bodies.map(b => b.id).join('|') !== cache.bodyIdsKey) return false;
+    for (let i = 0; i < bodies.length; i++) if (Math.abs(bodies[i].mass - cache.masses[i]) > 1e-12) return false;
+    if (simTime < cache.baseTime - 1e-9 || simTime > cache.macroStream.maxAdvanceTime) return false;
+    if (cache.moonStream && simTime > cache.moonStream.maxAdvanceTime) return false;
+    for (let i = 0; i < bodies.length; i++) {
+      const useMoon = cache.streamForBody[i] === 'moon' && cache.moonStream;
+      const st = useMoon ? cache.moonStream : cache.macroStream;
+      const li = st.bodyIndices.indexOf(i);
+      if (li < 0) continue;
+      const exp = sampleStreamBodyAtTime(st, li, simTime);
+      if (Math.hypot(bodies[i].position.x - exp.x, bodies[i].position.y - exp.y, bodies[i].position.z - exp.z) > driftTol) return false;
+    }
+    return true;
+  }
+
+  function getStreamAnchorAtTime(stream, followId, bodies, masses, t) {
+    if (followId === 'none') return { x: 0, y: 0, z: 0 };
+    if (followId === 'barycenter') {
+      let mTot = 0, cx = 0, cy = 0, cz = 0;
+      for (let li = 0; li < stream.bodyIndices.length; li++) {
+        const oi = stream.bodyIndices[li], m = masses[oi], p = sampleStreamBodyAtTime(stream, li, t);
+        mTot += m; cx += m * p.x; cy += m * p.y; cz += m * p.z;
+      }
+      return mTot > 0 ? { x: cx/mTot, y: cy/mTot, z: cz/mTot } : { x: 0, y: 0, z: 0 };
+    }
+    const targetOrig = bodies.findIndex(b => b.id === followId);
+    if (targetOrig < 0) return { x: 0, y: 0, z: 0 };
+    const li = stream.bodyIndices.indexOf(targetOrig);
+    return li >= 0 ? sampleStreamBodyAtTime(stream, li, t) : { x: 0, y: 0, z: 0 };
+  }
+
+  function predictPaths() {
+    const pctVal = state.settings.predictionLengthPct !== undefined ? state.settings.predictionLengthPct : 100;
+    if (!state.settings.showPredictedTrajectories || pctVal <= 0 || state.bodies.length === 0) return new Map();
+    const bodies = state.bodies, G = state.preset.G, softening = state.preset.softening, duration = state.preset.predictionDuration, simTime = state.simTime;
+    const maxSpan = Math.max(1, ...bodies.map(b => Math.hypot(b.position.x, b.position.y, b.position.z)));
+    if (!isPredCacheValid(predCache, bodies, G, softening, simTime, Math.max(1e-4, maxSpan * 0.0025))) {
+      predCache = buildNBodyPredictionCache(bodies, G, softening, duration, simTime);
+    }
+    const cache = predCache, pct = Math.max(0, Math.min(100, pctVal)) / 100, followId = state.settings.followTargetId, paths = new Map();
+    function sampleOrigPos(origIdx, t) {
+      if (cache.streamForBody[origIdx] === 'moon' && cache.moonStream) return sampleStreamBodyAtTime(cache.moonStream, origIdx, t);
+      if (cache.outerStream && t > cache.macroStream.times[cache.macroStream.numSamples - 1]) {
+        const li = cache.outerStream.bodyIndices.indexOf(origIdx);
+        if (li >= 0) return sampleStreamBodyAtTime(cache.outerStream, li, t);
+      }
+      const li = cache.macroStream.bodyIndices.indexOf(origIdx);
+      return li >= 0 ? sampleStreamBodyAtTime(cache.macroStream, li, t) : bodies[origIdx].position;
+    }
+    let liveAnchor = { x: 0, y: 0, z: 0 };
+    if (followId === 'barycenter') {
+      let mt = 0, cx = 0, cy = 0, cz = 0;
+      bodies.forEach(b => { mt += b.mass; cx += b.mass*b.position.x; cy += b.mass*b.position.y; cz += b.mass*b.position.z; });
+      if (mt > 0) liveAnchor = { x: cx/mt, y: cy/mt, z: cz/mt };
+    } else if (followId !== 'none') {
+      const f = bodies.find(b => b.id === followId);
+      if (f) liveAnchor = f.position;
+    }
+    function sampleCachedAnchor(useMoon, t) {
+      if (followId === 'none') return { x: 0, y: 0, z: 0 };
+      if (useMoon && cache.moonStream) return getStreamAnchorAtTime(cache.moonStream, followId, bodies, cache.masses, t);
+      if (cache.outerStream && t > cache.macroStream.times[cache.macroStream.numSamples - 1]) {
+        if (followId === 'barycenter') return getStreamAnchorAtTime(cache.outerStream, 'barycenter', bodies, cache.masses, t);
+        const li = cache.outerStream.bodyIndices.indexOf(bodies.findIndex(b => b.id === followId));
+        return li >= 0 ? sampleStreamBodyAtTime(cache.outerStream, li, t) : sampleStreamBodyAtTime(cache.outerStream, 0, t);
+      }
+      return getStreamAnchorAtTime(cache.macroStream, followId, bodies, cache.masses, t);
+    }
+    for (let i = 0; i < bodies.length; i++) {
+      const b = bodies[i], useMoon = cache.streamForBody[i] === 'moon' && cache.moonStream !== null;
+      const rawTimes = [simTime];
+      function pushT(st, minT) { for (let k = 0; k < st.numSamples; k++) if (st.times[k] > minT + 1e-9) rawTimes.push(st.times[k]); }
+      if (useMoon && cache.moonStream) pushT(cache.moonStream, simTime);
+      else {
+        pushT(cache.macroStream, simTime);
+        if (cache.outerStream && cache.outerStream.bodyIndices.indexOf(i) >= 0) pushT(cache.outerStream, cache.macroStream.times[cache.macroStream.numSamples - 1]);
+      }
+      if (rawTimes.length < 2) { paths.set(b.id, []); continue; }
+      const aIdx = cache.attractorIdx[i];
+      function getAttrPosAt(t) {
+        if (aIdx === -2 && cache.binaryPairIndices) {
+          const i1 = cache.binaryPairIndices[0], i2 = cache.binaryPairIndices[1], m1 = cache.masses[i1], m2 = cache.masses[i2], mt = m1 + m2;
+          const p1 = sampleOrigPos(i1, t), p2 = sampleOrigPos(i2, t);
+          return { x: (m1*p1.x + m2*p2.x)/mt, y: (m1*p1.y + m2*p2.y)/mt, z: (m1*p1.z + m2*p2.z)/mt };
+        }
+        return aIdx >= 0 ? sampleOrigPos(aIdx, t) : null;
+      }
+      let tFull = simTime + (cache.isChoreography ? cache.choreoDuration : cache.estPeriod[i]);
+      if (!cache.isChoreography && cache.isBound[i] === 1 && aIdx !== -1) {
+        const p0 = sampleOrigPos(i, simTime), attr0 = getAttrPosAt(simTime);
+        if (attr0) {
+          const rx0 = p0.x - attr0.x, ry0 = p0.y - attr0.y, rz0 = p0.z - attr0.z, r0 = Math.hypot(rx0, ry0, rz0);
+          const probeT = rawTimes[Math.min(1, rawTimes.length - 1)], p1 = sampleOrigPos(i, probeT), a1 = getAttrPosAt(probeT);
+          const drx = p1.x - a1.x - rx0, dry = p1.y - a1.y - ry0, drz = p1.z - a1.z - rz0;
+          if (r0 > 1e-8) {
+            const ux = rx0/r0, uy = ry0/r0, uz = rz0/r0;
+            let nx = ry0*drz - rz0*dry, ny = rz0*drx - rx0*drz, nz = rx0*dry - ry0*drx;
+            const nLen = Math.hypot(nx, ny, nz);
+            if (nLen > 1e-12) { nx/=nLen; ny/=nLen; nz/=nLen; } else { nx=0; ny=0; nz=1; }
+            const wx = ny*uz - nz*uy, wy = nz*ux - nx*uz, wz = nx*uy - ny*ux;
+            let prevAng = 0, cumAng = 0, prevT = simTime, found2Pi = false;
+            for (let k = 1; k < rawTimes.length; k++) {
+              const tk = rawTimes[k], pk = sampleOrigPos(i, tk), ak = getAttrPosAt(tk);
+              const rx = pk.x - ak.x, ry = pk.y - ak.y, rz = pk.z - ak.z;
+              const ang = Math.atan2(rx*wx + ry*wy + rz*wz, rx*ux + ry*uy + rz*uz);
+              let dAng = ang - prevAng;
+              if (dAng > Math.PI) dAng -= Math.PI * 2;
+              if (dAng < -Math.PI) dAng += Math.PI * 2;
+              const nextCum = cumAng + dAng;
+              if (Math.abs(nextCum) >= Math.PI * 2) {
+                const target = Math.sign(nextCum) * Math.PI * 2, denom = nextCum - cumAng;
+                const frac = Math.abs(denom) > 1e-9 ? (target - cumAng) / denom : 1;
+                tFull = prevT + (tk - prevT) * Math.max(0, Math.min(1, frac));
+                found2Pi = true; break;
+              }
+              cumAng = nextCum; prevAng = ang; prevT = tk;
+            }
+            if (!found2Pi) tFull = Math.min(tFull, rawTimes[rawTimes.length - 1]);
+          }
+        }
+      } else if (!cache.isChoreography && cache.isBound[i] === 0) {
+        tFull = simTime + Math.min(rawTimes[rawTimes.length - 1] - simTime, Math.max(duration * 1.4, cache.estPeriod[i]));
+      }
+      const tCutoff = simTime + pct * Math.max(0, tFull - simTime);
+      if (tCutoff <= simTime + 1e-9) { paths.set(b.id, []); continue; }
+      const sliceTimes = [];
+      for (let k = 0; k < rawTimes.length; k++) { if (rawTimes[k] < tCutoff) sliceTimes.push(rawTimes[k]); else break; }
+      sliceTimes.push(tCutoff);
+      const maxPts = 150, pts = [], totPts = sliceTimes.length;
+      function emitPt(t) {
+        if (t === simTime) { pts.push(Object.assign({}, b.position)); return; }
+        const p = sampleOrigPos(i, t), anc = sampleCachedAnchor(useMoon, t);
+        pts.push({ x: p.x - anc.x + liveAnchor.x, y: p.y - anc.y + liveAnchor.y, z: p.z - anc.z + liveAnchor.z });
+      }
+      if (totPts <= maxPts) { for (let k = 0; k < totPts; k++) emitPt(sliceTimes[k]); }
+      else { for (let idx = 0; idx < maxPts; idx++) emitPt(sliceTimes[Math.round((idx / (maxPts - 1)) * (totPts - 1))]); }
+      paths.set(b.id, pts);
+    }
+    return paths;
+  }
+
+  function getAnchor(bary) {
+    if (state.settings.followTargetId === 'barycenter') return bary;
+    if (state.settings.followTargetId !== 'none') {
+      const f = state.bodies.find(b => b.id === state.settings.followTargetId);
+      if (f) return f.position;
+    }
+    return { x: 0, y: 0, z: 0 };
+  }
+
+  function projectPoint(p, anchor, w, h) {
+    if (state.viewMode === '2d') {
+      return {
+        x: w*0.5 + (p.x - anchor.x - cam2d.panX) * cam2d.ppu,
+        y: h*0.5 - (p.y - anchor.y - cam2d.panY) * cam2d.ppu,
+        depth: 0, scale: cam2d.ppu
+      };
+    }
+    // Subtle 3D perspective projection matching Viewport3D
+    const dx = p.x - anchor.x - cam3d.panX;
+    const dy = p.z - anchor.z - cam3d.panY;
+    const dz = -(p.y - anchor.y) - cam3d.panZ;
+    const cy = Math.cos(cam3d.yaw), sy = Math.sin(cam3d.yaw);
+    const cp = Math.cos(cam3d.pitch), sp = Math.sin(cam3d.pitch);
+    const x1 = dx*cy - dz*sy;
+    const z1 = dx*sy + dz*cy;
+    const y2 = dy*cp - z1*sp;
+    const z2 = dy*sp + z1*cp;
+    const zCam = cam3d.dist + z2;
+    const fov = Math.min(w, h) * 1.48;
+    if (zCam < 0.05) return { x: -9999, y: -9999, depth: zCam, scale: 0 };
+    const s = fov / zCam;
+    return { x: w*0.5 + x1*s, y: h*0.5 - y2*s, depth: zCam, scale: s };
+  }
+
+  function screenToPlane3D(sx, sy, anchor, w, h, zWorld) {
+    const fov = Math.min(w, h) * 1.48;
+    if (fov <= 1e-6) return null;
+    const nx = (sx - w * 0.5) / fov;
+    const ny = -(sy - h * 0.5) / fov;
+    const cy = Math.cos(cam3d.yaw), syYaw = Math.sin(cam3d.yaw);
+    const cp = Math.cos(cam3d.pitch), sp = Math.sin(cam3d.pitch);
+    const dy = (zWorld - anchor.z) - cam3d.panY;
+    const denom = sp + ny * cp;
+    if (Math.abs(denom) < 1e-4) return null;
+    const z1 = (dy * cp - ny * (cam3d.dist + dy * sp)) / denom;
+    const zCam = cam3d.dist + dy * sp + z1 * cp;
+    if (zCam < 0.05) return null;
+    const x1 = nx * zCam;
+    const dx = x1 * cy + z1 * syYaw;
+    const dz = -x1 * syYaw + z1 * cy;
+    return {
+      x: anchor.x + cam3d.panX + dx,
+      y: anchor.y - (cam3d.panZ + dz),
+      z: zWorld
+    };
+  }
+
+  function getVelocityTipScreen(body, anchor, w, h) {
+    const sp = projectPoint(body.position, anchor, w, h);
+    const tipW = {
+      x: body.position.x + body.velocity.x * state.preset.velocityVectorScale,
+      y: body.position.y + body.velocity.y * state.preset.velocityVectorScale,
+      z: body.position.z + body.velocity.z * state.preset.velocityVectorScale
+    };
+    const tp = projectPoint(tipW, anchor, w, h);
+    const rPx = Math.max(7, getBodyRadius(body) * sp.scale);
+    const dx = tp.x - sp.x, dy = tp.y - sp.y;
+    const len = Math.hypot(dx, dy);
+    if (len < 1e-3) return { x: sp.x + rPx + 22, y: sp.y, isStub: true, sp };
+    const minTip = rPx + 14;
+    if (len < minTip) {
+      const k = minTip / len;
+      return { x: sp.x + dx * k, y: sp.y + dy * k, isStub: false, sp };
+    }
+    return { x: tp.x, y: tp.y, isStub: false, sp };
+  }
+
+  function drawLagrangeSet(pts, isSecondary, anchor, w, h, fontScale) {
+    if (!pts || pts.length === 0) return;
+    const l4 = pts.find(p => p.label === 'L4');
+    const l5 = pts.find(p => p.label === 'L5');
+    const l1 = pts.find(p => p.label === 'L1');
+    const l2 = pts.find(p => p.label === 'L2');
+    const l3 = pts.find(p => p.label === 'L3');
+    const pairIds = isSecondary ? state.preset.secondaryLagrangePairIds : state.preset.lagrangePairIds;
+    const b1 = pairIds ? state.bodies.find(b => b.id === pairIds[0]) : null;
+    const b2 = pairIds ? state.bodies.find(b => b.id === pairIds[1]) : null;
+    if (b1 && b2 && l4 && l5 && !isSecondary) {
+      const s1 = projectPoint(b1.position, anchor, w, h);
+      const s2 = projectPoint(b2.position, anchor, w, h);
+      const s4 = projectPoint(l4.position, anchor, w, h);
+      const s5 = projectPoint(l5.position, anchor, w, h);
+      ctx.save();
+      ctx.strokeStyle = state.theme.lagrangeColor; ctx.globalAlpha = 0.25; ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(s1.x, s1.y); ctx.lineTo(s4.x, s4.y); ctx.lineTo(s2.x, s2.y); ctx.lineTo(s5.x, s5.y);
+      ctx.closePath(); ctx.stroke();
+      if (l1 && l2 && l3) {
+        const s3 = projectPoint(l3.position, anchor, w, h);
+        const s2x = projectPoint(l2.position, anchor, w, h);
+        ctx.beginPath(); ctx.moveTo(s3.x, s3.y); ctx.lineTo(s2x.x, s2x.y); ctx.stroke();
+      }
+      ctx.restore();
+    }
+    const labelSize = Math.round((isSecondary ? 8.5 : 10.5) * fontScale);
+    ctx.font = '600 ' + labelSize + 'px monospace';
+    pts.forEach(lp => {
+      const sp = projectPoint(lp.position, anchor, w, h);
+      if (sp.scale <= 0 || sp.x < -60 || sp.x > w + 60 || sp.y < -60 || sp.y > h + 60) return;
+      const sz = isSecondary ? 4 : 6;
+      ctx.save();
+      ctx.strokeStyle = state.theme.lagrangeColor;
+      ctx.fillStyle = state.theme.lagrangeColor;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(sp.x, sp.y - sz); ctx.lineTo(sp.x + sz, sp.y);
+      ctx.lineTo(sp.x, sp.y + sz); ctx.lineTo(sp.x - sz, sp.y);
+      ctx.closePath();
+      if (lp.stable) {
+        ctx.globalAlpha = isSecondary ? 0.25 : 0.3; ctx.fill();
+      }
+      ctx.globalAlpha = isSecondary ? 0.65 : 0.94; ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(sp.x - sz - 3, sp.y); ctx.lineTo(sp.x - sz + 1, sp.y);
+      ctx.moveTo(sp.x + sz - 1, sp.y); ctx.lineTo(sp.x + sz + 3, sp.y);
+      ctx.stroke();
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      ctx.fillText(isSecondary ? ('EM-' + lp.label) : lp.label, sp.x + sz + 5, sp.y - 2);
+      ctx.restore();
+    });
+  }
+
+  function render() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
+      canvas.width = Math.floor(w * dpr); canvas.height = Math.floor(h * dpr);
+    }
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
+    // Radial background gradient
+    const bgGrad = ctx.createRadialGradient(w*0.5, h*0.5, 10, w*0.5, h*0.5, Math.max(w, h)*0.75);
+    bgGrad.addColorStop(0, state.theme.canvasBgSecondary || state.theme.canvasBg);
+    bgGrad.addColorStop(1, state.theme.canvasBg);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    const metrics = computeMetrics();
+    const anchor = getAnchor(metrics.bary);
+    const fontScale = state.settings.annotationScale;
+
+    // Background grid (2D) or starfield + 3D box (3D)
+    if (state.viewMode === '2d' && state.settings.showGridOrBox) {
+      const spanX = w / cam2d.ppu, spanY = h / cam2d.ppu;
+      const step = niceGridStep(Math.max(spanX, spanY));
+      const minor = step / 5;
+      const leftW = anchor.x + cam2d.panX - spanX*0.5, rightW = anchor.x + cam2d.panX + spanX*0.5;
+      const botW = anchor.y + cam2d.panY - spanY*0.5, topW = anchor.y + cam2d.panY + spanY*0.5;
+
+      // Minor grid
+      ctx.strokeStyle = state.theme.gridMinor; ctx.lineWidth = 1; ctx.beginPath();
+      for (let x = Math.floor(leftW/minor)*minor; x <= rightW; x += minor) {
+        const sx = w*0.5 + (x - anchor.x - cam2d.panX)*cam2d.ppu;
+        ctx.moveTo(sx, 0); ctx.lineTo(sx, h);
+      }
+      for (let y = Math.floor(botW/minor)*minor; y <= topW; y += minor) {
+        const sy = h*0.5 - (y - anchor.y - cam2d.panY)*cam2d.ppu;
+        ctx.moveTo(0, sy); ctx.lineTo(w, sy);
+      }
+      ctx.stroke();
+
+      // Major grid
+      const startMajorX = Math.floor(leftW/step)*step;
+      const startMajorY = Math.floor(botW/step)*step;
+      ctx.strokeStyle = state.theme.gridMajor; ctx.lineWidth = 1; ctx.beginPath();
+      for (let x = startMajorX; x <= rightW; x += step) {
+        const sx = w*0.5 + (x - anchor.x - cam2d.panX)*cam2d.ppu;
+        ctx.moveTo(sx, 0); ctx.lineTo(sx, h);
+      }
+      for (let y = startMajorY; y <= topW; y += step) {
+        const sy = h*0.5 - (y - anchor.y - cam2d.panY)*cam2d.ppu;
+        ctx.moveTo(0, sy); ctx.lineTo(w, sy);
+      }
+      ctx.stroke();
+
+      // Principal axes
+      const originS = projectPoint({ x: 0, y: 0, z: 0 }, anchor, w, h);
+      ctx.strokeStyle = state.theme.axisColor; ctx.lineWidth = 1.25; ctx.beginPath();
+      if (originS.x >= 0 && originS.x <= w) { ctx.moveTo(originS.x, 0); ctx.lineTo(originS.x, h); }
+      if (originS.y >= 0 && originS.y <= h) { ctx.moveTo(0, originS.y); ctx.lineTo(w, originS.y); }
+      ctx.stroke();
+
+      // Coordinate labels
+      const gridFont = Math.round(9.5 * fontScale);
+      const dec = step < 0.05 ? 3 : step < 0.5 ? 2 : step < 2 ? 1 : 0;
+      ctx.font = '500 ' + gridFont + 'px monospace';
+      ctx.fillStyle = state.theme.textMuted;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      for (let x = startMajorX; x <= rightW; x += step) {
+        if (Math.abs(x) < step*0.1) continue;
+        const sx = w*0.5 + (x - anchor.x - cam2d.panX)*cam2d.ppu;
+        if (sx > 30 && sx < w - 30) {
+          const ly = Math.min(Math.max(originS.y + 6, 8), h - gridFont - 10);
+          ctx.fillText(x.toFixed(dec), sx, ly);
+        }
+      }
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      for (let y = startMajorY; y <= topW; y += step) {
+        if (Math.abs(y) < step*0.1) continue;
+        const sy = h*0.5 - (y - anchor.y - cam2d.panY)*cam2d.ppu;
+        if (sy > 20 && sy < h - 20) {
+          const lx = Math.min(Math.max(originS.x + 8, 8), w - 50);
+          ctx.fillText(y.toFixed(dec), lx, sy);
+        }
+      }
+
+      // Scale bar
+      const barPx = step * cam2d.ppu;
+      const barX = 18, barY = h - 22;
+      ctx.strokeStyle = state.theme.textPrimary; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(barX, barY - 4); ctx.lineTo(barX, barY); ctx.lineTo(barX + barPx, barY); ctx.lineTo(barX + barPx, barY - 4);
+      ctx.stroke();
+      ctx.font = '600 ' + Math.round(10*fontScale) + 'px monospace';
+      ctx.fillStyle = state.theme.textPrimary; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      ctx.fillText(step.toFixed(dec) + ' ' + state.preset.distanceLabel, barX, barY - 6);
+    } else if (state.viewMode === '3d') {
+      if (state.theme.isDark) {
+        ctx.fillStyle = '#ffffff';
+        bgStars.forEach(st => {
+          const sp = projectPoint({ x: st.x + anchor.x, y: st.y + anchor.y, z: st.z + anchor.z }, anchor, w, h);
+          if (sp.scale > 0 && sp.x >= 0 && sp.x <= w && sp.y >= 0 && sp.y <= h) {
+            ctx.globalAlpha = 0.55;
+            ctx.fillRect(sp.x, sp.y, st.s, st.s);
+          }
+        });
+        ctx.globalAlpha = 1;
+      }
+      if (state.settings.showGridOrBox) {
+        const r = state.preset.defaultViewRadius * 1.2, rz = r * 0.72;
+        const corners = [
+          [-r,-r,-rz],[r,-r,-rz],[r,r,-rz],[-r,r,-rz],
+          [-r,-r,rz],[r,-r,rz],[r,r,rz],[-r,r,rz]
+        ].map(c => projectPoint({x:c[0]+anchor.x, y:c[1]+anchor.y, z:c[2]+anchor.z}, anchor, w, h));
+        const edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+        ctx.strokeStyle = state.theme.boxWireframe; ctx.globalAlpha = 0.44; ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        edges.forEach(e => {
+          if (corners[e[0]].scale > 0 && corners[e[1]].scale > 0) {
+            ctx.moveTo(corners[e[0]].x, corners[e[0]].y); ctx.lineTo(corners[e[1]].x, corners[e[1]].y);
+          }
+        });
+        ctx.stroke();
+
+        // Subtle ecliptic grid on bottom plane z = -rz
+        ctx.globalAlpha = 0.22; ctx.lineWidth = 1; ctx.beginPath();
+        for (let k = -6; k <= 6; k++) {
+          const v = (k / 6) * r;
+          const a = projectPoint({ x: -r+anchor.x, y: v+anchor.y, z: -rz+anchor.z }, anchor, w, h);
+          const b = projectPoint({ x: r+anchor.x, y: v+anchor.y, z: -rz+anchor.z }, anchor, w, h);
+          if (a.scale > 0 && b.scale > 0) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); }
+          const c = projectPoint({ x: v+anchor.x, y: -r+anchor.y, z: -rz+anchor.z }, anchor, w, h);
+          const d = projectPoint({ x: v+anchor.x, y: r+anchor.y, z: -rz+anchor.z }, anchor, w, h);
+          if (c.scale > 0 && d.scale > 0) { ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); }
+        }
+        ctx.stroke();
+
+        // Equatorial ring at z = 0
+        ctx.beginPath();
+        for (let i = 0; i <= 64; i++) {
+          const ang = (i / 64) * Math.PI * 2;
+          const pt = projectPoint({ x: Math.cos(ang)*state.preset.defaultViewRadius+anchor.x, y: Math.sin(ang)*state.preset.defaultViewRadius+anchor.y, z: anchor.z }, anchor, w, h);
+          if (pt.scale > 0) { if (i === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y); }
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // Lagrange Points
+    const lSets = getLagrangeSets();
+    drawLagrangeSet(lSets.primary, false, anchor, w, h, fontScale);
+    if (lSets.secondary.length > 0) drawLagrangeSet(lSets.secondary, true, anchor, w, h, fontScale);
+
+    // Past Orbital Trails
+    if (state.settings.showTrails) {
+      state.bodies.forEach(b => {
+        if (b.trail.length < 2) return;
+        ctx.save();
+        ctx.strokeStyle = b.color;
+        ctx.globalAlpha = b.id === state.selectedId ? 0.72 : 0.45;
+        ctx.lineWidth = b.id === state.selectedId ? 2 : 1.35;
+        ctx.beginPath();
+        let started = false;
+        b.trail.forEach(pt => {
+          const sp = projectPoint(pt, anchor, w, h);
+          if (sp.scale <= 0) return;
+          if (!started) { ctx.moveTo(sp.x, sp.y); started = true; } else ctx.lineTo(sp.x, sp.y);
+        });
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    // Future Predicted Trajectories
+    const preds = predictPaths();
+    if (state.settings.showPredictedTrajectories) {
+      state.bodies.forEach(b => {
+        const pts = preds.get(b.id);
+        if (!pts || pts.length < 2) return;
+        ctx.save();
+        ctx.strokeStyle = b.color;
+        ctx.globalAlpha = b.id === state.selectedId ? 0.85 : 0.54;
+        ctx.lineWidth = b.id === state.selectedId ? 1.85 : 1.3;
+        ctx.setLineDash([6, 5]);
+        ctx.beginPath();
+        let started = false;
+        pts.forEach(pt => {
+          const sp = projectPoint(pt, anchor, w, h);
+          if (sp.scale <= 0) return;
+          if (!started) { ctx.moveTo(sp.x, sp.y); started = true; } else ctx.lineTo(sp.x, sp.y);
+        });
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    // Center of Mass (Barycenter)
+    if (state.settings.showBarycenter) {
+      const bs = projectPoint(metrics.bary, anchor, w, h);
+      if (bs.scale > 0) {
+        ctx.save();
+        ctx.strokeStyle = state.theme.barycenterColor; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(bs.x, bs.y, 6, 0, Math.PI*2);
+        ctx.moveTo(bs.x - 10, bs.y); ctx.lineTo(bs.x + 10, bs.y);
+        ctx.moveTo(bs.x, bs.y - 10); ctx.lineTo(bs.x, bs.y + 10);
+        ctx.stroke();
+        ctx.font = '600 ' + Math.round(9*fontScale) + 'px monospace';
+        ctx.fillStyle = state.theme.barycenterColor;
+        ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        ctx.fillText('CoM', bs.x + 9, bs.y + 6);
+        ctx.restore();
+      }
+    }
+
+    // Gravitational Force Vectors
+    if (state.settings.showForceVectors) {
+      const forces = computeForceVectors(state.bodies, state.preset.G, state.preset.softening);
+      state.bodies.forEach(b => {
+        const f = forces.get(b.id);
+        if (!f) return;
+        const fMag = Math.hypot(f.x, f.y, f.z);
+        if (fMag < 1e-12) return;
+        const sp = projectPoint(b.position, anchor, w, h);
+        const arrowLen = Math.min(95, 22 + 18 * Math.log10(1 + fMag / Math.max(b.mass, 1e-6)));
+        const tipP = {
+          x: b.position.x + f.x / fMag,
+          y: b.position.y + f.y / fMag,
+          z: b.position.z + f.z / fMag
+        };
+        const tp = projectPoint(tipP, anchor, w, h);
+        if (sp.scale <= 0 || tp.scale <= 0) return;
+        const dpx = tp.x - sp.x, dpy = tp.y - sp.y, dLen = Math.hypot(dpx, dpy);
+        if (dLen < 1e-6) return;
+        const ex = sp.x + (dpx / dLen) * arrowLen, ey = sp.y + (dpy / dLen) * arrowLen;
+        ctx.save();
+        ctx.strokeStyle = state.theme.forceVectorColor;
+        ctx.fillStyle = state.theme.forceVectorColor;
+        ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.moveTo(sp.x, sp.y); ctx.lineTo(ex, ey); ctx.stroke();
+        const ang = Math.atan2(ey - sp.y, ex - sp.x);
+        ctx.beginPath();
+        ctx.moveTo(ex, ey);
+        ctx.lineTo(ex - 8*Math.cos(ang - 0.45), ey - 8*Math.sin(ang - 0.45));
+        ctx.lineTo(ex - 8*Math.cos(ang + 0.45), ey - 8*Math.sin(ang + 0.45));
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    // Bodies (sorted back-to-front in 3D)
+    const projectedBodies = state.bodies.map(b => ({
+      body: b,
+      sp: projectPoint(b.position, anchor, w, h)
+    })).sort((a, b) => b.sp.depth - a.sp.depth);
+
+    projectedBodies.forEach(({ body, sp }) => {
+      if (sp.scale <= 0) return;
+      const minR = body.minScreenRadiusPx || 4.5;
+      const rPx = Math.max(minR, getBodyRadius(body) * sp.scale);
+      const isSel = body.id === state.selectedId;
+      if (sp.x + rPx < -60 || sp.x - rPx > w + 60 || sp.y + rPx < -60 || sp.y - rPx > h + 60) return;
+
+      // Velocity Vector
+      if (state.settings.showVelocityVectors) {
+        const tip = getVelocityTipScreen(body, anchor, w, h);
+        ctx.save();
+        ctx.strokeStyle = state.theme.velocityVectorColor;
+        ctx.fillStyle = state.theme.velocityVectorColor;
+        ctx.globalAlpha = isSel ? 0.98 : 0.72;
+        ctx.lineWidth = isSel ? 2.2 : 1.5;
+        if (tip.isStub) ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(sp.x, sp.y); ctx.lineTo(tip.x, tip.y); ctx.stroke();
+        ctx.setLineDash([]);
+        const ang = Math.atan2(tip.y - sp.y, tip.x - sp.x);
+        const headLen = isSel ? 14.5 : 12.5;
+        ctx.beginPath();
+        ctx.moveTo(tip.x + Math.cos(ang)*2, tip.y + Math.sin(ang)*2);
+        ctx.lineTo(tip.x - headLen*Math.cos(ang - 0.45), tip.y - headLen*Math.sin(ang - 0.45));
+        ctx.lineTo(tip.x - headLen*Math.cos(ang + 0.45), tip.y - headLen*Math.sin(ang + 0.45));
+        ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.arc(tip.x, tip.y, isSel ? 3.3 : 2.6, 0, Math.PI*2);
+        ctx.fillStyle = state.theme.canvasBg; ctx.fill();
+        ctx.lineWidth = 1.6; ctx.strokeStyle = state.theme.velocityVectorColor; ctx.stroke();
+
+        if (isSel || state.settings.showDetailedAnnotations) {
+          const speedPhys = Math.hypot(body.velocity.x, body.velocity.y, body.velocity.z) * state.preset.velocityDisplayFactor;
+          ctx.font = '500 ' + Math.round(9.5*fontScale) + 'px monospace';
+          ctx.fillStyle = state.theme.velocityVectorColor;
+          ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+          ctx.fillText('v = ' + speedPhys.toFixed(2) + ' ' + state.preset.velocityLabel, tip.x + 10, tip.y);
+        }
+        ctx.restore();
+      }
+
+      ctx.save();
+      if (body.kind === 'star') {
+        const glow = ctx.createRadialGradient(sp.x, sp.y, rPx*0.4, sp.x, sp.y, rPx*3.1);
+        glow.addColorStop(0, body.color);
+        glow.addColorStop(0.35, body.color + '55');
+        glow.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(sp.x, sp.y, rPx*3.1, 0, Math.PI*2); ctx.fill();
+      }
+      const grad = ctx.createRadialGradient(sp.x - rPx*0.34, sp.y - rPx*0.34, rPx*0.1, sp.x, sp.y, rPx);
+      if (body.kind === 'star') {
+        grad.addColorStop(0, '#FFFFFF');
+        grad.addColorStop(0.35, body.color);
+        grad.addColorStop(1, shadeHex(body.color, 0.72));
+      } else {
+        grad.addColorStop(0, '#FFFFFF');
+        grad.addColorStop(0.22, body.color);
+        grad.addColorStop(0.75, shadeHex(body.color, 0.58));
+        grad.addColorStop(1, shadeHex(body.color, 0.22));
+      }
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, rPx, 0, Math.PI*2); ctx.fill();
+
+      if (isSel) {
+        ctx.strokeStyle = state.theme.accent; ctx.lineWidth = 1.75;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.arc(sp.x, sp.y, rPx + 6, 0, Math.PI*2); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      ctx.fillStyle = state.theme.textPrimary;
+      ctx.font = '600 ' + Math.round(11*fontScale) + 'px sans-serif';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      const labelX = sp.x + rPx + 7;
+      ctx.fillText(body.name, labelX, sp.y - 2);
+      if (state.settings.showDetailedAnnotations) {
+        const vPhys = Math.hypot(body.velocity.x, body.velocity.y, body.velocity.z) * state.preset.velocityDisplayFactor;
+        const mStr = body.mass < 0.01 ? body.mass.toExponential(1) : body.mass.toFixed(3);
+        ctx.fillStyle = state.theme.textMuted;
+        ctx.font = '400 ' + Math.round(9*fontScale) + 'px monospace';
+        ctx.textBaseline = 'top';
+        ctx.fillText('m=' + mStr + ' ' + state.preset.massLabel + ' · ' + vPhys.toFixed(2) + ' ' + state.preset.velocityLabel, labelX, sp.y + 2);
+      }
+      ctx.restore();
+    });
+
+    // Click-and-drag new body preview
+    if (state.isAdding && newPlacePreview && state.viewMode === '2d') {
+      const s = projectPoint(newPlacePreview.start, anchor, w, h);
+      const e = projectPoint(newPlacePreview.end, anchor, w, h);
+      ctx.save();
+      ctx.strokeStyle = state.theme.velocityVectorColor; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(e.x, e.y); ctx.stroke();
+      ctx.fillStyle = document.getElementById('newBodyColor').value || '#34D399';
+      ctx.beginPath(); ctx.arc(s.x, s.y, 8, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.restore();
+    } else if (state.isAdding && hoverWorld && state.viewMode === '2d') {
+      const hs = projectPoint(hoverWorld, anchor, w, h);
+      ctx.save();
+      ctx.strokeStyle = document.getElementById('newBodyColor').value || '#34D399';
+      ctx.setLineDash([4, 3]); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(hs.x, hs.y, 10, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.restore();
+
+    // Update elapsed time dock
+    const tp = formatSimTimeParts(state.simTime * state.preset.daysPerSimTime, state.settings.timeUnitPref);
+    document.getElementById('timeVal').textContent = tp.value;
+    document.getElementById('timeUnit').textContent = tp.unit;
+    document.getElementById('timeSec').textContent = '(' + tp.secondary + ')';
+  }
+
+  // === Right Panel Selected Telemetry & 4 SVG Graphs ===
+  function getSelectedAndPrimary() {
+    const sel = state.bodies.find(b => b.id === state.selectedId) || state.bodies[0] || null;
+    if (!sel) return { sel: null, prim: null };
+    const others = state.bodies.filter(b => b.id !== sel.id).sort((a, b) => b.mass - a.mass);
+    return { sel, prim: others[0] || null };
+  }
+
+  function updateSelectedTelemetryCard() {
+    const card = document.getElementById('selectedTelemetryCard');
+    const { sel, prim } = getSelectedAndPrimary();
+    if (!sel) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    const oe = computeOrbitalElements(sel, prim, state.preset.G, state.preset.softening, state.preset.daysPerSimTime);
+    document.getElementById('telemDot').style.background = sel.color;
+    document.getElementById('telemTitle').textContent = sel.name + ' Telemetry';
+    const stEl = document.getElementById('telemStatus');
+    stEl.textContent = oe.bound ? '● Bound' : '▲ Escape';
+    stEl.style.color = oe.bound ? '#34D399' : state.theme.accentSecondary;
+    document.getElementById('telemR').textContent = oe.distance.toFixed(3) + ' ' + state.preset.distanceLabel;
+    const vPhys = Math.hypot(sel.velocity.x, sel.velocity.y, sel.velocity.z) * state.preset.velocityDisplayFactor;
+    document.getElementById('telemV').textContent = vPhys.toFixed(2) + ' ' + state.preset.velocityLabel;
+    document.getElementById('telemF').textContent = formatSci(oe.force, 2);
+    document.getElementById('telemE').textContent = oe.eccentricity !== null ? oe.eccentricity.toFixed(3) : '—';
+    document.getElementById('telemA').textContent = oe.semiMajorAxis !== null ? oe.semiMajorAxis.toFixed(3) : '∞';
+    document.getElementById('telemT').textContent = oe.periodDays !== null ? oe.periodDays.toFixed(1) + ' d' : '—';
+  }
+
+  function buildPoly(pts, xMin, xMax, yMin, yMax, W, H, PL, PR, PT, PB) {
+    if (!pts.length) return '';
+    const xs = Math.max(1e-12, xMax - xMin), ys = Math.max(1e-12, yMax - yMin);
+    const pw = Math.max(20, W - PL - PR), ph = Math.max(20, H - PT - PB);
+    return pts.map(p => {
+      const px = PL + ((p.x - xMin)/xs) * pw;
+      const py = PT + (1 - (p.y - yMin)/ys) * ph;
+      return px.toFixed(1) + ',' + Math.max(PT, Math.min(H - PB, py)).toFixed(1);
+    }).join(' ');
+  }
+
+  function toSvgPt(x, y, xMin, xMax, yMin, yMax, W, H, PL, PR, PT, PB) {
+    const xs = Math.max(1e-12, xMax - xMin), ys = Math.max(1e-12, yMax - yMin);
+    return {
+      px: PL + ((x - xMin)/xs) * Math.max(20, W - PL - PR),
+      py: PT + (1 - (y - yMin)/ys) * Math.max(20, H - PT - PB)
+    };
+  }
+
+  function getChartDims(mount) {
+    const isPopout = mount.classList && mount.classList.contains('popout-body');
+    const rawW = mount.clientWidth || (isPopout ? 386 : 300);
+    const W = Math.max(200, Math.floor(isPopout ? rawW - 24 : rawW));
+    if (isPopout) {
+      const H = Math.max(120, Math.floor((mount.clientHeight || 220) - 62));
+      return { W, H };
+    }
+    const H = Math.max(135, Math.min(260, Math.round(W * 0.44)));
+    return { W, H };
+  }
+
+  function renderForceChart(mount) {
+    const { sel, prim } = getSelectedAndPrimary();
+    const oe = sel ? computeOrbitalElements(sel, prim, state.preset.G, state.preset.softening, state.preset.daysPerSimTime) : null;
+    const m1 = prim ? prim.mass : 1, m2 = sel ? sel.mass : 0.001;
+    const curR = oe ? oe.distance : 1;
+    const curF = oe ? oe.force : (state.preset.G * m1 * m2) / (curR * curR);
+    const histR = state.telemetry.map(t => t.r).filter(v => v > 0);
+    const minHistR = histR.length ? Math.min(...histR) : curR * 0.55;
+    const maxHistR = histR.length ? Math.max(...histR) : curR * 1.65;
+    const rMin = Math.max(state.preset.softening * 3, Math.min(minHistR * 0.72, curR * 0.55));
+    const rMax = Math.max(rMin * 1.8, Math.max(maxHistR * 1.15, curR * 1.45));
+
+    const curvePts = [];
+    for (let i = 0; i <= 56; i++) {
+      const r = rMin + (i / 56) * (rMax - rMin);
+      curvePts.push({ x: r, y: (state.preset.G * m1 * m2) / (r*r + state.preset.softening**2) });
+    }
+    const fMax = Math.max(...curvePts.map(p => p.y), curF * 1.05, 1e-12);
+    const { W, H } = getChartDims(mount);
+    const PL = 46, PR = 14, PT = 12, PB = 22;
+    const curveStr = buildPoly(curvePts, rMin, rMax, 0, fMax, W, H, PL, PR, PT, PB);
+    const histPts = state.telemetry.map(t => ({ x: t.r, y: t.F }));
+    const histStr = buildPoly(histPts, rMin, rMax, 0, fMax, W, H, PL, PR, PT, PB);
+    const dot = toSvgPt(curR, curF, rMin, rMax, 0, fMax, W, H, PL, PR, PT, PB);
+
+    const gridLines = [0.25, 0.5, 0.75].map(fr => {
+      const y = PT + fr * (H - PT - PB);
+      return '<line x1="'+PL+'" y1="'+y.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+y.toFixed(1)+'" stroke="'+state.theme.uiBorder+'" stroke-dasharray="2 3" />';
+    }).join('');
+
+    mount.innerHTML =
+      '<div class="chart-hdr mono"><span class="muted">' + esc(sel ? sel.name : 'Body') + ' ↔ ' + esc(prim ? prim.name : 'Origin') + '</span><span style="color:var(--accent)">F = ' + formatSci(curF) + '</span></div>' +
+      '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" class="chart-svg">' +
+        gridLines +
+        '<line x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(H-PB)+'" stroke="'+state.theme.uiBorder+'" />' +
+        '<line x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'" stroke="'+state.theme.uiBorder+'" />' +
+        '<polyline fill="none" stroke="'+state.theme.accentSecondary+'" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.7" points="'+curveStr+'" />' +
+        (histPts.length > 1 ? '<polyline fill="none" stroke="'+state.theme.accent+'" stroke-width="2.2" points="'+histStr+'" />' : '') +
+        '<circle cx="'+Math.max(PL, Math.min(W-PR, dot.px)).toFixed(1)+'" cy="'+Math.max(PT, Math.min(H-PB, dot.py)).toFixed(1)+'" r="4.2" fill="'+state.theme.accent+'" stroke="#ffffff" stroke-width="1.5" />' +
+        '<text x="'+(PL-4)+'" y="'+(PT+8)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+formatSci(fMax, 1)+'</text>' +
+        '<text x="'+(PL-4)+'" y="'+(H-PB)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">0</text>' +
+        '<text x="'+PL+'" y="'+(H-6)+'" text-anchor="start" font-size="9" fill="'+state.theme.uiTextMuted+'">r='+rMin.toFixed(2)+'</text>' +
+        '<text x="'+(W-PR)+'" y="'+(H-6)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+rMax.toFixed(2)+' '+esc(state.preset.distanceLabel)+'</text>' +
+      '</svg>' +
+      '<div class="chart-ftr mono"><span>r = '+curR.toFixed(3)+' '+esc(state.preset.distanceLabel)+'</span><span>Dashed: Gm₁m₂/r²</span></div>';
+  }
+
+  function renderEnergyChart(mount) {
+    const lat = state.telemetry[state.telemetry.length - 1] || { K: 0, U: 0, E: 0, t: 0 };
+    const driftPct = state.initialE && Math.abs(state.initialE) > 1e-12
+      ? ((lat.E - state.initialE) / Math.abs(state.initialE)) * 100 : 0;
+    const tMin = state.telemetry.length ? state.telemetry[0].t : 0;
+    const tMax = state.telemetry.length > 1 ? state.telemetry[state.telemetry.length - 1].t : tMin + 1;
+    const allE = state.telemetry.flatMap(t => [t.K, t.U, t.E]);
+    let yMin = allE.length ? Math.min(...allE) : -1, yMax = allE.length ? Math.max(...allE) : 1;
+    if (Math.abs(yMax - yMin) < 1e-9) { yMin -= 1; yMax += 1; }
+    const pad = (yMax - yMin) * 0.1; yMin -= pad; yMax += pad;
+    const { W, H } = getChartDims(mount);
+    const PL = 46, PR = 14, PT = 12, PB = 22;
+    const kLine = buildPoly(state.telemetry.map(t => ({ x: t.t, y: t.K })), tMin, tMax, yMin, yMax, W, H, PL, PR, PT, PB);
+    const uLine = buildPoly(state.telemetry.map(t => ({ x: t.t, y: t.U })), tMin, tMax, yMin, yMax, W, H, PL, PR, PT, PB);
+    const eLine = buildPoly(state.telemetry.map(t => ({ x: t.t, y: t.E })), tMin, tMax, yMin, yMax, W, H, PL, PR, PT, PB);
+    const zeroY = toSvgPt(tMin, 0, tMin, tMax, yMin, yMax, W, H, PL, PR, PT, PB).py;
+    const zeroLine = (zeroY >= PT && zeroY <= H - PB)
+      ? '<line x1="'+PL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+zeroY.toFixed(1)+'" stroke="'+state.theme.uiBorder+'" stroke-dasharray="3 3" />' : '';
+
+    mount.innerHTML =
+      '<div class="chart-hdr mono" style="display:grid; grid-template-columns:repeat(3,1fr);">' +
+        '<span><span style="color:#34D399">K </span>'+formatSci(lat.K, 2)+'</span>' +
+        '<span><span style="color:#FB7185">U </span>'+formatSci(lat.U, 2)+'</span>' +
+        '<span style="text-align:right"><span style="color:var(--accent)">E </span>'+formatSci(lat.E, 2)+'</span>' +
+      '</div>' +
+      '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" class="chart-svg">' +
+        zeroLine +
+        '<line x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(H-PB)+'" stroke="'+state.theme.uiBorder+'" />' +
+        '<line x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'" stroke="'+state.theme.uiBorder+'" />' +
+        (state.telemetry.length > 1 ?
+          '<polyline fill="none" stroke="#34D399" stroke-width="1.7" points="'+kLine+'" />' +
+          '<polyline fill="none" stroke="#FB7185" stroke-width="1.7" points="'+uLine+'" />' +
+          '<polyline fill="none" stroke="'+state.theme.accent+'" stroke-width="2.1" points="'+eLine+'" />' : '') +
+        '<text x="'+(PL-4)+'" y="'+(PT+8)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+formatSci(yMax, 1)+'</text>' +
+        '<text x="'+(PL-4)+'" y="'+(H-PB)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+formatSci(yMin, 1)+'</text>' +
+        '<text x="'+PL+'" y="'+(H-6)+'" text-anchor="start" font-size="9" fill="'+state.theme.uiTextMuted+'">'+tMin.toFixed(1)+'d</text>' +
+        '<text x="'+(W-PR)+'" y="'+(H-6)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+tMax.toFixed(1)+'d</text>' +
+      '</svg>' +
+      '<div class="chart-ftr mono"><span>E = K + U (RK4)</span><span>ΔE/E₀: '+(driftPct >= 0 ? '+' : '')+driftPct.toFixed(4)+'%</span></div>';
+  }
+
+  function renderKinChart(mount) {
+    const { sel, prim } = getSelectedAndPrimary();
+    const oe = sel ? computeOrbitalElements(sel, prim, state.preset.G, state.preset.softening, state.preset.daysPerSimTime) : null;
+    const lat = state.telemetry[state.telemetry.length - 1] || { v: 0, keBody: 0, t: 0 };
+    const tMin = state.telemetry.length ? state.telemetry[0].t : 0;
+    const tMax = state.telemetry.length > 1 ? state.telemetry[state.telemetry.length - 1].t : tMin + 1;
+    const spds = state.telemetry.map(t => t.v);
+    let yMin = spds.length ? Math.min(...spds) * 0.9 : 0, yMax = spds.length ? Math.max(...spds) * 1.1 : 10;
+    if (Math.abs(yMax - yMin) < 1e-6) { yMin = Math.max(0, yMin - 1); yMax += 1; }
+    const kes = state.telemetry.map(t => t.keBody);
+    const keMin = kes.length ? Math.min(...kes) * 0.9 : 0, keMax = Math.max(keMin + 1e-12, kes.length ? Math.max(...kes) * 1.1 : 1);
+    const { W, H } = getChartDims(mount);
+    const PL = 46, PR = 14, PT = 12, PB = 22;
+    const vLine = buildPoly(state.telemetry.map(t => ({ x: t.t, y: t.v })), tMin, tMax, yMin, yMax, W, H, PL, PR, PT, PB);
+    const keLine = buildPoly(state.telemetry.map(t => ({ x: t.t, y: t.keBody })), tMin, tMax, keMin, keMax, W, H, PL, PR, PT, PB);
+    const vEsc = (oe ? oe.escapeVelocity : 0) * state.preset.velocityDisplayFactor;
+
+    mount.innerHTML =
+      '<div class="chart-hdr mono"><span><span style="color:#34D399">v </span>'+lat.v.toFixed(2)+' '+esc(state.preset.velocityLabel)+'</span><span><span style="color:var(--accent2)">KEᵢ </span>'+formatSci(lat.keBody, 2)+'</span></div>' +
+      '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" class="chart-svg">' +
+        '<line x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(H-PB)+'" stroke="'+state.theme.uiBorder+'" />' +
+        '<line x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'" stroke="'+state.theme.uiBorder+'" />' +
+        (state.telemetry.length > 1 ?
+          '<polyline fill="none" stroke="'+state.theme.accentSecondary+'" stroke-width="1.4" stroke-dasharray="3 2" points="'+keLine+'" />' +
+          '<polyline fill="none" stroke="#34D399" stroke-width="2.1" points="'+vLine+'" />' : '') +
+        '<text x="'+(PL-4)+'" y="'+(PT+8)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+yMax.toFixed(1)+'</text>' +
+        '<text x="'+(PL-4)+'" y="'+(H-PB)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+yMin.toFixed(1)+'</text>' +
+        '<text x="'+PL+'" y="'+(H-6)+'" text-anchor="start" font-size="9" fill="'+state.theme.uiTextMuted+'">'+tMin.toFixed(1)+'d</text>' +
+        '<text x="'+(W-PR)+'" y="'+(H-6)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+tMax.toFixed(1)+'d</text>' +
+      '</svg>' +
+      '<div class="chart-ftr mono"><span>v_esc: '+vEsc.toFixed(2)+' '+esc(state.preset.velocityLabel)+'</span><span>'+(oe && oe.bound ? 'Bound Orbit (E<0)' : 'Unbound / Escape')+'</span></div>';
+  }
+
+  function renderPhaseChart(mount) {
+    const { sel, prim } = getSelectedAndPrimary();
+    const oe = sel ? computeOrbitalElements(sel, prim, state.preset.G, state.preset.softening, state.preset.daysPerSimTime) : null;
+    const rs = state.telemetry.map(t => t.r), vs = state.telemetry.map(t => t.v);
+    const rMin = rs.length ? Math.min(...rs) * 0.9 : 0;
+    const rMax = Math.max(rMin + 1e-6, rs.length ? Math.max(...rs) * 1.1 : 2);
+    const vMin = vs.length ? Math.min(...vs) * 0.9 : 0;
+    const vMax = Math.max(vMin + 1e-6, vs.length ? Math.max(...vs) * 1.1 : 10);
+    const { W, H } = getChartDims(mount);
+    const PL = 46, PR = 14, PT = 12, PB = 22;
+    const phaseLine = buildPoly(state.telemetry.map(t => ({ x: t.r, y: t.v })), rMin, rMax, vMin, vMax, W, H, PL, PR, PT, PB);
+    const lastR = rs.length ? rs[rs.length - 1] : 1, lastV = vs.length ? vs[vs.length - 1] : 0;
+    const dot = toSvgPt(lastR, lastV, rMin, rMax, vMin, vMax, W, H, PL, PR, PT, PB);
+
+    mount.innerHTML =
+      '<div class="chart-hdr mono muted"><span>Phase Portrait: r vs v</span><span>e = '+(oe && oe.eccentricity !== null ? oe.eccentricity.toFixed(3) : '—')+'</span></div>' +
+      '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" class="chart-svg">' +
+        '<line x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(H-PB)+'" stroke="'+state.theme.uiBorder+'" />' +
+        '<line x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'" stroke="'+state.theme.uiBorder+'" />' +
+        (state.telemetry.length > 1 ? '<polyline fill="none" stroke="'+state.theme.accent+'" stroke-width="1.9" points="'+phaseLine+'" />' : '') +
+        '<circle cx="'+Math.max(PL, Math.min(W-PR, dot.px)).toFixed(1)+'" cy="'+Math.max(PT, Math.min(H-PB, dot.py)).toFixed(1)+'" r="4" fill="'+state.theme.accentSecondary+'" stroke="#ffffff" stroke-width="1.4" />' +
+        '<text x="'+(PL-4)+'" y="'+(PT+8)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+vMax.toFixed(1)+'</text>' +
+        '<text x="'+(PL-4)+'" y="'+(H-PB)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+vMin.toFixed(1)+'</text>' +
+        '<text x="'+PL+'" y="'+(H-6)+'" text-anchor="start" font-size="9" fill="'+state.theme.uiTextMuted+'">'+rMin.toFixed(2)+'</text>' +
+        '<text x="'+(W-PR)+'" y="'+(H-6)+'" text-anchor="end" font-size="9" fill="'+state.theme.uiTextMuted+'">'+rMax.toFixed(2)+' '+esc(state.preset.distanceLabel)+'</text>' +
+      '</svg>' +
+      '<div class="chart-ftr mono"><span>a = '+(oe && oe.semiMajorAxis !== null ? oe.semiMajorAxis.toFixed(3)+' '+esc(state.preset.distanceLabel) : '∞')+'</span><span>T = '+(oe && oe.periodDays !== null ? oe.periodDays.toFixed(1)+' d' : 'Unbound')+'</span></div>';
+  }
+
+  function updateCharts() {
+    updateSelectedTelemetryCard();
+    const mounts = {
+      force: { el: state.popped.force || document.getElementById('chartForceMount'), dockEl: document.getElementById('chartForceMount'), fn: renderForceChart },
+      energy: { el: state.popped.energy || document.getElementById('chartEnergyMount'), dockEl: document.getElementById('chartEnergyMount'), fn: renderEnergyChart },
+      kinematics: { el: state.popped.kinematics || document.getElementById('chartKinMount'), dockEl: document.getElementById('chartKinMount'), fn: renderKinChart },
+      phase: { el: state.popped.phase || document.getElementById('chartPhaseMount'), dockEl: document.getElementById('chartPhaseMount'), fn: renderPhaseChart }
+    };
+    Object.keys(mounts).forEach(k => {
+      const m = mounts[k];
+      if (state.popped[k] && m.dockEl.firstChild === null) {
+        m.dockEl.innerHTML = '<div style="padding:18px 8px; text-align:center; font-size:11px; border:1px dashed var(--border); border-radius:6px; color:var(--muted);">Displayed in floating pop-out window</div>';
+      } else if (state.popped[k] && !m.dockEl.dataset.placeholder) {
+        m.dockEl.dataset.placeholder = '1';
+        m.dockEl.innerHTML = '<div style="padding:18px 8px; text-align:center; font-size:11px; border:1px dashed var(--border); border-radius:6px; color:var(--muted);">Displayed in floating pop-out window</div>';
+      }
+      if (!state.popped[k]) m.dockEl.dataset.placeholder = '';
+      m.fn(m.el);
+    });
+  }
+
+  function recordTelemetry() {
+    const m = computeMetrics();
+    if (state.initialE === null) state.initialE = m.E;
+    const { sel, prim } = getSelectedAndPrimary();
+    const oe = sel ? computeOrbitalElements(sel, prim, state.preset.G, state.preset.softening, state.preset.daysPerSimTime) : null;
+    const vPhys = sel ? Math.hypot(sel.velocity.x, sel.velocity.y, sel.velocity.z) * state.preset.velocityDisplayFactor : 0;
+    state.telemetry.push({
+      t: state.simTime * state.preset.daysPerSimTime,
+      K: m.K, U: m.U, E: m.E,
+      F: oe ? oe.force : 0,
+      r: oe ? oe.distance : 0,
+      v: vPhys,
+      keBody: oe ? oe.kineticEnergy : 0
+    });
+    if (state.telemetry.length > 220) state.telemetry.shift();
+  }
+
+  // === UI Synchronization ===
+  function syncPresetSummary() {
+    document.getElementById('presetTitle').textContent = state.preset.name;
+    document.getElementById('presetSubtitle').textContent = state.preset.subtitle || '';
+    document.getElementById('presetDesc').textContent = state.preset.description || '';
+    document.getElementById('navHint').textContent = state.viewMode === '2d'
+      ? 'Scroll: Zoom · Right-Drag: Pan · Left-Drag: Move Mass / Velocity Tip'
+      : 'Scroll: Zoom · Right-Drag: Rotate 3D · Left-Drag: Pan / Move Mass';
+  }
+
+  function syncLagrangeRefCard() {
+    const sets = getLagrangeSets();
+    const card = document.getElementById('lagrangeRefCard');
+    if (!state.settings.showLagrangePoints || sets.primary.length === 0) {
+      card.style.display = 'none';
+      return;
+    }
+    card.style.display = 'block';
+    document.getElementById('lagrangeRefList').innerHTML = sets.primary.map(lp =>
+      '<div style="display:flex; gap:8px; align-items:flex-start;"><span class="mono" style="font-weight:600; width:24px; flex-shrink:0;">' + esc(lp.label) + '</span><span class="muted">' + esc(lp.description) + '</span></div>'
+    ).join('');
+  }
+
+  function syncBodyList() {
+    document.getElementById('bodiesCountTitle').textContent = 'Orbital Bodies (' + state.bodies.length + ')';
+    const list = document.getElementById('bodyList');
+    list.innerHTML = '';
+    state.bodies.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'body-item' + (b.id === state.selectedId ? ' selected' : '');
+      div.innerHTML =
+        '<span class="row" style="gap:7px;"><span class="dot" style="background:' + esc(b.color) + '"></span><span style="font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(b.name) + '</span></span>' +
+        '<span class="mono muted" style="font-size:10.5px; flex-shrink:0; margin-left:6px;">' + formatSci(b.mass, 3) + ' ' + esc(state.preset.massLabel) + '</span>';
+      div.onclick = () => {
+        state.selectedId = b.id;
+        syncBodyList(); syncInspector(); updateCharts();
+      };
+      list.appendChild(div);
+    });
+
+    const fSel = document.getElementById('followSelect');
+    const cur = state.settings.followTargetId;
+    fSel.innerHTML = '<option value="none">Free / Inertial Origin</option><option value="barycenter">System Barycenter (CoM)</option>' +
+      state.bodies.map(b => '<option value="' + esc(b.id) + '">Lock to ' + esc(b.name) + '</option>').join('');
+    fSel.value = cur;
+  }
+
+  function syncInspector() {
+    const b = state.bodies.find(x => x.id === state.selectedId);
+    const card = document.getElementById('inspectorCard');
+    if (!b) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    document.getElementById('inspectorTitle').textContent = 'Inspector: ' + b.name;
+    document.getElementById('deleteBodyBtn').style.display = state.bodies.length > 1 ? 'inline-block' : 'none';
+    document.getElementById('inpName').value = b.name;
+    document.getElementById('inpColor').value = b.color;
+    const p = state.preset;
+    document.getElementById('lblMass').textContent = 'Mass (' + p.massLabel + ')';
+    document.getElementById('lblPosHeader').textContent = 'Position (' + p.distanceLabel + ') — or drag body';
+    document.getElementById('lblVelHeader').textContent = 'Velocity (' + p.velocityLabel + ') — or drag arrow tip';
+
+    const setRng = (id, valId, min, max, val, fmt) => {
+      const el = document.getElementById(id);
+      el.min = min; el.max = max; el.step = (max - min) / 400; el.value = val;
+      document.getElementById(valId).textContent = fmt ? fmt(val) : Number(val).toFixed(3);
+    };
+    setRng('rngMass', 'valMass', p.massRange[0], Math.max(p.massRange[1], b.mass * 1.5), b.mass, v => formatSci(v, 4));
+    setRng('rngPosX', 'valPosX', -p.positionRange, p.positionRange, b.position.x);
+    setRng('rngPosY', 'valPosY', -p.positionRange, p.positionRange, b.position.y);
+    setRng('rngPosZ', 'valPosZ', -p.positionRange, p.positionRange, b.position.z);
+
+    const speedMag = Math.hypot(b.velocity.x, b.velocity.y, b.velocity.z);
+    setRng('rngSpeed', 'valSpeedMag', 0, Math.max(p.velocityRange, speedMag * 1.25), speedMag, v => (v * p.velocityDisplayFactor).toFixed(2) + ' ' + p.velocityLabel);
+    setRng('rngVelX', 'valVelX', -p.velocityRange, p.velocityRange, b.velocity.x);
+    setRng('rngVelY', 'valVelY', -p.velocityRange, p.velocityRange, b.velocity.y);
+    setRng('rngVelZ', 'valVelZ', -p.velocityRange, p.velocityRange, b.velocity.z);
+
+    const showZ = state.viewMode === '3d';
+    document.getElementById('posZWrap').style.display = showZ ? 'flex' : 'none';
+    document.getElementById('velZWrap').style.display = showZ ? 'flex' : 'none';
+    document.getElementById('gridToggleLabel').textContent = showZ ? '3D Outline Bounding Box' : 'Grid Background';
+  }
+
+  function setSwitchState(id, on) {
+    document.getElementById(id).setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+
+  function loadPreset(presetId) {
+    predCache = null;
+    const p = BOOTSTRAP.presets.find(x => x.id === presetId) || BOOTSTRAP.presets[0];
+    state.preset = JSON.parse(JSON.stringify(p));
+    const showMoons = state.settings.showMoons !== false;
+    state.bodies = p.bodies
+      .filter(b => showMoons || !b.isMoon)
+      .map(b => Object.assign({}, JSON.parse(JSON.stringify(b)), { trail: [] }));
+    state.selectedId = state.bodies[1] ? state.bodies[1].id : (state.bodies[0] ? state.bodies[0].id : null);
+    state.simTime = 0; state.telemetry = []; state.initialE = null;
+    state.settings.followTargetId = p.defaultFollowId || 'none';
+    state.settings.showLagrangePoints = Boolean(p.showLagrangeByDefault);
+    setSwitchState('chkLagrange', state.settings.showLagrangePoints);
+    state.isAdding = false;
+    document.getElementById('placeBanner').style.display = 'none';
+    setAddBtnState(false);
+    resetCamera();
+    syncPresetSummary();
+    syncBodyList();
+    syncInspector();
+    syncLagrangeRefCard();
+    recordTelemetry();
+    updateCharts();
+  }
+
+  function setAddBtnState(adding) {
+    const btn = document.getElementById('addBodyBtn');
+    document.getElementById('addBodyText').textContent = adding ? 'Click Viewport...' : 'Click to Place';
+    btn.classList.toggle('primary', adding);
+  }
+
+  function setPlayBtnState(running) {
+    document.getElementById('playText').textContent = running ? 'Pause' : 'Play';
+    document.getElementById('playIcon').innerHTML = running
+      ? '<rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/>'
+      : '<path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/>';
+  }
+
+  function syncPanelToggleIcons() {
+    const leftHidden = document.getElementById('leftPanel').classList.contains('hidden');
+    document.getElementById('toggleLeftBtn').title = leftHidden ? 'Show Controls Panel' : 'Hide Controls Panel';
+    document.getElementById('toggleLeftIcon').innerHTML = leftHidden
+      ? '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/>'
+      : '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/>';
+    const rightHidden = document.getElementById('rightPanel').classList.contains('hidden');
+    document.getElementById('toggleRightBtn').title = rightHidden ? 'Show Telemetry Graphs' : 'Hide Telemetry Graphs';
+    document.getElementById('toggleRightIcon').innerHTML = rightHidden
+      ? '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="m10 15-3-3 3-3"/>'
+      : '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/><path d="m8 9 3 3-3 3"/>';
+  }
+
+  function populateDropdowns() {
+    document.querySelectorAll('#modeSwitch .mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === state.viewMode);
+    });
+    const pSel = document.getElementById('presetSelect');
+    pSel.innerHTML = BOOTSTRAP.presets.filter(p => p.category === state.viewMode).map(p => '<option value="' + esc(p.id) + '">' + esc(p.name) + '</option>').join('');
+    pSel.value = state.preset.id;
+
+    const tSel = document.getElementById('themeSelect');
+    tSel.innerHTML = BOOTSTRAP.themes.map(t => '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>').join('');
+    tSel.value = state.theme.id;
+  }
+
+  let simFullscreen = false;
+  function syncFullscreenBtnLabel() {
+    const active = Boolean(document.fullscreenElement) || simFullscreen;
+    document.getElementById('fullscreenText').textContent = active ? 'Exit Full' : 'Fullscreen';
+    document.getElementById('fullscreenIcon').innerHTML = active
+      ? '<path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>'
+      : '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>';
+  }
+  async function toggleFullscreen() {
+    try {
+      if (!document.fullscreenElement && !simFullscreen) {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        } else {
+          throw new Error('no-fs');
+        }
+      } else if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        simFullscreen = false;
+        document.getElementById('leftPanel').classList.remove('hidden');
+        document.getElementById('rightPanel').classList.remove('hidden');
+        document.getElementById('rightSplitter').classList.remove('hidden');
+      }
+    } catch {
+      simFullscreen = !simFullscreen;
+      document.getElementById('leftPanel').classList.toggle('hidden', simFullscreen);
+      document.getElementById('rightPanel').classList.toggle('hidden', simFullscreen);
+      document.getElementById('rightSplitter').classList.toggle('hidden', simFullscreen);
+    }
+    syncFullscreenBtnLabel();
+    syncPanelToggleIcons();
+    updateCharts();
+  }
+  document.addEventListener('fullscreenchange', syncFullscreenBtnLabel);
+
+  // Bind top bar
+  document.querySelectorAll('#modeSwitch .mode-btn').forEach(btn => {
+    btn.onclick = () => {
+      const m = btn.dataset.mode;
+      if (m === state.viewMode) return;
+      state.viewMode = m;
+      populateDropdowns();
+      const first = BOOTSTRAP.presets.find(p => p.category === state.viewMode);
+      if (first) loadPreset(first.id);
+      else { syncPresetSummary(); syncInspector(); }
+    };
+  });
+  document.getElementById('presetSelect').onchange = e => loadPreset(e.target.value);
+  document.getElementById('themeSelect').onchange = e => {
+    state.theme = BOOTSTRAP.themes.find(t => t.id === e.target.value) || BOOTSTRAP.themes[0];
+    applyThemeVars();
+    updateCharts();
+  };
+  document.getElementById('toggleLeftBtn').onclick = () => {
+    document.getElementById('leftPanel').classList.toggle('hidden');
+    syncPanelToggleIcons();
+  };
+  document.getElementById('toggleRightBtn').onclick = () => {
+    document.getElementById('rightPanel').classList.toggle('hidden');
+    document.getElementById('rightSplitter').classList.toggle('hidden');
+    syncPanelToggleIcons();
+    updateCharts();
+  };
+  document.getElementById('fullscreenBtn').onclick = toggleFullscreen;
+  document.getElementById('downloadHtmlBtn').onclick = () => {
+    const nextPayload = {
+      initialViewMode: state.viewMode,
+      initialPresetId: state.preset.id,
+      initialThemeId: state.theme.id,
+      initialSettings: state.settings,
+      initialSelectedId: state.selectedId,
+      initialBodies: state.bodies.map(b => ({
+        id: b.id, name: b.name, mass: b.mass,
+        position: b.position, velocity: b.velocity,
+        color: b.color, kind: b.kind || 'planet',
+        fixedVisualRadius: b.fixedVisualRadius,
+        minScreenRadiusPx: b.minScreenRadiusPx,
+        isMoon: b.isMoon, parentId: b.parentId
+      })),
+      presets: BOOTSTRAP.presets,
+      themes: BOOTSTRAP.themes
+    };
+    const nextJson = JSON.stringify(nextPayload).replace(new RegExp('<' + '/script', 'gi'), '<\\/' + 'script');
+    const startMark = '/*__BS_' + 'START__*/';
+    const endMark = '/*__BS_' + 'END__*/';
+    const sIdx = PRISTINE_HTML.indexOf(startMark);
+    const eIdx = PRISTINE_HTML.indexOf(endMark);
+    const out = (sIdx !== -1 && eIdx !== -1 && eIdx > sIdx)
+      ? PRISTINE_HTML.slice(0, sIdx) + startMark + 'const BOOTSTRAP = ' + nextJson + ';' + PRISTINE_HTML.slice(eIdx)
+      : PRISTINE_HTML;
+    const blob = new Blob([out], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'orbit-lab-pro-' + state.preset.id + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Draggable splitter up to 1/3 screen
+  const splitter = document.getElementById('rightSplitter');
+  const rightPanel = document.getElementById('rightPanel');
+  splitter.onmousedown = ev => {
+    ev.preventDefault();
+    splitter.classList.add('active');
+    const onMv = e2 => {
+      const maxW = Math.max(340, Math.floor(window.innerWidth / 3));
+      const nextW = Math.max(260, Math.min(maxW, window.innerWidth - e2.clientX));
+      rightPanel.style.width = nextW + 'px';
+      updateCharts();
+    };
+    const onUp = () => {
+      splitter.classList.remove('active');
+      window.removeEventListener('mousemove', onMv);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMv);
+    window.addEventListener('mouseup', onUp);
+  };
+  window.addEventListener('resize', () => {
+    const maxW = Math.max(340, Math.floor(window.innerWidth / 3));
+    if (rightPanel.clientWidth > maxW) rightPanel.style.width = maxW + 'px';
+    updateCharts();
+  });
+
+  // Dock controls
+  document.getElementById('playBtn').onclick = () => {
+    state.running = !state.running;
+    setPlayBtnState(state.running);
+  };
+  document.getElementById('stepBtn').onclick = () => {
+    state.running = false; setPlayBtnState(false);
+    const totalDt = (state.preset.simTimePerRealSecond / 30) * state.settings.speedMultiplier;
+    const sub = Math.max(4, state.preset.substepsPerFrame || 10);
+    for (let i = 0; i < sub; i++) state.bodies = stepRK4(state.bodies, state.preset.G, totalDt / sub, state.preset.softening);
+    state.simTime += totalDt;
+    state.bodies.forEach(b => {
+      b.trail.push(Object.assign({}, b.position));
+      if (b.trail.length > state.settings.trailLength) b.trail.shift();
+    });
+    recordTelemetry(); syncInspector(); updateCharts();
+  };
+  document.getElementById('resetBtn').onclick = () => loadPreset(state.preset.id);
+  document.getElementById('resetViewBtn').onclick = resetCamera;
+  document.querySelectorAll('.spd-btn').forEach(btn => {
+    const spd = parseFloat(btn.dataset.spd);
+    btn.classList.toggle('active', Math.abs(state.settings.speedMultiplier - spd) < 0.01);
+    btn.onclick = () => {
+      state.settings.speedMultiplier = spd;
+      document.querySelectorAll('.spd-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+  });
+  document.getElementById('timeUnitSelect').value = state.settings.timeUnitPref || 'auto';
+  document.getElementById('timeUnitSelect').onchange = e => { state.settings.timeUnitPref = e.target.value; };
+
+  // Display switches
+  const switchBindings = [
+    ['chkGrid', 'showGridOrBox'],
+    ['chkPred', 'showPredictedTrajectories'],
+    ['chkTrails', 'showTrails'],
+    ['chkVel', 'showVelocityVectors'],
+    ['chkForce', 'showForceVectors'],
+    ['chkLagrange', 'showLagrangePoints'],
+    ['chkBary', 'showBarycenter'],
+    ['chkMoons', 'showMoons'],
+    ['chkDetails', 'showDetailedAnnotations']
+  ];
+  switchBindings.forEach(([id, key]) => {
+    setSwitchState(id, state.settings[key] !== false && !!state.settings[key]);
+    document.querySelector('[data-switch="' + id + '"]').onclick = () => {
+      const next = !state.settings[key];
+      state.settings[key] = next;
+      setSwitchState(id, next);
+      if (key === 'showPredictedTrajectories') {
+        document.getElementById('predLenWrap').style.opacity = next ? '1' : '0.45';
+      }
+      if (key === 'showLagrangePoints') {
+        syncLagrangeRefCard();
+      }
+      if (key === 'showMoons') {
+        predCache = null;
+        if (!next) {
+          state.bodies = state.bodies.filter(b => !b.isMoon);
+          if (!state.bodies.some(b => b.id === state.selectedId)) state.selectedId = state.bodies[1]?.id || state.bodies[0]?.id || null;
+          if (state.settings.followTargetId !== 'none' && state.settings.followTargetId !== 'barycenter' && !state.bodies.some(b => b.id === state.settings.followTargetId)) {
+            state.settings.followTargetId = state.preset.defaultFollowId || 'none';
+          }
+        } else {
+          const existing = new Set(state.bodies.map(b => b.id));
+          state.preset.bodies.filter(b => b.isMoon && !existing.has(b.id)).forEach(mp => {
+            const pp = state.preset.bodies.find(x => x.id === mp.parentId);
+            const pl = state.bodies.find(x => x.id === mp.parentId);
+            const cloned = JSON.parse(JSON.stringify(mp));
+            cloned.trail = [];
+            if (pp && pl) {
+              cloned.position = { x: pl.position.x + (mp.position.x - pp.position.x), y: pl.position.y + (mp.position.y - pp.position.y), z: pl.position.z + (mp.position.z - pp.position.z) };
+              cloned.velocity = { x: pl.velocity.x + (mp.velocity.x - pp.velocity.x), y: pl.velocity.y + (mp.velocity.y - pp.velocity.y), z: pl.velocity.z + (mp.velocity.z - pp.velocity.z) };
+            }
+            state.bodies.push(cloned);
+          });
+        }
+        syncBodyList(); syncInspector(); updateCharts();
+      }
+    };
+  });
+
+  const initPredLen = state.settings.predictionLengthPct !== undefined ? state.settings.predictionLengthPct : 100;
+  document.getElementById('rngPredLen').value = initPredLen;
+  document.getElementById('valPredLen').textContent = initPredLen + '%';
+  document.getElementById('predLenWrap').style.opacity = state.settings.showPredictedTrajectories ? '1' : '0.45';
+  document.getElementById('rngPredLen').oninput = e => {
+    const v = parseInt(e.target.value, 10);
+    state.settings.predictionLengthPct = v;
+    document.getElementById('valPredLen').textContent = v + '%';
+    if (v > 0 && !state.settings.showPredictedTrajectories) {
+      state.settings.showPredictedTrajectories = true;
+      setSwitchState('chkPred', true);
+      document.getElementById('predLenWrap').style.opacity = '1';
+    }
+  };
+
+  document.getElementById('rngAnno').value = state.settings.annotationScale;
+  document.getElementById('valAnno').textContent = state.settings.annotationScale.toFixed(1) + '×';
+  document.getElementById('rngAnno').oninput = e => {
+    state.settings.annotationScale = parseFloat(e.target.value);
+    document.getElementById('valAnno').textContent = state.settings.annotationScale.toFixed(1) + '×';
+  };
+  document.getElementById('followSelect').onchange = e => state.settings.followTargetId = e.target.value;
+  document.getElementById('collisionSelect').value = state.settings.collisionBehavior || 'pass';
+  document.getElementById('collisionSelect').onchange = e => state.settings.collisionBehavior = e.target.value;
+
+  // Inspector bindings
+  const bindSlider = (id, fn) => {
+    document.getElementById(id).oninput = e => {
+      const b = state.bodies.find(x => x.id === state.selectedId);
+      if (!b) return;
+      predCache = null;
+      fn(b, parseFloat(e.target.value));
+      syncInspector(); syncBodyList(); updateCharts();
+    };
+  };
+  document.getElementById('inpName').oninput = e => {
+    const b = state.bodies.find(x => x.id === state.selectedId);
+    if (b) {
+      b.name = e.target.value;
+      document.getElementById('inspectorTitle').textContent = 'Inspector: ' + b.name;
+      syncBodyList(); updateSelectedTelemetryCard();
+    }
+  };
+  document.getElementById('inpColor').oninput = e => {
+    const b = state.bodies.find(x => x.id === state.selectedId);
+    if (b) { b.color = e.target.value; syncBodyList(); updateSelectedTelemetryCard(); }
+  };
+  bindSlider('rngMass', (b, v) => b.mass = Math.max(1e-9, v));
+  bindSlider('rngPosX', (b, v) => { b.position.x = v; b.trail = []; });
+  bindSlider('rngPosY', (b, v) => { b.position.y = v; b.trail = []; });
+  bindSlider('rngPosZ', (b, v) => { b.position.z = v; b.trail = []; });
+  bindSlider('rngSpeed', (b, nextSpd) => {
+    const curSpd = Math.hypot(b.velocity.x, b.velocity.y, b.velocity.z);
+    if (curSpd > 1e-6) {
+      const r = nextSpd / curSpd;
+      b.velocity.x *= r; b.velocity.y *= r; b.velocity.z *= r;
+    } else {
+      b.velocity.x = nextSpd; b.velocity.y = 0; b.velocity.z = 0;
+    }
+  });
+  bindSlider('rngVelX', (b, v) => b.velocity.x = v);
+  bindSlider('rngVelY', (b, v) => b.velocity.y = v);
+  bindSlider('rngVelZ', (b, v) => b.velocity.z = v);
+
+  document.getElementById('deleteBodyBtn').onclick = () => {
+    if (state.bodies.length <= 1) return;
+    predCache = null;
+    state.bodies = state.bodies.filter(b => b.id !== state.selectedId);
+    state.selectedId = state.bodies[0]?.id || null;
+    syncBodyList(); syncInspector(); syncLagrangeRefCard(); updateCharts();
+  };
+
+  document.getElementById('addBodyBtn').onclick = () => {
+    state.isAdding = !state.isAdding;
+    const banner = document.getElementById('placeBanner');
+    setAddBtnState(state.isAdding);
+    banner.style.display = state.isAdding ? 'block' : 'none';
+    const nm = document.getElementById('newBodyName').value.trim() || 'Mass';
+    banner.textContent = 'Click anywhere to place "' + nm + '" — drag before releasing to set velocity vector';
+  };
+
+  function addBodyAt(pos, vel) {
+    predCache = null;
+    const nm = document.getElementById('newBodyName').value.trim() || ('Body ' + (state.bodies.length + 1));
+    const kind = document.getElementById('newBodyKind').value || 'planet';
+    const col = document.getElementById('newBodyColor').value || state.theme.defaultBodyPalette[state.bodies.length % state.theme.defaultBodyPalette.length];
+    const nb = {
+      id: 'custom-' + Date.now(),
+      name: nm,
+      mass: Math.max(state.preset.massRange[0], (state.preset.massRange[0] + state.preset.massRange[1]) * 0.02),
+      position: pos, velocity: vel, color: col, kind: kind, trail: []
+    };
+    state.bodies.push(nb);
+    state.selectedId = nb.id;
+    state.isAdding = false;
+    setAddBtnState(false);
+    document.getElementById('placeBanner').style.display = 'none';
+    document.getElementById('newBodyName').value = 'Body ' + (state.bodies.length + 1);
+    document.getElementById('newBodyColor').value = state.theme.defaultBodyPalette[state.bodies.length % state.theme.defaultBodyPalette.length];
+    syncBodyList(); syncInspector(); syncLagrangeRefCard(); updateCharts();
+  }
+
+  document.getElementById('addOrbitBtn').onclick = () => {
+    const primary = [...state.bodies].sort((a, b) => b.mass - a.mass)[0];
+    const r = state.preset.defaultViewRadius * (0.45 + (state.bodies.length % 4) * 0.16);
+    const angle = (state.bodies.length * 1.35) % (Math.PI * 2);
+    const px = (primary ? primary.position.x : 0) + r * Math.cos(angle);
+    const py = (primary ? primary.position.y : 0) + r * Math.sin(angle);
+    const pz = state.viewMode === '3d' ? ((state.bodies.length % 2 === 0 ? 1 : -1) * r * 0.18) : 0;
+    const vc = primary ? Math.sqrt((state.preset.G * primary.mass) / r) : 1;
+    const vx = (primary ? primary.velocity.x : 0) - Math.sin(angle) * vc;
+    const vy = (primary ? primary.velocity.y : 0) + Math.cos(angle) * vc;
+    const vz = state.viewMode === '3d' ? vc * 0.15 : 0;
+    addBodyAt({ x: px, y: py, z: pz }, { x: vx, y: vy, z: vz });
+  };
+
+  document.getElementById('zeroMomBtn').onclick = () => {
+    predCache = null;
+    let tm = 0, px = 0, py = 0, pz = 0;
+    state.bodies.forEach(b => { tm += b.mass; px += b.mass*b.velocity.x; py += b.mass*b.velocity.y; pz += b.mass*b.velocity.z; });
+    if (tm > 0) state.bodies.forEach(b => { b.velocity.x -= px/tm; b.velocity.y -= py/tm; b.velocity.z -= pz/tm; b.trail = []; });
+    syncInspector(); updateCharts();
+  };
+
+  // Pop-out charts
+  document.querySelectorAll('.pop-btn').forEach(btn => {
+    btn.onclick = () => {
+      const g = btn.dataset.graph;
+      const lbl = btn.querySelector('.pop-text') || btn;
+      if (state.popped[g]) {
+        const existingWin = state.popped[g].closest('.popout');
+        delete state.popped[g];
+        if (existingWin) existingWin.remove();
+        lbl.textContent = 'Pop Out';
+        btn.classList.remove('active');
+        updateCharts();
+        return;
+      }
+      const win = document.createElement('div');
+      win.className = 'popout';
+      const off = Object.keys(state.popped).length;
+      win.style.left = Math.max(40, window.innerWidth - 780 + off * 34) + 'px';
+      win.style.top = (70 + off * 38) + 'px';
+      const hdr = document.createElement('div');
+      hdr.className = 'popout-hdr';
+      hdr.innerHTML = '<span>' + esc(btn.dataset.title) + ' <span class="mono muted" style="font-weight:400; font-size:10px; margin-left:6px;">' + esc(btn.dataset.sub) + '</span></span><button type="button" style="font-size:10.5px; padding:2px 7px;">Dock</button>';
+      const bodyDiv = document.createElement('div');
+      bodyDiv.className = 'popout-body';
+      win.appendChild(hdr); win.appendChild(bodyDiv);
+      document.body.appendChild(win);
+      state.popped[g] = bodyDiv;
+      lbl.textContent = 'Popped';
+      btn.classList.add('active');
+
+      const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => updateCharts()) : null;
+      if (ro) ro.observe(win);
+
+      hdr.querySelector('button').onclick = () => {
+        if (ro) ro.disconnect();
+        delete state.popped[g];
+        win.remove();
+        lbl.textContent = 'Pop Out';
+        btn.classList.remove('active');
+        updateCharts();
+      };
+      hdr.onmousedown = ev => {
+        if (ev.target.tagName === 'BUTTON') return;
+        const ox = ev.clientX - win.offsetLeft, oy = ev.clientY - win.offsetTop;
+        const mv = e2 => { win.style.left = (e2.clientX - ox) + 'px'; win.style.top = (e2.clientY - oy) + 'px'; };
+        const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
+        window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+      };
+      updateCharts();
+    };
+  });
+
+  // Canvas interactions (cursor-anchored zoom, pan/rotate, move mass, drag vel tip, click-to-place drag)
+  let drag = null;
+  canvas.oncontextmenu = e => e.preventDefault();
+  canvas.onwheel = e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+    const w = rect.width, h = rect.height;
+    const f = e.deltaY < 0 ? 1.12 : 1/1.12;
+    if (state.viewMode === '2d') {
+      const m = computeMetrics(), anchor = getAnchor(m.bary);
+      const bx = (sx - w*0.5)/cam2d.ppu + anchor.x + cam2d.panX;
+      const by = -(sy - h*0.5)/cam2d.ppu + anchor.y + cam2d.panY;
+      cam2d.ppu = Math.min(180000, Math.max(2, cam2d.ppu * f));
+      const ax = (sx - w*0.5)/cam2d.ppu + anchor.x + cam2d.panX;
+      const ay = -(sy - h*0.5)/cam2d.ppu + anchor.y + cam2d.panY;
+      cam2d.panX += bx - ax; cam2d.panY += by - ay;
+    } else {
+      cam3d.dist = Math.min(600, Math.max(0.02, cam3d.dist / f));
+    }
+  };
+  canvas.onmousedown = e => {
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+    const w = rect.width, h = rect.height;
+    if (e.button === 2 || e.button === 1) {
+      drag = { type: 'orbit_or_pan', sx, sy, ox: cam2d.panX, oy: cam2d.panY, yaw: cam3d.yaw, pitch: cam3d.pitch };
+      canvas.style.cursor = 'grabbing';
+      return;
+    }
+    if (e.button !== 0) return;
+    const m = computeMetrics(), anchor = getAnchor(m.bary);
+    if (state.isAdding) {
+      if (state.viewMode === '2d') {
+        const wx = (sx - w*0.5)/cam2d.ppu + anchor.x + cam2d.panX;
+        const wy = -(sy - h*0.5)/cam2d.ppu + anchor.y + cam2d.panY;
+        const wp = { x: wx, y: wy, z: 0 };
+        drag = { type: 'place_new', start: wp, cur: wp };
+        newPlacePreview = { start: wp, end: wp };
+      } else {
+        const wp = screenToPlane3D(sx, sy, anchor, w, h, 0);
+        if (wp) {
+          const r = Math.hypot(wp.x, wp.y);
+          const vCirc = r > 0.05 ? Math.sqrt((state.preset.G * 1.0) / r) : 0;
+          const vx = r > 0.05 ? (-wp.y / r) * vCirc : 0;
+          const vy = r > 0.05 ? (wp.x / r) * vCirc : 0;
+          addBodyAt(wp, { x: vx, y: vy, z: 0 });
+        }
+      }
+      return;
+    }
+    if (state.settings.showVelocityVectors) {
+      const ordered = [...state.bodies].sort((a,b) => a.id === state.selectedId ? -1 : b.id === state.selectedId ? 1 : 0);
+      for (const b of ordered) {
+        const tip = getVelocityTipScreen(b, anchor, w, h);
+        if (Math.hypot(sx - tip.x, sy - tip.y) <= 13) {
+          state.selectedId = b.id; syncBodyList(); syncInspector(); updateCharts();
+          drag = { type: 'vel', id: b.id, planeZ: b.position.z };
+          canvas.style.cursor = 'crosshair';
+          return;
+        }
+      }
+    }
+    for (let i = state.bodies.length - 1; i >= 0; i--) {
+      const b = state.bodies[i];
+      const sp = projectPoint(b.position, anchor, w, h);
+      const rPx = Math.max(10, getBodyRadius(b) * sp.scale);
+      if (sp.scale > 0 && Math.hypot(sx - sp.x, sy - sp.y) <= rPx + 4) {
+        state.selectedId = b.id; syncBodyList(); syncInspector(); updateCharts();
+        if (state.viewMode === '2d') {
+          const wx = (sx - w*0.5)/cam2d.ppu + anchor.x + cam2d.panX;
+          const wy = -(sy - h*0.5)/cam2d.ppu + anchor.y + cam2d.panY;
+          drag = { type: 'move', id: b.id, ox: b.position.x - wx, oy: b.position.y - wy };
+        } else {
+          const wp = screenToPlane3D(sx, sy, anchor, w, h, b.position.z);
+          drag = { type: 'move', id: b.id, planeZ: b.position.z, ox: wp ? b.position.x - wp.x : 0, oy: wp ? b.position.y - wp.y : 0 };
+        }
+        canvas.style.cursor = 'move';
+        return;
+      }
+    }
+    if (state.viewMode === '3d') {
+      drag = { type: 'pan3d', sx, sy, px: cam3d.panX, py: cam3d.panY, pz: cam3d.panZ };
+      canvas.style.cursor = 'grabbing';
+    } else {
+      state.selectedId = null; syncBodyList(); syncInspector(); updateCharts();
+    }
+  };
+  window.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+    const w = rect.width, h = rect.height;
+    if (drag) {
+      if (drag.type === 'orbit_or_pan') {
+        if (state.viewMode === '2d') {
+          cam2d.panX = drag.ox - (sx - drag.sx)/cam2d.ppu;
+          cam2d.panY = drag.oy + (sy - drag.sy)/cam2d.ppu;
+        } else {
+          cam3d.yaw = drag.yaw - (sx - drag.sx)*0.008;
+          cam3d.pitch = Math.max(-1.45, Math.min(1.45, drag.pitch + (sy - drag.sy)*0.008));
+        }
+      } else if (drag.type === 'pan3d') {
+        const sp = state.preset.defaultViewRadius * 0.003;
+        cam3d.panX = drag.px - (sx - drag.sx) * sp * Math.cos(cam3d.yaw);
+        cam3d.panZ = drag.pz - (sx - drag.sx) * sp * Math.sin(cam3d.yaw);
+        cam3d.panY = drag.py + (sy - drag.sy) * sp;
+      } else if (drag.type === 'move') {
+        const m = computeMetrics(), anchor = getAnchor(m.bary);
+        const b = state.bodies.find(x => x.id === drag.id);
+        if (b) {
+          if (state.viewMode === '2d') {
+            predCache = null;
+            b.position.x = (sx - w*0.5)/cam2d.ppu + anchor.x + cam2d.panX + drag.ox;
+            b.position.y = -(sy - h*0.5)/cam2d.ppu + anchor.y + cam2d.panY + drag.oy;
+            b.trail = []; syncInspector(); updateCharts();
+          } else {
+            const wp = screenToPlane3D(sx, sy, anchor, w, h, drag.planeZ);
+            if (wp) {
+              predCache = null;
+              b.position.x = wp.x + drag.ox;
+              b.position.y = wp.y + drag.oy;
+              b.trail = []; syncInspector(); updateCharts();
+            }
+          }
+        }
+      } else if (drag.type === 'vel') {
+        const m = computeMetrics(), anchor = getAnchor(m.bary);
+        const b = state.bodies.find(x => x.id === drag.id);
+        if (b) {
+          const sc = Math.max(state.preset.velocityVectorScale, 1e-6);
+          if (state.viewMode === '2d') {
+            predCache = null;
+            const wx = (sx - w*0.5)/cam2d.ppu + anchor.x + cam2d.panX;
+            const wy = -(sy - h*0.5)/cam2d.ppu + anchor.y + cam2d.panY;
+            b.velocity.x = (wx - b.position.x) / sc;
+            b.velocity.y = (wy - b.position.y) / sc;
+            syncInspector(); updateCharts();
+          } else {
+            const wp = screenToPlane3D(sx, sy, anchor, w, h, drag.planeZ);
+            if (wp) {
+              predCache = null;
+              b.velocity.x = (wp.x - b.position.x) / sc;
+              b.velocity.y = (wp.y - b.position.y) / sc;
+              syncInspector(); updateCharts();
+            }
+          }
+        }
+      } else if (drag.type === 'place_new') {
+        const m = computeMetrics(), anchor = getAnchor(m.bary);
+        const wp = { x: (sx - w*0.5)/cam2d.ppu + anchor.x + cam2d.panX, y: -(sy - h*0.5)/cam2d.ppu + anchor.y + cam2d.panY, z: 0 };
+        drag.cur = wp;
+        newPlacePreview = { start: drag.start, end: wp };
+      }
+      return;
+    }
+    if (sx < 0 || sx > w || sy < 0 || sy > h) {
+      hoverWorld = null;
+      return;
+    }
+    if (state.isAdding) {
+      const m = computeMetrics(), anchor = getAnchor(m.bary);
+      hoverWorld = state.viewMode === '2d'
+        ? { x: (sx - w*0.5)/cam2d.ppu + anchor.x + cam2d.panX, y: -(sy - h*0.5)/cam2d.ppu + anchor.y + cam2d.panY, z: 0 }
+        : null;
+      canvas.style.cursor = 'crosshair';
+    } else {
+      hoverWorld = null;
+      const m = computeMetrics(), anchor = getAnchor(m.bary);
+      let nextCursor = 'default';
+      if (state.settings.showVelocityVectors) {
+        for (const b of state.bodies) {
+          const tip = getVelocityTipScreen(b, anchor, w, h);
+          if (Math.hypot(sx - tip.x, sy - tip.y) <= 13) { nextCursor = 'crosshair'; break; }
+        }
+      }
+      if (nextCursor === 'default') {
+        for (const b of state.bodies) {
+          const sp = projectPoint(b.position, anchor, w, h);
+          const rPx = Math.max(10, getBodyRadius(b) * sp.scale);
+          if (sp.scale > 0 && Math.hypot(sx - sp.x, sy - sp.y) <= rPx + 4) { nextCursor = 'pointer'; break; }
+        }
+      }
+      canvas.style.cursor = nextCursor;
+    }
+  });
+  window.addEventListener('mouseup', () => {
+    if (drag && drag.type === 'place_new') {
+      const sc = Math.max(state.preset.velocityVectorScale, 1e-6);
+      const vx = (drag.cur.x - drag.start.x) / sc;
+      const vy = (drag.cur.y - drag.start.y) / sc;
+      addBodyAt(drag.start, { x: vx, y: vy, z: 0 });
+      newPlacePreview = null;
+    }
+    drag = null;
+    canvas.style.cursor = state.isAdding ? 'crosshair' : 'default';
+  });
+
+  // Keyboard shortcuts
+  window.addEventListener('keydown', e => {
+    const tag = e.target && e.target.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    if (e.code === 'Space') {
+      e.preventDefault();
+      state.running = !state.running;
+      setPlayBtnState(state.running);
+    } else if (e.key === 'r' || e.key === 'R') {
+      loadPreset(state.preset.id);
+    } else if (e.key === 'g' || e.key === 'G') {
+      state.settings.showGridOrBox = !state.settings.showGridOrBox;
+      setSwitchState('chkGrid', state.settings.showGridOrBox);
+    } else if (e.key === 't' || e.key === 'T') {
+      state.settings.showPredictedTrajectories = !state.settings.showPredictedTrajectories;
+      setSwitchState('chkPred', state.settings.showPredictedTrajectories);
+      document.getElementById('predLenWrap').style.opacity = state.settings.showPredictedTrajectories ? '1' : '0.45';
+    } else if (e.key === 'f' || e.key === 'F') {
+      toggleFullscreen();
+    }
+  });
+
+  // Boot & Main Loop
+  applyThemeVars();
+  populateDropdowns();
+  syncPresetSummary();
+  resetCamera();
+  syncBodyList();
+  syncInspector();
+  syncLagrangeRefCard();
+  recordTelemetry();
+  updateCharts();
+
+  let lastTs = performance.now();
+  let frameCount = 0;
+  function loop(ts) {
+    const realDt = Math.min(0.05, Math.max(0.001, (ts - lastTs) / 1000));
+    lastTs = ts;
+    if (state.running) {
+      const totalDt = realDt * state.preset.simTimePerRealSecond * state.settings.speedMultiplier;
+      const sub = Math.max(4, state.preset.substepsPerFrame || 10);
+      const subDt = totalDt / sub;
+      for (let i = 0; i < sub; i++) {
+        state.bodies = stepRK4(state.bodies, state.preset.G, subDt, state.preset.softening);
+      }
+      if (state.settings.collisionBehavior === 'merge') {
+        const prevLen = state.bodies.length;
+        state.bodies = resolveCollisions(state.bodies);
+        if (state.bodies.length !== prevLen) { predCache = null; syncBodyList(); syncInspector(); }
+      }
+      state.simTime += totalDt;
+      if (frameCount % 2 === 0) {
+        const maxLen = state.settings.trailLength || 320;
+        state.bodies.forEach(b => {
+          const last = b.trail[b.trail.length - 1];
+          if (!last || Math.hypot(b.position.x - last.x, b.position.y - last.y, b.position.z - last.z) >= state.preset.defaultViewRadius * 0.004) {
+            b.trail.push(Object.assign({}, b.position));
+            if (b.trail.length > maxLen) b.trail.shift();
+          }
+        });
+      }
+      if (frameCount % 5 === 0) {
+        recordTelemetry();
+        updateCharts();
+      }
+    }
+    frameCount++;
+    render();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
